@@ -14,7 +14,7 @@ except ImportError:
     import tkinter as tk
 
 from PIL import Image, ImageTk
-from EyeTraking import EyeTracking
+from EyeTracking import EyeTracking
  
 class Application(tk.Frame):
     
@@ -26,15 +26,13 @@ class Application(tk.Frame):
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
         
-        self.pack()
+        self.pack(fill="both", expand=True)
         self.create_widgets()
         
         self.eye_tracking = EyeTracking()
 
     def create_widgets(self):
         
-        self.canvas = tk.Canvas(self, width=self.screen_width, height=self.screen_width)
-        self.canvas.pack()
         
         '''
         self.shapes = []
@@ -90,48 +88,64 @@ class Application(tk.Frame):
         menu.add_cascade(label="Edit", menu=edit)
         '''
         
+        self.canvas = tk.Canvas(self)
         
-        self.ball1 = Ball(self.canvas, 10, 10, 100, 100)
-        self.ball2 = Ball(self.canvas, 500, 400, 590, 490)
-        
-        self.shutdown_button = tk.Button(self)
-        self.shutdown_button["text"] = "Shutdown"
-        self.shutdown_button["fg"]   = "black"
-        self.shutdown_button["command"] = self.client_exit
-        self.shutdown_button.pack({"side": "bottom"})
+        self.ball1 = Ball(self.canvas, 10, 10, 110, 110)
+        self.ball2 = Ball(self.canvas, self.screen_width - 10, self.screen_height - 10, self.screen_width - 110, self.screen_height - 110)
         
         self.start_button = tk.Button(self)
         self.start_button["text"] = "Start exercise"
-        self.start_button["fg"]   = "black"
+        self.start_button["fg"]   = "white"
+        self.start_button["bg"]   = "#4CAF50"
         self.start_button["command"] = self.start_exercise
-        self.start_button.pack({"side": "bottom"})
         
-    def start_exercise(self):
-        print("Exercise started")
+        self.shutdown_button = tk.Button(self)
+        self.shutdown_button["text"] = "Shutdown"
+        self.shutdown_button["fg"]   = "white"
+        self.shutdown_button["bg"]   = "#f44336"
+        self.shutdown_button["command"] = self.client_exit
         
-        # Hide button
+        self.hide_exercise()
+        
+    def hide_exercise(self):
+        self.start_button.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
+        self.shutdown_button.pack(side=tk.TOP)
+        
+        self.canvas.pack_forget()
+        
+    def show_exercise(self):
         self.shutdown_button.pack_forget()
         self.start_button.pack_forget()
         
-        # Start eye traking
-        self.eye_tracking.start_gaze_tracking()
+        self.canvas.pack(fill="both", expand=True)
         
         # Show balls after 5 and 10 secounds
         self.ball1.animate(5000,5000)
         self.ball2.animate(10000,5000)
+
+    def start_exercise(self):
+        print("Exercise started")
+        
+        # Start eye traking
+        self.eye_tracking.start_gaze_tracking()
+        
+        # Hide button
+        # Show canvas
+        # Show elements
+        self.show_exercise()
         
         # End after 20 seconds
         self.canvas.after(20000, self.stop_exercise)
-
+        
     def stop_exercise(self):
         print("Exercise stopped")
         
         # Stop eye traking
         self.eye_tracking.end_gaze_tracking()
        
+        # Hide canvas
         # Show button after exercise
-        self.shutdown_button.pack({"side": "bottom"})
-        self.start_button.pack({"side": "bottom"})
+        self.hide_exercise()
     
     
     def start_animation(self, shape):
