@@ -29,6 +29,8 @@ class EyeTracking:
     global_gaze_data = []
     halted = False
     
+    current_target = (0.5,0.5)
+    
     licence_file = config.licence_file_path
     gazedata_filename = config.gazedata_file_path
 
@@ -51,7 +53,8 @@ class EyeTracking:
         'right_gaze_point_validity',
         'right_pupil_diameter',
         'right_pupil_validity',
-        'system_time_stamp'
+        'system_time_stamp',
+        'current_target_point_on_display_area'
     ]
 
     def __init__(self):
@@ -109,6 +112,8 @@ class EyeTracking:
         '''
         
         try:
+            
+            gaze_data.append(self.current_target)
             self.global_gaze_data.append(gaze_data)
             
             # print(unpack_gaze_data(gaze_data)
@@ -139,6 +144,10 @@ class EyeTracking:
                 
         return True
 
+    def set_current_target(self, x, y):
+        self.current_target = (x, y)
+        print("Target x: " + x)
+        print("Target y: " + y)
         
 
 

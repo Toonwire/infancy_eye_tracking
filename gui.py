@@ -15,6 +15,7 @@ except ImportError:
 
 from PIL import Image, ImageTk
 from eye_tracking import EyeTracking
+import config
  
 class Application(tk.Frame):
     
@@ -28,7 +29,6 @@ class Application(tk.Frame):
         
         self.pack(fill="both", expand=True)
         self.create_widgets()
-        
         
         try:
             self.eye_tracking = EyeTracking()
@@ -94,21 +94,17 @@ class Application(tk.Frame):
         
         self.canvas = tk.Canvas(self)
         
-        self.ball1 = Ball(self.canvas, 10, 10, 110, 110)
+        self.ball1 = Ball(self.canvas, 9, 9, 110, 110)
         self.ball2 = Ball(self.canvas, self.screen_width - 10, self.screen_height - 10, self.screen_width - 110, self.screen_height - 110)
         
         self.start_button = tk.Button(self)
         self.start_button["text"] = "Start exercise"
-        self.start_button["fg"]   = "white"
-        self.start_button["bg"]   = "#4CAF50"
         self.start_button["command"] = self.start_exercise
         
         self.shutdown_button = tk.Button(self)
         self.shutdown_button["text"] = "Shutdown"
-        self.shutdown_button["fg"]   = "white"
-        self.shutdown_button["bg"]   = "#f44336"
         self.shutdown_button["command"] = self.client_exit
-        
+            
         self.hide_exercise()
         
     def hide_exercise(self):
@@ -124,8 +120,27 @@ class Application(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
         
         # Show balls after 5 and 10 secounds
-        self.ball1.animate(5000,5000)
-        self.ball2.animate(10000,5000)
+        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
+        self.canvas.after(5000, lambda ball=self.ball1: self.animate(ball, 5000))
+        self.canvas.after(10000, lambda ball=self.ball2: self.animate(ball, 5000))
+        self.canvas.after(15000, lambda ball=None: self.animate(ball, 0))
+
+    def animate(self, ball, delay_before_hide):
+        
+        # Show ball <if not None>
+        if ball != None:
+            ball.show(delay_before_hide)
+        
+        # Set current target points for Eye Tracker
+        if self.eye_tracking != None:
+            if ball != None:
+                
+                center_x_norm = (ball.center_x - config.min_x) / (config.max_x - config.min_x)
+                center_y_norm = (ball.center_y - config.min_y) / (config.max_y - config.min_y)
+                
+                self.eye_tracking.set_current_target(center_x_norm, center_y_norm)
+            else:
+                self.eye_tracking.set_current_target(0.5, 0.5)
 
     def start_exercise(self):
         print("Exercise started")
@@ -150,8 +165,8 @@ class Application(tk.Frame):
         # Hide canvas
         # Show button after exercise
         self.hide_exercise()
-    
-    
+        
+        
     def start_animation(self, shape):
         if not shape.active:
             shape.active = True        
@@ -180,19 +195,19 @@ class Application(tk.Frame):
 
 
 class Ball:
-    def __init__(self, canvas, x1, y1, x2, y2):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+    def __init__(self, canvas, left_upper_x, left_upper_y, right_bottom_x, right_bottom_y):
+        self.left_upper_x = left_upper_x
+        self.left_upper_y = left_upper_y
+        self.right_bottom_x = right_bottom_x
+        self.right_bottom_y = right_bottom_y
         self.canvas = canvas
 
-    def animate(self, delay_show, delay_hide):
-        self.canvas.after(delay_show, self.show)
-        self.canvas.after(delay_show + delay_hide,self.hide)
+        self.center_x = self.left_upper_x + float(self.right_bottom_x - self.left_upper_x) / 2
+        self.center_y = self.left_upper_y + float(self.right_bottom_y - self.left_upper_y) / 2
         
-    def show(self):
-        self.ball = self.canvas.create_oval(self.x1, self.y1, self.x2, self.y2, fill="red")
+    def show(self, delay_before_hide):
+        self.ball = self.canvas.create_oval(self.left_upper_x, self.left_upper_y, self.right_bottom_x, self.right_bottom_y, fill="red")
+        self.canvas.after(delay_before_hide, self.hide)
         
     def hide(self):
         self.canvas.delete(self.ball)
