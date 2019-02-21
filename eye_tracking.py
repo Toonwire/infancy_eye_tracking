@@ -10,13 +10,7 @@ Created on Thu Feb 14 09:10:33 2019
 # Preface here
 #
 # from psychopy import prefs, visual, core, event, monitors, tools, logging
-import numpy as np
 import tobii_research as tr
-import time
-import datetime
-import random
-import os
-import pylsl as lsl
 import sys
 import config
 import csv
@@ -34,9 +28,9 @@ class EyeTracking:
 
     global_gaze_data = []
     halted = False
-
-    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-    gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
+    
+    licence_file = config.licence_file_path
+    gazedata_filename = config.gazedata_file_path
 
     channels = 31 # count of the below channels, incl. those that are 3 or 2 long
     gaze_stuff = [
@@ -64,15 +58,16 @@ class EyeTracking:
         # Find Eye Tracker and Apply License (edit to suit actual tracker serial no)
         ft = tr.find_all_eyetrackers()
         if len(ft) == 0:
-            print "No Eye Trackers found!?"
-            exit(1)
+            print("No Eye Trackers found!?")
+            sys.exit
+            
         
         for tracker in ft:
-            print "Found Tobii Tracker at '%s'" % (tracker.address)
+            print("Found Tobii Tracker at '%s'" % (tracker.address))
         
         # Pick first tracker
         mt = ft[0]
-        print "Found Tobii Tracker at '%s'" % (mt.address)
+        print("Using Tobii Tracker at '%s'" % (mt.address))
         
         # Apply license
         if self.license_file != "":
@@ -81,12 +76,12 @@ class EyeTracking:
         
                 res = mt.apply_licenses(license)
                 if len(res) == 0:
-                    print "Successfully applied license from single key"
+                    print("Successfully applied license from single key")
                 else:
                     print("Failed to apply license from single key. Validation result: %s." % (res[0].validation_result))
-                    exit
+                    sys.exit
         else:
-            print "No license file installed"
+            print("No license file installed")
         
         self.mt = mt
 
@@ -118,7 +113,7 @@ class EyeTracking:
         try:
             self.global_gaze_data.append(gaze_data)
             
-            # print unpack_gaze_data(gaze_data)
+            # print(unpack_gaze_data(gaze_data)
         except:
             print("Error in callback: ")
             print(sys.exc_info())

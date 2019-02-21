@@ -14,7 +14,7 @@ except ImportError:
     import tkinter as tk
 
 from PIL import Image, ImageTk
-from EyeTracking import EyeTracking
+from eye_tracking import EyeTracking
  
 class Application(tk.Frame):
     
