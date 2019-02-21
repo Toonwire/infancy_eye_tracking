@@ -58,9 +58,7 @@ class EyeTracking:
         # Find Eye Tracker and Apply License (edit to suit actual tracker serial no)
         ft = tr.find_all_eyetrackers()
         if len(ft) == 0:
-            print("No Eye Trackers found!?")
-            sys.exit
-            
+            raise Exception("No eye trackers found")
         
         for tracker in ft:
             print("Found Tobii Tracker at '%s'" % (tracker.address))

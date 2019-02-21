@@ -29,7 +29,11 @@ class Application(tk.Frame):
         self.pack(fill="both", expand=True)
         self.create_widgets()
         
-        self.eye_tracking = EyeTracking()
+        
+        try:
+            self.eye_tracking = EyeTracking()
+        except Exception as eye_tracker_exception:
+            print(eye_tracker_exception)
 
     def create_widgets(self):
         
