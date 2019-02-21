@@ -12,9 +12,8 @@ Created on Thu Feb 14 09:10:33 2019
 # from psychopy import prefs, visual, core, event, monitors, tools, logging
 import tobii_research as tr
 import sys
-import config
 import csv
-
+import datetime
 
 
 #
@@ -29,11 +28,11 @@ class EyeTracking:
     global_gaze_data = []
     halted = False
     
-    licence_file = config.licence_file_path
-    gazedata_filename = config.gazedata_file_path
+    licence_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+    gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
 
     channels = 31 # count of the below channels, incl. those that are 3 or 2 long
-    gaze_stuff = [
+    gaze_params = [
         'device_time_stamp',
         'left_gaze_origin_in_trackbox_coordinate_system',
         'left_gaze_origin_in_user_coordinate_system',
@@ -122,22 +121,10 @@ class EyeTracking:
     
     def start_gaze_tracking(self): 
         self.mt.subscribe_to(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback, as_dictionary=True)
-        return True
     
     def end_gaze_tracking(self):
         self.mt.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
         
-        # PYTHON 2.x
-        with open(self.gazedata_filename, mode='wb') as gaze_data_file:
-            
-            fieldnames = [data for data in self.gaze_stuff]
-            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=fieldnames, delimiter=";")
-        
-            gaze_data_writer.writeheader()
-            for gaze_data in self.global_gaze_data:
-                gaze_data_writer.writerow(gaze_data)
-                
-        return True
 
         
 
