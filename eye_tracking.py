@@ -12,8 +12,6 @@ Created on Thu Feb 14 09:10:33 2019
 # from psychopy import prefs, visual, core, event, monitors, tools, logging
 import tobii_research as tr
 import sys
-import csv
-import datetime
 
 
 #
@@ -29,7 +27,10 @@ class EyeTracking:
     halted = False
     
     licence_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-    gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
+    #gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
+    
+    current_target = (0.5, 0.5)
+    
 
     channels = 31 # count of the below channels, incl. those that are 3 or 2 long
     gaze_params = [
@@ -50,7 +51,8 @@ class EyeTracking:
         'right_gaze_point_validity',
         'right_pupil_diameter',
         'right_pupil_validity',
-        'system_time_stamp'
+        'system_time_stamp',
+        'current_target_point_on_display_area'
     ]
 
     def __init__(self):
@@ -108,6 +110,8 @@ class EyeTracking:
         '''
         
         try:
+            
+            gaze_data.append(self.current_target)
             self.global_gaze_data.append(gaze_data)
             
             # print(unpack_gaze_data(gaze_data)
@@ -126,6 +130,10 @@ class EyeTracking:
         self.mt.unsubscribe_from(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
         
 
+    def set_current_target(self, x, y):
+        self.current_target = (x, y)
+        print("Target x: " + x)
+        print("Target y: " + y)
         
 
 

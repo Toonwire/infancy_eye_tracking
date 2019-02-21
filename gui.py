@@ -25,6 +25,9 @@ class Application(tk.Frame):
     gaze_data_path = "session_data/gaze_data/"
     session_file = datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
     
+    gaze_data_filename = gaze_data_path + session_file
+    config_filename = config_path + session_file
+    
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.master = master
@@ -45,7 +48,7 @@ class Application(tk.Frame):
     def create_widgets(self):        
         self.canvas = tk.Canvas(self)
         
-        self.ball1 = Ball(self.canvas, 10, 10, 110, 110)
+        self.ball1 = Ball(self.canvas, 9, 9, 110, 110)
         self.ball2 = Ball(self.canvas, self.screen_width - 10, self.screen_height - 10, self.screen_width - 110, self.screen_height - 110)
         
         config_fields = ["Age (Months)", "Sex", "Severity (1-5)"]
@@ -83,15 +86,14 @@ class Application(tk.Frame):
         btn_config_save.pack(side=tk.LEFT, padx=15, pady=10)
     
     def config_save(self, entries):
-        filename = self.config_path + self.session_file
         # PYTHON 2.x
-        with open(filename, mode='wb') as csv_file:
+        with open(self.config_filename, mode='wb') as csv_file:
             config_writer = csv.writer(csv_file)
             field_names = [row[0] for row in entries]
             entry_texts = [row[1].get() for row in entries]
             
-            field_names.extend(["Screen width", "Screen height"])
-            entry_texts.extend([self.screen_width, self.screen_height])
+            field_names.extend(["Screen width", "Screen height", "Gaze data filename"])
+            entry_texts.extend([self.screen_width, self.screen_height, self.gaze_data_filename])
             
             config_writer.writerow(field_names)     # field/label names
             config_writer.writerow(entry_texts)     # text of entries
@@ -113,9 +115,27 @@ class Application(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
         
         # Show balls after 5 and 10 secounds
-        self.ball1.animate(5000,5000)
-        self.ball2.animate(10000,5000)
+        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
+        self.canvas.after(5000, lambda ball=self.ball1: self.animate(ball, 5000))
+        self.canvas.after(10000, lambda ball=self.ball2: self.animate(ball, 5000))
+        self.canvas.after(15000, lambda ball=None: self.animate(ball, 0))
+
+    def animate(self, ball, delay_before_hide):
         
+        # Show ball <if not None>
+        if ball != None:
+            ball.show(delay_before_hide)
+        
+        # Set current target points for Eye Tracker
+        if self.eye_tracking != None:
+            if ball != None:
+                
+                center_x_norm = ball.center_x / float(self.screen_width)
+                center_y_norm = ball.center_y / float(self.screen_height)
+                
+                self.eye_tracking.set_current_target(center_x_norm, center_y_norm)
+            else:
+                self.eye_tracking.set_current_target(0.5, 0.5)
 
     def start_exercise(self):
         
@@ -141,9 +161,8 @@ class Application(tk.Frame):
         if self.eye_tracking != None:
             self.eye_tracking.end_gaze_tracking()
             
-            filename = self.gaze_data_path + self.session_file
             # PYTHON 2.x
-            with open(filename, mode='wb') as gaze_data_file:
+            with open(self.gaze_data_filename, mode='wb') as gaze_data_file:
             
                 field_names = [data for data in self.eye_tracking.gaze_params]
                 gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
@@ -157,8 +176,8 @@ class Application(tk.Frame):
         # Hide canvas
         # Show button after exercise
         self.hide_exercise()
-    
-    
+        
+        
     def start_animation(self, shape):
         if not shape.active:
             shape.active = True        
@@ -187,19 +206,19 @@ class Application(tk.Frame):
 
 
 class Ball:
-    def __init__(self, canvas, x1, y1, x2, y2):
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
+    def __init__(self, canvas, left_upper_x, left_upper_y, right_bottom_x, right_bottom_y):
+        self.left_upper_x = left_upper_x
+        self.left_upper_y = left_upper_y
+        self.right_bottom_x = right_bottom_x
+        self.right_bottom_y = right_bottom_y
         self.canvas = canvas
 
-    def animate(self, delay_show, delay_hide):
-        self.canvas.after(delay_show, self.show)
-        self.canvas.after(delay_show + delay_hide,self.hide)
+        self.center_x = self.left_upper_x + float(self.right_bottom_x - self.left_upper_x) / 2
+        self.center_y = self.left_upper_y + float(self.right_bottom_y - self.left_upper_y) / 2
         
-    def show(self):
-        self.ball = self.canvas.create_oval(self.x1, self.y1, self.x2, self.y2, fill="red")
+    def show(self, delay_before_hide):
+        self.ball = self.canvas.create_oval(self.left_upper_x, self.left_upper_y, self.right_bottom_x, self.right_bottom_y, fill="red")
+        self.canvas.after(delay_before_hide, self.hide)
         
     def hide(self):
         self.canvas.delete(self.ball)
