@@ -22,7 +22,7 @@ class Application(tk.Frame):
     
     
     config_path = "session_data/config_files/"
-    gaze_data_path = "session_data/gaze_data/"
+    gaze_data_path = "session_data/gaze_data_files/"
     session_file = datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
     
     gaze_data_filename = gaze_data_path + session_file
