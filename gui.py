@@ -83,7 +83,7 @@ class Application(tk.Frame):
         btn_config_save["fg"]   = "black"
         btn_config_save["bg"]   = "#b2b2b2"
         btn_config_save["command"] = lambda e=entries: self.config_save(e)
-        btn_config_save.pack(side=tk.LEFT, padx=15, pady=10)
+        btn_config_save.pack(side=tk.LEFT, padx=5, pady=10)
     
     def config_save(self, entries):
         # PYTHON 2.x
