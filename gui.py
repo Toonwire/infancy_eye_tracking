@@ -88,16 +88,21 @@ class Application(tk.Frame):
     def config_save(self, entries):
         # PYTHON 2.x
         with open(self.config_filename, mode='wb') as csv_file:
-            config_writer = csv.writer(csv_file)
             field_names = [row[0] for row in entries]
             entry_texts = [row[1].get() for row in entries]
             
             field_names.extend(["Screen width", "Screen height", "Gaze data filename"])
             entry_texts.extend([self.screen_width, self.screen_height, self.gaze_data_filename])
             
-            config_writer.writerow(field_names)     # field/label names
-            config_writer.writerow(entry_texts)     # text of entries
+            config_writer = csv.DictWriter(csv_file, fieldnames=field_names, delimiter=";")
+            config_writer.writeheader()
             
+            config_dict = {}
+            for f, e in zip(field_names, entry_texts):
+                config_dict[f] = e
+            
+            config_writer.writerow(config_dict)
+                    
         print("Configurations saved")
         self.config_panel.pack_forget()
         self.hide_exercise() 

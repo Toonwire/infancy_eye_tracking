@@ -16,8 +16,13 @@ right_display_gaze_point = None
 
 
 
-for csv_file in glob.glob('session_data/gaze_data_files/*.csv'):
-    data_frame = pd.read_csv(csv_file, delimiter=';')
+
+
+for csv_file in glob.glob('session_data/config_files/*.csv'):
+    
+    data_frame = pd.read_csv(csv_file, delimiter=";")
+    
+    data_frame = pd.read_csv(data_frame['Gaze data filename'][0], delimiter=';')
     
     data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
     data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
