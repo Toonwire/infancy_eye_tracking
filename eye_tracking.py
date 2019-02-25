@@ -24,9 +24,8 @@ import sys
 class EyeTracking:
 
     global_gaze_data = []
-    halted = False
     
-    licence_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
     #gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
     
     current_target = (0.5, 0.5)
@@ -53,6 +52,7 @@ class EyeTracking:
         'right_pupil_validity',
         'system_time_stamp',
         'current_target_point_on_display_area'
+            
     ]
 
     def __init__(self):
@@ -83,6 +83,7 @@ class EyeTracking:
             print("No license file installed")
         
         self.mt = mt
+            
 
     def gaze_data_callback(self, gaze_data):
         '''send gaze data'''
@@ -110,20 +111,15 @@ class EyeTracking:
         '''
         
         try:
-            
-            gaze_data.append(self.current_target)
+            gaze_data['current_target_point_on_display_area'] = self.current_target
             self.global_gaze_data.append(gaze_data)
             
-            # print(unpack_gaze_data(gaze_data)
         except:
             print("Error in callback: ")
             print(sys.exc_info())
             
-            global halted
-            halted = True
-    
-    
     def start_gaze_tracking(self): 
+        self.global_gaze_data = []
         self.mt.subscribe_to(tr.EYETRACKER_GAZE_DATA, self.gaze_data_callback, as_dictionary=True)
     
     def end_gaze_tracking(self):
@@ -132,8 +128,6 @@ class EyeTracking:
 
     def set_current_target(self, x, y):
         self.current_target = (x, y)
-        print("Target x: " + x)
-        print("Target y: " + y)
         
 
 

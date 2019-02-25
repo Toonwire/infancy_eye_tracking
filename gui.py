@@ -17,16 +17,22 @@ from PIL import Image, ImageTk
 from eye_tracking import EyeTracking
 import datetime
 import csv
+import gaze_data_analyzer as gda
+import random
+import os
  
 class Application(tk.Frame):
     
+    analyzer = gda.GazeDataAnalyzer()
     
-    config_path = "session_data/config_files/"
-    gaze_data_path = "session_data/gaze_data_files/"
-    session_file = datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
+    session_path = "session_data/" + datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S/")
     
-    gaze_data_filename = gaze_data_path + session_file
-    config_filename = config_path + session_file
+    cal_file_index = 0
+    training_file_index = 0
+    
+    config_filename = session_path + "config.csv"
+    
+    cal_path = session_path + "calibrations/"
     
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
@@ -44,23 +50,33 @@ class Application(tk.Frame):
             self.eye_tracking = EyeTracking()
         except Exception as eye_tracker_exception:
             print(eye_tracker_exception)
+        
+        try:
+            os.makedirs(self.cal_path)
+        except Exception:
+            # directory already exists
+            pass
 
     def create_widgets(self):        
         self.canvas = tk.Canvas(self)
         
-        self.ball1 = Ball(self.canvas, 9, 9, 110, 110)
-        self.ball2 = Ball(self.canvas, self.screen_width - 10, self.screen_height - 10, self.screen_width - 110, self.screen_height - 110)
-        
-        config_fields = ["Age (Months)", "Sex", "Severity (1-5)"]
+        config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
+        config_values = ["12", "M", "1", "27", "60"]
         self.config_panel = tk.Frame(self)        
-        self.config_setup(self.config_panel, config_fields)
+        self.config_setup(self.config_panel, config_fields, config_values)
         self.config_panel.pack(side=tk.TOP, pady=(self.screen_height / 2, 0))
         
-        self.start_button = tk.Button(self)
-        self.start_button["text"] = "Start exercise"
-        self.start_button["fg"]   = "white"
-        self.start_button["bg"]   = "#4CAF50"
-        self.start_button["command"] = self.start_exercise
+        self.calibrate_button = tk.Button(self)
+        self.calibrate_button["text"] = "Start calibration"
+        self.calibrate_button["fg"]   = "white"
+        self.calibrate_button["bg"]   = "#FFA500"
+        self.calibrate_button["command"] = self.start_calibration_exercise
+        
+        self.training_button = tk.Button(self)
+        self.training_button["text"] = "Start training"
+        self.training_button["fg"]   = "white"
+        self.training_button["bg"]   = "#4CAF50"
+        self.training_button["command"] = self.start_training_exercise
         
         self.shutdown_button = tk.Button(self)
         self.shutdown_button["text"] = "Shutdown"
@@ -68,12 +84,13 @@ class Application(tk.Frame):
         self.shutdown_button["bg"]   = "#f44336"
         self.shutdown_button["command"] = self.client_exit
         
-    def config_setup(self, root, fields):
+    def config_setup(self, root, fields, values):
         entries = []
-        for field in fields:
+        for field, value in zip(fields, values):
             row = tk.Frame(root)
             label = tk.Label(row, width=15, text=field, anchor='w')
             entry = tk.Entry(row)
+            entry.insert(tk.END, value)
             row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
             label.pack(side=tk.LEFT)
             entry.pack(side=tk.RIGHT, expand=True, fill=tk.X)
@@ -91,8 +108,8 @@ class Application(tk.Frame):
             field_names = [row[0] for row in entries]
             entry_texts = [row[1].get() for row in entries]
             
-            field_names.extend(["Screen width", "Screen height", "Gaze data filename"])
-            entry_texts.extend([self.screen_width, self.screen_height, self.gaze_data_filename])
+            field_names.extend(["Screen width (px)", "Screen height (px)"])
+            entry_texts.extend([self.screen_width, self.screen_height])
             
             config_writer = csv.DictWriter(csv_file, fieldnames=field_names, delimiter=";")
             config_writer.writeheader()
@@ -105,25 +122,23 @@ class Application(tk.Frame):
                     
         print("Configurations saved")
         self.config_panel.pack_forget()
-        self.hide_exercise() 
+        self.hide_canvas() 
     
-    def hide_exercise(self):
-        self.start_button.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
+    def hide_canvas(self):
+        self.calibrate_button.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
+        self.training_button.pack(side=tk.TOP, pady=(0, 10))
         self.shutdown_button.pack(side=tk.TOP)
+        
         
         self.canvas.pack_forget()
         
-    def show_exercise(self):
+    def show_canvas(self):
         self.shutdown_button.pack_forget()
-        self.start_button.pack_forget()
+        self.calibrate_button.pack_forget()
+        self.training_button.pack_forget()
         
         self.canvas.pack(fill="both", expand=True)
         
-        # Show balls after 5 and 10 secounds
-        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
-        self.canvas.after(5000, lambda ball=self.ball1: self.animate(ball, 5000))
-        self.canvas.after(10000, lambda ball=self.ball2: self.animate(ball, 5000))
-        self.canvas.after(15000, lambda ball=None: self.animate(ball, 0))
 
     def animate(self, ball, delay_before_hide):
         
@@ -142,7 +157,7 @@ class Application(tk.Frame):
             else:
                 self.eye_tracking.set_current_target(0.5, 0.5)
 
-    def start_exercise(self):
+    def start_training_exercise(self):
         
         # Start eye traking
         if self.eye_tracking != None:
@@ -154,20 +169,40 @@ class Application(tk.Frame):
         # Hide button
         # Show canvas
         # Show elements
-        self.show_exercise()
+        self.show_canvas()
+        training_balls = []
+        n = 5
+        
+        for i in range(n):
+            randx = random.random()
+            randy = random.random()
+            training_balls.append(Ball(self.canvas, (self.screen_width * randx) - 50, (self.screen_height * randy) - 50, (self.screen_width * randx) + 50, (self.screen_height * randy) + 50))
+        
+        # set center target point
+        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
+        
+        # make n random balls
+        for i in range(n):
+            self.canvas.after(1000+3000*i, lambda ball=training_balls[i]: self.animate(ball, 3000))
+            
+        self.canvas.after(1000+3000*n, lambda ball=None: self.animate(ball, 0))
         
         # End after 20 seconds
-        self.canvas.after(20000, self.stop_exercise)
-        
-    def stop_exercise(self):
+        self.canvas.after(2000+3000*n, self.stop_training_exercise)
+
+    def stop_training_exercise(self):
         print("Simulation ended")
         
-        # Stop eye traking
+        # Stop eye tracking
         if self.eye_tracking != None:
             self.eye_tracking.end_gaze_tracking()
             
+            self.training_file_index = self.training_file_index + 1
+            
+            training_filename = self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/training_" + str(self.training_file_index) + ".csv"
+            
             # PYTHON 2.x
-            with open(self.gaze_data_filename, mode='wb') as gaze_data_file:
+            with open(training_filename, mode='wb') as gaze_data_file:
             
                 field_names = [data for data in self.eye_tracking.gaze_params]
                 gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
@@ -176,11 +211,80 @@ class Application(tk.Frame):
                 for gaze_data in self.eye_tracking.global_gaze_data:
                     gaze_data_writer.writerow(gaze_data)
                     
-       
+            try:
+                self.analyzer.analyze(training_filename)
+            except:
+                print("Bad data obtained")
        
         # Hide canvas
         # Show button after exercise
-        self.hide_exercise()
+        self.hide_canvas()
+        
+    def start_calibration_exercise(self):
+        
+        # Start eye traking
+        if self.eye_tracking != None:
+            print("Starting simulation with eye tracker")
+            self.eye_tracking.start_gaze_tracking()
+        else:
+            print("Starting simulation without eye tracker")
+        
+        # Hide button
+        # Show canvas
+        # Show elements
+        self.show_canvas()
+        
+        ball1 = Ball(self.canvas, (self.screen_width * 0.25) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.25) + 50, (self.screen_height * 0.5) + 50)
+        ball2 = Ball(self.canvas, (self.screen_width * 0.75) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.75) + 50, (self.screen_height * 0.5) + 50)
+        
+        # Show balls after 5 and 10 secounds
+        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
+        self.canvas.after(1000, lambda ball=ball1: self.animate(ball, 3000))
+        self.canvas.after(4000, lambda ball=ball2: self.animate(ball, 3000))
+        self.canvas.after(7000, lambda ball=None: self.animate(ball, 0))
+        
+        # End after 20 seconds
+        self.canvas.after(8000, self.stop_calibration_exercise)
+        
+    def stop_calibration_exercise(self):
+        print("Simulation ended")
+        
+        # Stop eye tracking
+        if self.eye_tracking != None:
+            self.eye_tracking.end_gaze_tracking()
+            
+            self.cal_file_index = self.cal_file_index + 1
+            self.training_file_index = 0
+            
+            try:
+                os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
+            except Exception:
+                # directory already exists
+                pass
+            
+            cal_filename = self.cal_path + "cal_" + str(self.cal_file_index) + ".csv"
+            
+            # PYTHON 2.x
+            with open(cal_filename, mode='wb') as gaze_data_file:
+            
+                field_names = [data for data in self.eye_tracking.gaze_params]
+                gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
+            
+                gaze_data_writer.writeheader()
+                for gaze_data in self.eye_tracking.global_gaze_data:
+                    gaze_data_writer.writerow(gaze_data)
+
+                    
+            try:
+                self.analyzer.setup(self.config_filename, cal_filename)
+                self.analyzer.analyze(cal_filename)
+            except:
+                print("Bad data obtained")
+                
+       
+        # Hide canvas
+        # Show button after exercise
+        self.hide_canvas()
         
         
     def start_animation(self, shape):
