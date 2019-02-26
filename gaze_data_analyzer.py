@@ -73,9 +73,6 @@ class GazeDataAnalyzer:
         self.dist_to_screen_cm = data_frame['Distance to screen (cm)'][0]
         self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
         
-        
-        
-        
         # override current config data frame and replace with gaze data data frame
         data_frame = pd.read_csv(cal_filename, delimiter=';')
         
