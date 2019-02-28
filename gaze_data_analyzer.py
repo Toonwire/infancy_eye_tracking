@@ -25,10 +25,13 @@ class GazeDataAnalyzer:
         self.N = len(data_frame)
         
         # fetch gaze points from data
-        self.gaze_data_left = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
-        self.gaze_data_right = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
-        self.target_points = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
+        gaze_data_left = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
+        gaze_data_right = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
+        target_points = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
 
+        return (gaze_data_left, gaze_data_right, target_points)
+    
+    
     # set up the transformation matrices 
     def setup(self, config_file, cal_filename):
         
@@ -42,26 +45,26 @@ class GazeDataAnalyzer:
         self.dist_to_screen_cm = data_frame['Distance to screen (cm)'][0]
         self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
         
-        self.read_data(cal_filename)
+        gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename)
         
-        self.data_correction = dc.DataCorrection(self.target_points, self.screen_width_px, self.screen_height_px)
-        self.data_correction.calibrate_left_eye(self.gaze_data_left)
-        self.data_correction.calibrate_right_eye(self.gaze_data_right)
+        self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
+        self.data_correction.calibrate_left_eye(gaze_data_left)
+        self.data_correction.calibrate_right_eye(gaze_data_right)
         
     
     def analyze(self, training_filename):   
-        self.read_data(training_filename)
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename)
         
         ### error analysis - raw
-        self.analyze_errors(self.gaze_data_left, self.gaze_data_right, self.target_points)
+        self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
         
         #------ correct raw data ------#
-        corrected_gaze_data_left = self.data_correction.adjust_left_eye(self.gaze_data_left)
-        corrected_gaze_data_right = self.data_correction.adjust_right_eye(self.gaze_data_right)
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
         #------------------------------#
         
         ### error analysis - corrected
-        self.analyze_errors(corrected_gaze_data_left, corrected_gaze_data_right, self.target_points)
+        self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
