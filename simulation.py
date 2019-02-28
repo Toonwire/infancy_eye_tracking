@@ -15,8 +15,8 @@ session_path = "session_data/" + session_path + "/"
 
 config_filename = session_path + "config.csv"
 
-cal_file_index = 1
-training_file_index = 2
+cal_file_index = 3
+training_file_index = 1
 
 
 cal_filename = session_path + "calibrations/cal_" + str(cal_file_index) + ".csv"

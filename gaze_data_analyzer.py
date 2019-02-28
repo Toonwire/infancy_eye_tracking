@@ -67,6 +67,18 @@ class GazeDataAnalyzer:
         self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         
+        # RMSE values for raw and corrected data (averaged btween left- and right fixations)
+        rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
+        rmse_cor = (self.rmse(gaze_data_left_corrected, target_points) + self.rmse(gaze_data_right_corrected, target_points)) / 2
+        print("RMS error raw:\t\t" + str(rmse_raw))
+        print("RMS error corrected:\t" + str(rmse_cor))
+        print("Change:\t\t\t" + str((rmse_raw - rmse_cor) / max(rmse_raw, rmse_cor) * 100) + " %")
+        
+        
+    def rmse(self, fixations, targets):
+        return np.sqrt(((fixations - targets) ** 2).mean())
+
+    
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
         # compute pixel deviations from fixation to target
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
