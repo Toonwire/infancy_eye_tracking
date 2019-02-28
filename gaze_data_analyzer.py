@@ -11,9 +11,6 @@ import math
 import data_correction as dc
 import numpy as np
 
-left_display_gaze_point = None
-right_display_gaze_point = None
-
 class GazeDataAnalyzer:
 
     def read_data(self, filename):
