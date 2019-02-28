@@ -5,7 +5,6 @@ Created on Wed Feb 20 14:05:05 2019
 @author: s144451
 """
 
-import glob
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
