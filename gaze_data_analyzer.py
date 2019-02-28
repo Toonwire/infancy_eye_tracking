@@ -75,32 +75,39 @@ class GazeDataAnalyzer:
         # override current config data frame and replace with gaze data data frame
         data_frame = pd.read_csv(cal_filename, delimiter=';')
         
+        # check for corrupted/missing data in data frames
         data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
         data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
         
-        N = len(data_frame)
+        # note number of data rows in csv file
+        self.N = len(data_frame)
         
+        # fetch gaze points from data
         left_display_gaze_point = [eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]
         right_display_gaze_point = [eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]
         target_points = [eval(coord) for coord in data_frame['current_target_point_on_display_area']]
     
         x_left, y_left = map(list, zip(*left_display_gaze_point))
         x_right, y_right = map(list, zip(*right_display_gaze_point))
-        x_target, y_target = map(list, zip(*target_points))
+        x_targets, y_targets = map(list, zip(*target_points))
         
-        fixations_left = np.zeros((2,N))
-        fixations_right = np.zeros((2,N))
-        targets = np.zeros((2,N))
+        fixations_left = np.zeros((2,self.N))
+        fixations_right = np.zeros((2,self.N))
+        targets = np.zeros((2,self.N))
         
-        for i in range(0,N):
+        for i in range(0,self.N):
             fixations_left[0,i] = x_left[i];
             fixations_left[1,i] = y_left[i];
         
             fixations_right[0,i] = x_right[i];
             fixations_right[1,i] = y_right[i];
         
-            targets[0,i] = x_target[i];
-            targets[1,i] = y_target[i];
+            targets[0,i] = x_targets[i];
+            targets[1,i] = y_targets[i];
+        
+        self.fixations_left = fixations_left
+        self.fixations_right = fixations_right
+        self.targets = targets
         
         self.data_correction = dc.DataCorrection(targets, self.screen_width_px, self.screen_height_px)
         self.data_correction.calibrate_left_eye(fixations_left)
@@ -115,103 +122,84 @@ class GazeDataAnalyzer:
         data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
         data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
         
-        N = len(data_frame)
+        self.N = len(data_frame)
         
-        left_display_gaze_point = [eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]
-        right_display_gaze_point = [eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]
+        left_display_gaze_points = [eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]
+        right_display_gaze_points = [eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]
         target_points = [eval(coord) for coord in data_frame['current_target_point_on_display_area']]
     
-        x_left, y_left = map(list, zip(*left_display_gaze_point))
-        x_right, y_right = map(list, zip(*right_display_gaze_point))
-        x_target, y_target = map(list, zip(*target_points))
+        x_left, y_left = map(list, zip(*left_display_gaze_points))
+        x_right, y_right = map(list, zip(*right_display_gaze_points))
+        x_targets, y_targets = map(list, zip(*target_points))
         
-        plt.scatter(x_left, y_left, marker='x', color='red')
-        plt.scatter(x_right, y_right, marker='o', color='green')
-        plt.scatter(x_target, y_target, marker='^', color='black')
-            
-        plt.gca().xaxis.tick_top()
-        plt.xlim(0,1)
-        plt.ylim(1,0)
-        plt.show()
+        self.plot_scatter_err(x_left, y_left, x_right, y_right, x_targets, y_targets, title_string="Scatter plot for fixations")
         
-        left_error_norm = []
-        right_error_norm = []
-        left_error = []
-        right_error = []
         
-        for i in range(0,N):
+        # Normalize data
+        left_err_norm = []
+        right_err_norm = []
+        left_err = []
+        right_err = []
+        
+        for i in range(0,self.N):
             target_point = target_points[i]
             
             gaze_point_left = (x_left[i], y_left[i])
             gaze_point_right = (x_right[i], y_right[i])
             
-            left_error_norm_single = (abs(gaze_point_left[0] - target_point[0]), abs(gaze_point_left[1] - target_point[1]))
-            right_error_norm_single = (abs(gaze_point_right[0] - target_point[0]), abs(gaze_point_right[1] - target_point[1]))
+            left_err_norm_single = (abs(gaze_point_left[0] - target_point[0]), abs(gaze_point_left[1] - target_point[1]))
+            right_err_norm_single = (abs(gaze_point_right[0] - target_point[0]), abs(gaze_point_right[1] - target_point[1]))
             
-            dist_left = math.sqrt(math.pow(left_error_norm_single[0], 2) + math.pow(left_error_norm_single[1], 2))
-            left_error.append(dist_left)
-            left_error_norm.append(left_error_norm_single)
+            dist_left = math.sqrt(math.pow(left_err_norm_single[0], 2) + math.pow(left_err_norm_single[1], 2))
+            left_err.append(dist_left)
+            left_err_norm.append(left_err_norm_single)
             
-            dist_right = math.sqrt(math.pow(right_error_norm_single[0], 2) + math.pow(right_error_norm_single[1], 2))
-            right_error.append(dist_right)
-            right_error_norm.append(right_error_norm_single)
+            dist_right = math.sqrt(math.pow(right_err_norm_single[0], 2) + math.pow(right_err_norm_single[1], 2))
+            right_err.append(dist_right)
+            right_err_norm.append(right_err_norm_single)
         
         
-        visual_angle_err_left, visual_angle_err_right = self.compute_visual_angle_error(left_error_norm, right_error_norm)
+        visual_angle_err_left, visual_angle_err_right = self.compute_visual_angle_error(left_err_norm, right_err_norm)
         
-        plt.plot(range(0,N), left_error, color='red')
-        plt.plot(range(0,N), right_error, color='green')
-        plt.ylim(0,1)
-        plt.show()
-       
-        plt.plot(range(0,N), visual_angle_err_left, color='red')
-        plt.plot(range(0,N), visual_angle_err_right, color='green')
-        plt.ylim(0,5)
-        plt.show()
-   
-        fixations_left = np.zeros((2,N))
-        fixations_right = np.zeros((2,N))
-        targets = np.zeros((2,N))
+        self.plot_visual_err(left_err, right_err, "Visual distance error")
+        self.plot_visual_err(visual_angle_err_left, visual_angle_err_right, "Visual angle error", y_max=5)
         
-        for i in range(0,N):
+        
+        ##################
+        ## CORRECTION ANALYSIS
+        ##################
+        fixations_left = np.zeros((2,self.N))
+        fixations_right = np.zeros((2,self.N))
+        targets = np.zeros((2,self.N))
+        
+        for i in range(0,self.N):
             fixations_left[0,i] = x_left[i];
             fixations_left[1,i] = y_left[i];
         
             fixations_right[0,i] = x_right[i];
             fixations_right[1,i] = y_right[i];
         
-            targets[0,i] = x_target[i];
-            targets[1,i] = y_target[i];
+            targets[0,i] = x_targets[i];
+            targets[1,i] = y_targets[i];
             
             
         corrected_gaze_data_left = self.data_correction.adjust_left_eye(fixations_left)
         corrected_gaze_data_right = self.data_correction.adjust_right_eye(fixations_right)
         
+        x_left_corrected = corrected_gaze_data_left[0,:]
+        y_left_corrected = corrected_gaze_data_left[1,:]
+        x_right_corrected = corrected_gaze_data_right[0,:]
+        y_right_corrected = corrected_gaze_data_right[1,:]
         
-        x_left_corrected = corrected_gaze_data_left[0, :]
-        y_left_corrected = corrected_gaze_data_left[1, :]
+        self.plot_scatter_err(x_left_corrected, y_left_corrected, x_right_corrected, y_right_corrected, x_targets, y_targets, "Scatter plot for corrected fixations")
         
-        x_right_corrected = corrected_gaze_data_right[0, :]
-        y_right_corrected = corrected_gaze_data_right[1, :]
-        
-        visual_scatter_err_plot_left_corrected = plt.scatter(x_left_corrected, y_left_corrected, marker='x', color='red')
-        visual_scatter_err_plot_right_corrected = plt.scatter(x_right_corrected, y_right_corrected, marker='o', color='green')
-        visual_scatter_err_plot_target_corrected = plt.scatter(x_target, y_target, marker='^', color='black')
-            
-        plt.legend((visual_scatter_err_plot_left_corrected, visual_scatter_err_plot_right_corrected, visual_scatter_err_plot_target_corrected),
-                   ("left eye", "right eye", "target points"))
-        plt.title("Scatter plot for corrected data")
-        plt.gca().xaxis.tick_top()
-        plt.xlim(0,1)
-        plt.ylim(1,0)
-        plt.show()
         
         left_error_norm_corrected = []
         right_error_norm_corrected = []
         left_error_corrected = []
         right_error_corrected = []
         
-        for i in range(0,N):
+        for i in range(0,self.N):
             target_point = target_points[i]
             
             gaze_point_left_corrected = (x_left_corrected[i], y_left_corrected[i])
@@ -229,27 +217,39 @@ class GazeDataAnalyzer:
             right_error_norm_corrected.append(right_error_norm_single_corrected)
         
         
-        
-        visual_dist_err_plot_left_corrected, = plt.plot(range(0,N), left_error_corrected, color='red', label="left eye")
-        visual_dist_err_plot_right_corrected, = plt.plot(range(0,N), right_error_corrected, color='green', label="right eye")
-        plt.legend(handles=[visual_dist_err_plot_left_corrected, visual_dist_err_plot_right_corrected])
-        plt.title("Visual distance error (corrected)")
-        plt.ylim(0,1)
-        plt.show()
-        
-        
-        
         visual_angle_err_left_corrected, visual_angle_err_right_corrected = self.compute_visual_angle_error(left_error_norm_corrected, right_error_norm_corrected)
-       
-        visual_angle_err_plot_left_corrected, = plt.plot(range(0,N), visual_angle_err_left_corrected, color='red', label="left eye")
-        visual_angle_err_plot_right_corrected, = plt.plot(range(0,N), visual_angle_err_right_corrected, color='green', label="right eye")
-        plt.legend(handles=[visual_angle_err_plot_left_corrected, visual_angle_err_plot_right_corrected])
-        plt.title("Visual angle error (corrected)")
-        plt.ylim(0,5)
+        
+        # PLOTTING ERRORS
+        self.plot_visual_err(left_error_corrected, right_error_corrected, "Visual distance error (corrected)")
+        self.plot_visual_err(visual_angle_err_left_corrected, visual_angle_err_right_corrected, "Visual angle error (corrected)", y_max=5)
+        
+    def plot_visual_err(self, data_left, data_right, title_string, y_max=1):
+        plot_left, = plt.plot(range(0,self.N), data_left, color='red', label="left eye")
+        plot_right, = plt.plot(range(0,self.N), data_right, color='green', label="right eye")
+        plt.legend(handles=[plot_left, plot_right])
+        plt.title(title_string)
+        plt.ylim(0,y_max)
         plt.show()
-
-
-
+        
+    def plot_scatter_err(self, x_left, y_left, x_right, y_right, x_targets, y_targets, title_string=""):
+        
+#        x_left_corrected = corrected_gaze_data_left[0,:]
+#        y_left_corrected = corrected_gaze_data_left[1,:]
+#        x_right_corrected = corrected_gaze_data_right[0,:]
+#        y_right_corrected = corrected_gaze_data_right[1,:]
+        
+        scatter_left = plt.scatter(x_left, y_left, marker='x', color='red')
+        scatter_right = plt.scatter(x_right, y_right, marker='o', color='green')
+        scatter_target = plt.scatter(x_targets, y_targets, marker='^', color='black')
+            
+        plt.legend((scatter_left, scatter_right, scatter_target),
+                   ("left eye", "right eye", "target points"))
+        plt.title(title_string, y=1.08)
+        plt.gca().xaxis.tick_top()
+        plt.xlim(0,1)
+        plt.ylim(1,0)
+        plt.show()
+        
 
 
 
