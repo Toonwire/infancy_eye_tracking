@@ -140,18 +140,18 @@ class Application(tk.Frame):
         self.canvas.pack(fill="both", expand=True)
         
 
-    def animate(self, ball, delay_before_hide):
+    def animate(self, stimuli, delay_before_hide):
         
         # Show ball <if not None>
-        if ball != None:
-            ball.show(delay_before_hide)
+        if stimuli != None:
+            stimuli.show(delay_before_hide)
         
         # Set current target points for Eye Tracker
         if self.eye_tracking != None:
-            if ball != None:
+            if stimuli != None:
                 
-                center_x_norm = ball.center_x / float(self.screen_width)
-                center_y_norm = ball.center_y / float(self.screen_height)
+                center_x_norm = stimuli.center_x / float(self.screen_width)
+                center_y_norm = stimuli.center_y / float(self.screen_height)
                 
                 self.eye_tracking.set_current_target(center_x_norm, center_y_norm)
             else:
@@ -222,6 +222,12 @@ class Application(tk.Frame):
         
     def start_calibration_exercise(self):
         
+        
+        stimuli1 = Stimuli("original-pony-dancing.gif", self.canvas, (self.screen_width * 0.25) - 100, (self.screen_height * 0.5) - 100, (self.screen_width * 0.25) + 100, (self.screen_height * 0.5) + 100)
+        stimuli2 = Stimuli("original-pony-dancing.gif", self.canvas, (self.screen_width * 0.75) - 100, (self.screen_height * 0.5) - 100, (self.screen_width * 0.75) + 100, (self.screen_height * 0.5) + 100)
+        #ball1 = Ball(self.canvas, (self.screen_width * 0.25) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.25) + 50, (self.screen_height * 0.5) + 50)
+        #ball2 = Ball(self.canvas, (self.screen_width * 0.75) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.75) + 50, (self.screen_height * 0.5) + 50)
+        
         # Start eye traking
         if self.eye_tracking != None:
             print("Starting simulation with eye tracker")
@@ -234,14 +240,11 @@ class Application(tk.Frame):
         # Show elements
         self.show_canvas()
         
-        ball1 = Ball(self.canvas, (self.screen_width * 0.25) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.25) + 50, (self.screen_height * 0.5) + 50)
-        ball2 = Ball(self.canvas, (self.screen_width * 0.75) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.75) + 50, (self.screen_height * 0.5) + 50)
-        
         # Show balls after 5 and 10 secounds
-        self.canvas.after(0, lambda ball=None: self.animate(ball, 0))
-        self.canvas.after(1000, lambda ball=ball1: self.animate(ball, 3000))
-        self.canvas.after(4000, lambda ball=ball2: self.animate(ball, 3000))
-        self.canvas.after(7000, lambda ball=None: self.animate(ball, 0))
+        self.canvas.after(0, lambda stimuli=None: self.animate(stimuli, 0))
+        self.canvas.after(1000, lambda stimuli=stimuli1: self.animate(stimuli, 3000))
+        self.canvas.after(4000, lambda stimuli=stimuli2: self.animate(stimuli, 3000))
+        self.canvas.after(7000, lambda stimuli=None: self.animate(stimuli, 0))
         
         # End after 20 seconds
         self.canvas.after(8000, self.stop_calibration_exercise)
@@ -286,29 +289,6 @@ class Application(tk.Frame):
         # Show button after exercise
         self.hide_canvas()
         
-        
-    def start_animation(self, shape):
-        if not shape.active:
-            shape.active = True        
-            self.move(shape)
-            
-    def stop_animation(self, shape):
-        shape.active = False
-    
-    def move(self, shape):
-        if shape.active:
-            
-            pos = self.canvas.coords(shape.object)
-            
-            if pos[0] < 0 or self.screen_width < pos[0] + shape.width:
-                shape.speedx *= -1
-            if pos[1] < 0 or self.screen_width < pos[1] + shape.height:
-                shape.speedy *= -1
-    
-            self.canvas.move(shape.object, shape.speedx, shape.speedy)
-    
-            self.canvas.after(50, lambda: self.move(shape))
-        
     def client_exit(self):
         print("Shutting down")
         self.quit()
@@ -332,25 +312,58 @@ class Ball:
     def hide(self):
         self.canvas.delete(self.ball)
 
-class Shape:
+class Stimuli:
     
-    def __init__(self, name):
-        self.name = name
-    
-    def add_image(self, image, width, height):
-        image = Image.open("images/"+image)
-        image = image.resize((width, height), Image.ANTIALIAS) #The (250, 250) is (height, width)
-        self.image = ImageTk.PhotoImage(image)
-        self.width = width;
-        self.height = height;
+    def __init__(self, image_name, canvas, left_upper_x, left_upper_y, right_bottom_x, right_bottom_y):
+        self.left_upper_x = left_upper_x
+        self.left_upper_y = left_upper_y
+        self.right_bottom_x = right_bottom_x
+        self.right_bottom_y = right_bottom_y
+        self.canvas = canvas
 
-    def create_image(self, canvas, anchor):
-        self.object = canvas.create_image(self.width, self.height, image=self.image, anchor = anchor)
+        self.width = self.right_bottom_x - self.left_upper_x
+        self.height = self.right_bottom_y - self.left_upper_y
+
+        self.center_x = self.left_upper_x + self.width / 2
+        self.center_y = self.left_upper_y + self.height / 2
+        
+        # Setup gif (frames)
+        im = Image.open("stimuli/" + image_name)
+        
+        self.frames = []
+        try:
+            while True:
+                self.frames.append(ImageTk.PhotoImage((im.copy()).resize((int(self.width), int(self.height)), Image.ANTIALIAS)))
+                im.seek(im.tell() + 1)
+        except EOFError:
+            pass
+        
+        self.count_frames = len(self.frames)
     
-    def set_animation(self, speedx, speedy, active):
-        self.speedx = speedx
-        self.speedy = speedy
-        self.active = active
+    def show(self, delay_before_hide):
+        self.active = True
+        
+        frame = self.frames[0]
+        self.stimuli = self.canvas.create_image(self.center_x, self.center_y, image=frame)
+        
+        self.canvas.after(100, lambda i=1: self.animate(i % self.count_frames))
+        self.canvas.after(delay_before_hide, self.hide)
+        
+    def animate(self, i):
+        
+        if self.active:
+            self.canvas.delete(self.stimuli)
+
+            frame = self.frames[i]
+            self.stimuli = self.canvas.create_image(self.center_x, self.center_y, image=frame)
+            self.canvas.after(100, lambda i=i+1: self.animate(i % self.count_frames))
+        
+        if not self.active:
+            self.canvas.delete(self.stimuli)
+            
+    def hide(self):        
+        self.active = False
+        
 
 root = tk.Tk()
 #root = tk.Toplevel()

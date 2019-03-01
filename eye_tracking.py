@@ -12,6 +12,7 @@ Created on Thu Feb 14 09:10:33 2019
 # from psychopy import prefs, visual, core, event, monitors, tools, logging
 import tobii_research as tr
 import sys
+import time
 
 
 #
@@ -130,7 +131,16 @@ class EyeTracking:
         self.current_target = (x, y)
         
 
-
-
-
+    def time_synchronization_data_callback(time_synchronization_data):
+        print time_synchronization_data
+    
+    def time_synchronization_data(self):
+        print("Subscribing to time synchronization data for eye tracker with serial number {0}.".format(self.mt.serial_number))
+        
+        self.mt.subscribe_to(tr.EYETRACKER_TIME_SYNCHRONIZATION_DATA, self.time_synchronization_data_callback, as_dictionary=True)
+        
+        # Wait while some time synchronization data is collected.
+        time.sleep(2)
+        self.mt.unsubscribe_from(tr.EYETRACKER_TIME_SYNCHRONIZATION_DATA, self.time_synchronization_data_callback)
+        print("Unsubscribed from time synchronization data.")
 
