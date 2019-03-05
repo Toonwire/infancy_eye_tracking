@@ -15,7 +15,7 @@ session_path = "session_data/" + session_path + "/"
 
 config_filename = session_path + "config.csv"
 
-cal_file_index = 3
+cal_file_index = 1
 training_file_index = 1
 
 
