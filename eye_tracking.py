@@ -26,7 +26,8 @@ class EyeTracking:
 
     global_gaze_data = []
     
-    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+    #license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
     #gazedata_filename = "gaze_data/"+datetime.datetime.now().strftime("%A, %d. %B %Y %I.%M.%S %p")+".csv"
     
     current_target = (0.5, 0.5)
@@ -84,6 +85,7 @@ class EyeTracking:
             print("No license file installed")
         
         self.mt = mt
+        
             
 
     def gaze_data_callback(self, gaze_data):

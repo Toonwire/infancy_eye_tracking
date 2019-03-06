@@ -6,6 +6,11 @@ Created on Fri Feb  8 10:41:26 2019
 @author: sebastiannyholm
 """
 
+
+
+
+
+
 try:
     # for Python2
     import Tkinter as tk
@@ -13,6 +18,7 @@ except ImportError:
     # for Python3
     import tkinter as tk
 
+from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 from PIL import Image, ImageTk
 from eye_tracking import EyeTracking
 import datetime
@@ -20,7 +26,8 @@ import csv
 import gaze_data_analyzer as gda
 import random
 import os
- 
+
+
 class Application(tk.Frame):
     
     analyzer = gda.GazeDataAnalyzer()
@@ -56,18 +63,19 @@ class Application(tk.Frame):
         except Exception:
             # directory already exists
             pass
-
+        
+        
     def create_widgets(self):        
         self.canvas = tk.Canvas(self)
         
         config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
         config_values = ["12", "M", "1", "27", "60"]
-        self.config_panel = tk.Frame(self)        
+        self.config_panel = tk.Frame(self)
         self.config_setup(self.config_panel, config_fields, config_values)
         self.config_panel.pack(side=tk.TOP, pady=(self.screen_height / 2, 0))
         
         self.calibrate_button = tk.Button(self)
-        self.calibrate_button["text"] = "Start calibration"
+        self.calibrate_button["text"] = "Make transformation"
         self.calibrate_button["fg"]   = "white"
         self.calibrate_button["bg"]   = "#FFA500"
         self.calibrate_button["command"] = self.start_calibration_exercise
@@ -77,6 +85,12 @@ class Application(tk.Frame):
         self.training_button["fg"]   = "white"
         self.training_button["bg"]   = "#4CAF50"
         self.training_button["command"] = self.start_training_exercise
+        
+        self.psycho_button = tk.Button(self)
+        self.psycho_button["text"] = "Custom calibration"
+        self.psycho_button["fg"]   = "white"
+        self.psycho_button["bg"]   = "#2196F3"
+        self.psycho_button["command"] = self.psycho_start
         
         self.shutdown_button = tk.Button(self)
         self.shutdown_button["text"] = "Shutdown"
@@ -103,6 +117,7 @@ class Application(tk.Frame):
         btn_config_save.pack(side=tk.LEFT, padx=5, pady=10)
     
     def config_save(self, entries):
+        
         # PYTHON 2.x
         with open(self.config_filename, mode='wb') as csv_file:
             field_names = [row[0] for row in entries]
@@ -114,19 +129,24 @@ class Application(tk.Frame):
             config_writer = csv.DictWriter(csv_file, fieldnames=field_names, delimiter=";")
             config_writer.writeheader()
             
-            config_dict = {}
+            self.config_dict = {}
             for f, e in zip(field_names, entry_texts):
-                config_dict[f] = e
+                self.config_dict[f] = e
             
-            config_writer.writerow(config_dict)
+            config_writer.writerow(self.config_dict)
                     
         print("Configurations saved")
         self.config_panel.pack_forget()
         self.hide_canvas() 
+        
+        
+        # Initialize tobii_controller with configurations
+        self.controller = tobii_controller(self.screen_width, self.screen_height, self.config_dict["Distance to screen (cm)"])
     
     def hide_canvas(self):
         self.calibrate_button.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
         self.training_button.pack(side=tk.TOP, pady=(0, 10))
+        self.psycho_button.pack(side=tk.TOP, pady=(0, 10))
         self.shutdown_button.pack(side=tk.TOP)
         
         
@@ -136,6 +156,7 @@ class Application(tk.Frame):
         self.shutdown_button.pack_forget()
         self.calibrate_button.pack_forget()
         self.training_button.pack_forget()
+        self.psycho_button.pack_forget()
         
         self.canvas.pack(fill="both", expand=True)
         
@@ -222,7 +243,9 @@ class Application(tk.Frame):
         
     def start_calibration_exercise(self):
         
+        self.controller.make_transformation()
         
+        '''
         stimuli1 = Stimuli("original-pony-dancing.gif", self.canvas, (self.screen_width * 0.25) - 100, (self.screen_height * 0.5) - 100, (self.screen_width * 0.25) + 100, (self.screen_height * 0.5) + 100)
         stimuli2 = Stimuli("original-pony-dancing.gif", self.canvas, (self.screen_width * 0.75) - 100, (self.screen_height * 0.5) - 100, (self.screen_width * 0.75) + 100, (self.screen_height * 0.5) + 100)
         #ball1 = Ball(self.canvas, (self.screen_width * 0.25) - 50, (self.screen_height * 0.5) - 50, (self.screen_width * 0.25) + 50, (self.screen_height * 0.5) + 50)
@@ -248,6 +271,7 @@ class Application(tk.Frame):
         
         # End after 20 seconds
         self.canvas.after(8000, self.stop_calibration_exercise)
+        '''
         
     def stop_calibration_exercise(self):
         print("Simulation ended")
@@ -288,7 +312,19 @@ class Application(tk.Frame):
         # Hide canvas
         # Show button after exercise
         self.hide_canvas()
+       
+   
         
+    def psycho_start(self):
+        
+        # we can only check if there is an existing eye tracking device.
+        # this will still fail whenever the device is there but turned off 
+        # TobiiProSDK does not support activity checks this for python it seems..
+        if self.eye_tracking != None:
+            self.controller.start_gaze_trace()
+           
+            
+            
     def client_exit(self):
         print("Shutting down")
         self.quit()
