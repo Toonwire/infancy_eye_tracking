@@ -99,7 +99,7 @@ class tobii_controller:
     key_index_dict = default_key_index_dict.copy()
 
 
-    def __init__(self, screen_width, screen_height, dist_to_screen, id=0):
+    def __init__(self, screen_width, screen_height, id=0):
         """
         Initialize tobii_controller object.
         
@@ -109,10 +109,10 @@ class tobii_controller:
         """
         
         self.current_target = (0.5, 0.5)
+        self.eyetracker_id = id
+        
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.dist_to_screen = dist_to_screen
-        self.eyetracker_id = id
         
         
         try:
@@ -132,8 +132,8 @@ class tobii_controller:
             self.eyetracker = eyetrackers[self.eyetracker_id]
             
             #"C:\Users\s144451\git\infancy_eye_tracking\licenses\license_key_00395217_-_DTU_Compute_IS404-100106342114"
-            #license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
+            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+#            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
             with open(license_file, "rb") as f:
                 license = f.read()
                 res = self.eyetracker.apply_licenses(license)
@@ -150,6 +150,8 @@ class tobii_controller:
         
         self.calibration = tobii_research.ScreenBasedCalibration(self.eyetracker)
 
+    def set_dist_to_screen(self, dist_to_screen):
+        self.dist_to_screen = dist_to_screen
 
     def cm2deg(self, cm, monitor, correctFlat=False):
         """
@@ -213,6 +215,8 @@ class tobii_controller:
             Default value is False.
         """
         
+        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor="testMonitor", rgb=(0,0,0))
+        
         if self.eyetracker is None:
             raise RuntimeError('Eyetracker is not found.')
         
@@ -220,8 +224,7 @@ class tobii_controller:
             mouse = psychopy.event.Mouse(visible=False, win=self.win)
         
         self.gaze_data_status = None
-        self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA,
-                                     self.on_gaze_data_status)
+        self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data_status)
         
         msg = psychopy.visual.TextStim(self.win, color=text_color,
             height=0.02, pos=(0,-0.35), units='height', autoLog=False)
@@ -243,11 +246,11 @@ class tobii_controller:
                 msgst += 'Right: {:.3f},{:.3f},{:.3f}\n'.format(*rp)
                 msg.setText(msgst)
                 if lv:
-                    leye.setPos(((lp[0]-0.5)/2,(lp[1]-0.5)/2))
+                    leye.setPos(((1-lp[0]-0.5)/2,(1-lp[1]-0.5)/2))
                     leye.setRadius((1-lp[2])/2)
                     leye.draw()
                 if rv:
-                    reye.setPos(((rp[0]-0.5)/2,(rp[1]-0.5)/2))
+                    reye.setPos(((1-rp[0]-0.5)/2,(1-rp[1]-0.5)/2))
                     reye.setRadius((1-rp[2])/2)
                     reye.draw()
             
@@ -262,7 +265,9 @@ class tobii_controller:
             self.win.flip()
         
         self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
-
+        
+        self.win.winHandle.set_fullscreen(False) # disable fullscreen
+        self.win.close()
 
     def on_gaze_data_status(self, gaze_data):
         """
@@ -560,20 +565,25 @@ class tobii_controller:
             pass
         
         
+        self.show_status()
+        
+        
         self.subscribe_dict()
         
         
-        img_positions = [(-0.5,0), (0.5,0)]
+        img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
+        np.random.shuffle(img_positions)
         clock = psychopy.core.Clock()
         
         for img_pos in img_positions:       
+            self.current_target = self.get_tobii_pos(img_pos)
+            
+            i = 0
             clock.reset()
             current_time = clock.getTime()
-            i = 0
             while current_time < 3:
                 img_stim = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
                 img_stim.setPos(img_pos)
-            
                 img_stim.draw()
                 self.win.flip()
                 
@@ -608,8 +618,7 @@ class tobii_controller:
         
             gaze_data_writer.writeheader()
             for gaze_data in self.global_gaze_data:
-                gaze_data_writer.writerow(gaze_data)
-
+                gaze_data_writer.writerow(gaze_data)    
 
     def collect_calibration_data(self, p, cood='PsychoPy'):
         """
