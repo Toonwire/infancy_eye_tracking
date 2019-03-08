@@ -66,6 +66,12 @@ class GazeDataAnalyzer:
         ### error analysis - corrected
         self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
+#        ### error analysis - corrected
+#        fixations_filtered_left, filtered_targets = self.reject_outliers(gaze_data_left_corrected, target_points)
+#        fixations_filtered_right, filtered_targets = self.reject_outliers(gaze_data_right_corrected, target_points)
+#        self.analyze_errors(fixations_filtered_left, fixations_filtered_right, target_points)
+        
+        
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
@@ -83,8 +89,33 @@ class GazeDataAnalyzer:
         pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
         
-        rmse_deg_raw = (np.sqrt((angle_err_left ** 2).mean()) + np.sqrt((angle_err_right ** 2).mean())) / 2
-        rmse_deg_cor = (np.sqrt((angle_err_left_corrected ** 2).mean()) + np.sqrt((angle_err_right_corrected ** 2).mean())) / 2
+        rmse_deg_raw = (self.rmse_deg(angle_err_left) + self.rmse_deg(angle_err_right)) / 2
+        rmse_deg_cor = (self.rmse_deg(angle_err_left_corrected) + self.rmse_deg(angle_err_right_corrected)) / 2
+        
+#        N = len(angle_err_left)
+#        
+#        angle_err_sum_left = 0
+#        angle_err_sum_right = 0
+#        angle_err_sum_left_corrected = 0
+#        angle_err_sum_right_corrected = 0
+#        test = 0
+#        test_cor = 0
+#        for i in range(N):
+#            
+#            test += angle_err_left[i]
+#            test_cor += angle_err_left_corrected[i]
+#            angle_err_sum_left += angle_err_left[i] ** 2
+#            angle_err_sum_right += angle_err_right[i] ** 2
+#            angle_err_sum_left_corrected += angle_err_left_corrected[i] ** 2
+#            angle_err_sum_right_corrected += angle_err_right_corrected[i] ** 2
+#        
+#        print(angle_err_left)
+#        print(angle_err_left_corrected)
+#        print(test / N)
+#        print(test_cor / N)
+#        
+#        rmse_deg_raw = (np.sqrt(angle_err_sum_left / N) + np.sqrt(angle_err_sum_right / N)) / 2
+#        rmse_deg_cor = (np.sqrt(angle_err_sum_left_corrected / N) + np.sqrt(angle_err_sum_right_corrected / N)) / 2
         
         print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
         print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
@@ -92,11 +123,35 @@ class GazeDataAnalyzer:
         
         
     def rmse(self, fixations, targets):
-        return np.sqrt(((fixations - targets) ** 2).mean())
+        fixations_filtered, filtered_targets = self.reject_outliers(fixations, targets)
+        return np.sqrt(((fixations_filtered - filtered_targets) ** 2).mean())
 
-    def rmse_deg(self, fixations, targets):
-        return np.sqrt(((fixations - targets) ** 2).mean())
+    def rmse_deg(self, degrees):
+        degrees_filtered = degrees[abs(degrees - np.mean(degrees)) < 2 * np.std(degrees)]
+        return np.sqrt((degrees_filtered ** 2).mean())
 
+    
+    def reject_outliers(self, data, targets, m=1.5):
+        filtered_x = [x if abs(x - np.mean(data[0,:])) < m * np.std(data[0,:]) else -1 for x in data[0,:]]
+        filtered_y = [y if abs(y - np.mean(data[1,:])) < m * np.std(data[1,:]) else -1 for y in data[1,:]]
+        
+        filtered_data = [[],[]]
+        filtered_targets = [[],[]]
+        
+        for x,y,tx,ty in zip(filtered_x, filtered_y, targets[0,:], targets[1,:]):
+            if x >= 0.0 and y >= 0.0:
+                filtered_data[0].append(x)
+                filtered_data[1].append(y)
+                
+                filtered_targets[0].append(tx)
+                filtered_targets[1].append(ty)
+                
+        return (np.array(filtered_data), np.array(filtered_targets))
+                
+        
+        
+#        data_filtered_x = data[0,:][abs(data[0,:] - np.mean(data[0,:])) < m * np.std(data[0,:])]
+#        data_filtered_y = data[1,:][abs(data[1,:] - np.mean(data[1,:])) < m * np.std(data[1,:])]
     
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
         # compute pixel deviations from fixation to target

@@ -85,6 +85,7 @@ class EyeTracking:
             print("No license file installed")
         
         self.mt = mt
+        
             
 
     def gaze_data_callback(self, gaze_data):
