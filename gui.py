@@ -60,7 +60,6 @@ class Application(tk.Frame):
             pass
                 
     def create_widgets(self):        
-        self.canvas = tk.Canvas(self)
         
         config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
         config_values = ["12", "M", "1", "27", "60"]
@@ -74,18 +73,37 @@ class Application(tk.Frame):
         self.calibrate_button["bg"]   = "#FFA500"
         self.calibrate_button["command"] = self.start_calibration_exercise
         
-        self.training_button = tk.Button(self)
-        self.training_button["text"] = "Start training"
-        self.training_button["fg"]   = "white"
-        self.training_button["bg"]   = "#4CAF50"
-        self.training_button["command"] = self.start_training_exercise
+        self.training_fixation_button = tk.Button(self)
+        self.training_fixation_button["text"] = "Start fixation exercise"
+        self.training_fixation_button["fg"]   = "white"
+        self.training_fixation_button["bg"]   = "#4CAF50"
+        self.training_fixation_button["command"] = lambda training_type="fixation": self.training_exercise(training_type)
         
-        self.psycho_button = tk.Button(self)
-        self.psycho_button["text"] = "Custom calibration"
-        self.psycho_button["fg"]   = "white"
-        self.psycho_button["bg"]   = "#2196F3"
-        self.psycho_button["command"] = self.psycho_start
         
+        self.training_pursuit_button = tk.Button(self)
+        self.training_pursuit_button["text"] = "Start pursuit exercise"
+        self.training_pursuit_button["fg"]   = "white"
+        self.training_pursuit_button["bg"]   = "#4CAF50"
+        self.training_pursuit_button["command"] = lambda training_type="pursuit": self.training_exercise(training_type)
+        
+        self.custom_cal_2_button = tk.Button(self)
+        self.custom_cal_2_button["text"] = "Custom 2p calibration"      
+        self.custom_cal_2_button["fg"]   = "white"
+        self.custom_cal_2_button["bg"]   = "#2196F3"
+        self.custom_cal_2_button["command"] = lambda n=2: self.custom_calibration(n)
+        
+        self.custom_cal_5_button = tk.Button(self)
+        self.custom_cal_5_button["text"] = "Custom 5p calibration"
+        self.custom_cal_5_button["fg"]   = "white"
+        self.custom_cal_5_button["bg"]   = "#2196F3"
+        self.custom_cal_5_button["command"] = lambda n=5: self.custom_calibration(n)
+        
+        self.eye_pos_button = tk.Button(self)
+        self.eye_pos_button["text"] = "Check eye position"
+        self.eye_pos_button["fg"]   = "white"
+        self.eye_pos_button["bg"]   = "#2196F3"
+        self.eye_pos_button["command"] = self.check_eye_position
+    
         self.shutdown_button = tk.Button(self)
         self.shutdown_button["text"] = "Shutdown"
         self.shutdown_button["fg"]   = "white"
@@ -131,46 +149,60 @@ class Application(tk.Frame):
                     
         print("Configurations saved")
         self.config_panel.pack_forget()
-        self.hide_canvas() 
+        self.show_main_panel() 
         
         
         self.controller.set_dist_to_screen(self.config_dict["Distance to screen (cm)"])
     
-    def hide_canvas(self):
+    def show_main_panel(self):
         self.calibrate_button.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
-        self.training_button.pack(side=tk.TOP, pady=(0, 10))
-        self.psycho_button.pack(side=tk.TOP, pady=(0, 10))
+        self.training_fixation_button.pack(side=tk.TOP, pady=(0, 10))
+        self.training_pursuit_button.pack(side=tk.TOP, pady=(0, 10))
+        self.custom_cal_2_button.pack(side=tk.TOP, pady=(0, 10))
+        self.custom_cal_5_button.pack(side=tk.TOP, pady=(0, 10))
+        self.eye_pos_button.pack(side=tk.TOP, pady=(0, 10))
         self.shutdown_button.pack(side=tk.TOP)
         
         
-        self.canvas.pack_forget()
         
-    def show_canvas(self):
+    def hide_main_panel(self):
         self.shutdown_button.pack_forget()
         self.calibrate_button.pack_forget()
-        self.training_button.pack_forget()
-        self.psycho_button.pack_forget()
-        
-        self.canvas.pack(fill="both", expand=True)
+        self.training_pursuit_button.pack_forget()
+        self.training_fixation_button.pack_forget()
+        self.custom_cal_2_button.pack_forget()
+        self.custom_cal_5_button.pack_forget()
+        self.eye_pos_button.pack_forget()
         
 
-    def start_training_exercise(self):
+    def check_eye_position(self):
+        self.controller.show_status()
         
+    def training_exercise(self, training_type="fixation"):
+        
+    
         # Start eye traking
         if self.controller.eyetracker != None:
             print("Starting simulation with eye tracker")
-#            self.eye_tracking.start_gaze_tracking()
+            
+            if training_type == "fixation":
+                self.controller.start_fixation_exercise()
+                
+            elif training_type == "pursuit":
+                self.controller.start_pursuit_exercise()
+                
+                
         else:
             print("Starting simulation without eye tracker")
         
         
 
-    def stop_training_exercise(self):
-        print("Simulation ended")
-        
-        # Stop eye tracking
-        if self.controller.eyetracker != None:
-            pass
+#    def training_exercise(self):
+#        print("Simulation ended")
+#        
+#        # Stop eye tracking
+#        if self.controller.eyetracker != None:
+#            pass
 #            self.eye_tracking.end_gaze_tracking()
 #            
 #            self.training_file_index = self.training_file_index + 1
@@ -194,7 +226,7 @@ class Application(tk.Frame):
        
         # Hide canvas
         # Show button after exercise
-        self.hide_canvas()
+        #self.show_main_panel()
         
     def start_calibration_exercise(self):
         self.controller.make_transformation()
@@ -208,7 +240,7 @@ class Application(tk.Frame):
 #            
 #            self.cal_file_index = self.cal_file_index + 1
 #            self.training_file_index = 0
-#            
+ #             
 #            try:
 #                os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
 #            except Exception:
@@ -238,18 +270,18 @@ class Application(tk.Frame):
    
         # Hide canvas
         # Show button after exercise
-        self.hide_canvas()
+        #self.show_main_panel()
        
    
         
-    def psycho_start(self):
+    def custom_calibration(self, num_points):
         
         # we can only check if there is an existing eye tracking device.
         # this will still fail whenever the device is there but turned off 
         # TobiiProSDK does not support activity checks this for python it seems..
         if self.controller.eyetracker != None:
-            self.controller.start_gaze_trace()
-           
+            self.controller.start_custom_calibration(num_points)
+            
             
             
     def client_exit(self):
@@ -261,6 +293,10 @@ root = tk.Tk()
 
 # use the next line if you also want to get rid of the titlebar
 root.attributes("-fullscreen", True)
+
+# set focus
+root.lift()
+root.attributes("-topmost", True)
 
 # Set size of window to screen size
 #root.geometry("%dx%d+0+0" % (w, h))

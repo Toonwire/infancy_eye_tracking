@@ -198,8 +198,7 @@ class tobii_controller:
         mon.setDistance(self.dist_to_screen)
         mon.setSizePix((self.screen_width, self.screen_height))
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon, rgb=(0,0,0))
-        
+        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon, rgb=(1,1,1))
         
     def close_psycho_window(self):
         self.win.winHandle.set_fullscreen(False) # disable fullscreen
@@ -283,7 +282,7 @@ class tobii_controller:
         rv = gaze_data.right_eye.gaze_origin.validity
         self.gaze_data_status = (lp, lv, rp, rv)
 
-    def start_gaze_trace(self):
+    def start_custom_calibration(self, num_points=2):
         self.make_psycho_window()
             
             
@@ -292,13 +291,13 @@ class tobii_controller:
         
         # Show Tobii status display.
         # Press space to exit status display.
-        self.show_status()
+#        self.show_status()
         
         # Run calibration.
-        ret = self.run_calibration(
-                [(-0.4,0.4), (0.4,0.4) , (0.0,0.0), (-0.4,-0.4), (0.4,-0.4)],
-            )
-        
+        target_points = [(-0.5, 0.0), (0.5, 0.0)]
+        if num_points == 5:
+            target_points = [(-0.4,0.4), (0.4,0.4), (0.0,0.0), (-0.4,-0.4), (0.4,-0.4)]
+        ret = self.run_calibration(target_points)       
         
         
         # If calibration is aborted by pressing ESC key, return value of run_calibration()
@@ -565,9 +564,6 @@ class tobii_controller:
             pass
         
         
-        self.show_status()
-        
-        
         self.subscribe_dict()
         
         
@@ -620,6 +616,173 @@ class tobii_controller:
             for gaze_data in self.global_gaze_data:
                 gaze_data_writer.writerow(gaze_data)    
 
+
+    def start_fixation_exercise(self):
+        self.make_psycho_window()
+        
+        psychopy.event.Mouse(visible=False, win=self.win)
+        
+        background = Image.new('RGBA',tuple(self.win.size))
+        ImageDraw.Draw(background)
+        
+        
+        # Setup gif (frames)
+        imgs = []
+        imgs.append(Image.open("stimuli/pkmon_hitmontop.gif"))
+        imgs.append(Image.open("stimuli/pkmon_spoink.gif"))
+        
+        frames = []
+        
+        for img in imgs:
+            try:
+                img_frames = []
+                while True:
+                    img_frames.append(img.resize((200,200), Image.ANTIALIAS))
+                    img.seek(img.tell() + 1)
+        
+            except EOFError:        
+                frames.append(img_frames)
+    
+        
+        self.subscribe_dict()
+                
+        img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
+        np.random.shuffle(img_positions)
+        
+        img_indices = np.random.randint(len(imgs), size=len(img_positions))
+        clock = psychopy.core.Clock()
+        
+        for j, img_pos in enumerate(img_positions):
+            self.current_target = self.get_tobii_pos(img_pos)
+            i = 0
+            clock.reset()
+            current_time = clock.getTime()
+            while current_time < 3:
+                img_stim = psychopy.visual.ImageStim(self.win, image=frames[img_indices[j]][i % len(frames[img_indices[j]])], autoLog=False)
+                img_stim.setPos(img_pos)
+                img_stim.draw()
+                self.win.flip()
+                
+                i += 1
+                psychopy.core.wait(0.03)
+                current_time = clock.getTime()
+                
+                
+#        while True:
+#            if 'escape' in psychopy.event.waitKeys():
+#                break
+            
+        self.unsubscribe_dict()
+        self.close_psycho_window()
+
+         # write data to file
+        self.training_file_index = self.training_file_index + 1
+            
+        try: # just in case we run exercise before calibration
+            os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
+        except Exception:
+            # directory already exists
+            pass
+        
+        training_filename = self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/fixation_training_" + str(self.training_file_index) + ".csv"
+        
+        # PYTHON 2.x
+        with open(training_filename, mode='wb') as gaze_data_file:
+        
+            field_names = [data for data in self.gaze_params]
+            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
+        
+            gaze_data_writer.writeheader()
+            for gaze_data in self.global_gaze_data:
+                gaze_data_writer.writerow(gaze_data)   
+    
+    
+    def start_pursuit_exercise(self):
+        self.make_psycho_window()
+        
+        psychopy.event.Mouse(visible=False, win=self.win)
+        
+        background = Image.new('RGBA',tuple(self.win.size))
+        ImageDraw.Draw(background)
+        
+        
+        # Setup gif (frames)
+        img = Image.open("stimuli/pkmon_pikachu_running.gif")
+        
+        frames = []
+        
+       
+        try:
+            while True:
+                frames.append(img.resize((200,200), Image.ANTIALIAS))
+                img.seek(img.tell() + 1)
+    
+        except EOFError:        
+            pass
+    
+        
+        self.subscribe_dict()
+                
+        # Normal coordinate system
+        img_positions = [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]
+        
+        img_intermediate_positions = []
+        
+        frame_delay = 0.03
+        move_duration = 1
+        
+        move_steps = move_duration / frame_delay
+        
+        for i in range(len(img_positions)):
+            
+            if i+1 < len(img_positions):
+                start_pos = img_positions[i]
+                end_pos = img_positions[i+1]
+                img_intermediate_positions.extend(self.get_equidistant_points(start_pos, end_pos, move_steps))
+        
+        for i, img_pos in enumerate(img_intermediate_positions):
+            self.current_target = self.get_tobii_pos(img_pos)
+            
+            img_stim = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
+            img_stim.setPos(img_pos)
+            img_stim.draw()
+            self.win.flip()
+            
+            psychopy.core.wait(frame_delay)
+                
+                
+#        while True:
+#            if 'escape' in psychopy.event.waitKeys():
+#                break
+            
+        self.unsubscribe_dict()
+        self.close_psycho_window()
+
+         # write data to file
+        self.training_file_index = self.training_file_index + 1
+            
+        try: # just in case we run exercise before calibration
+            os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
+        except Exception:
+            # directory already exists
+            pass
+        
+        training_filename = self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/pursuit_training_" + str(self.training_file_index) + ".csv"
+        
+        # PYTHON 2.x
+        with open(training_filename, mode='wb') as gaze_data_file:
+        
+            field_names = [data for data in self.gaze_params]
+            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
+        
+            gaze_data_writer.writeheader()
+            for gaze_data in self.global_gaze_data:
+                gaze_data_writer.writerow(gaze_data)   
+
+
+    def get_equidistant_points(self, p1, p2, parts):
+        return zip(np.linspace(p1[0], p2[0], parts), np.linspace(p1[1], p2[1], parts))
+    
     def collect_calibration_data(self, p, cood='PsychoPy'):
         """
         Callback function used by

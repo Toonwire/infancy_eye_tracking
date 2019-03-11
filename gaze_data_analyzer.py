@@ -20,6 +20,8 @@ class GazeDataAnalyzer:
         # check for corrupted/missing data in data frames
         data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
         data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
+        data_frame = data_frame[(data_frame['left_gaze_point_validity'] != 0)]
+        data_frame = data_frame[(data_frame['right_gaze_point_validity'] != 0)]
         
         # note number of data rows in csv file
         self.N = len(data_frame)
