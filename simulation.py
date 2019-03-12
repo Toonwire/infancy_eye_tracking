@@ -7,11 +7,11 @@ Created on Tue Feb 26 10:34:34 2019
 
 import gaze_data_analyzer as gda
 
-
 analyzer = gda.GazeDataAnalyzer()
 
 session_path = "2019-03-09 17.12.02"
 session_path = "session_data/" + session_path + "/"
+
 
 config_filename = session_path + "config.csv"
 
