@@ -71,6 +71,30 @@ class Application(tk.Frame):
         self.btn_test["command"] = self.test
         self.btn_test.pack(side=tk.TOP, pady=(0, 10))
         
+
+        self.btn_test1 = tk.Button(self)
+        self.btn_test1["text"] = "TEST - Fixation"
+        self.btn_test1["fg"]   = "white"
+        self.btn_test1["bg"]   = "#000000"
+        self.btn_test1["command"] = self.test_fixation
+        self.btn_test1.pack(side=tk.TOP, pady=(0, 10))
+        
+
+        self.btn_test2 = tk.Button(self)
+        self.btn_test2["text"] = "TEST - Pursuit (linear)"
+        self.btn_test2["fg"]   = "white"
+        self.btn_test2["bg"]   = "#000000"
+        self.btn_test2["command"] = lambda t="linear": self.test_pursuit(t)
+        self.btn_test2.pack(side=tk.TOP, pady=(0, 10))
+        
+
+        self.btn_test3 = tk.Button(self)
+        self.btn_test3["text"] = "TEST - Pursuit (spiral)"
+        self.btn_test3["fg"]   = "white"
+        self.btn_test3["bg"]   = "#000000"
+        self.btn_test3["command"] = lambda t="spiral": self.test_pursuit(t)
+        self.btn_test3.pack(side=tk.TOP, pady=(0, 10))
+        
         
         
         
@@ -83,7 +107,7 @@ class Application(tk.Frame):
         self.btn_show_status = tk.Button(self)
         self.btn_show_status["text"] = "Check eye position"
         self.btn_show_status["fg"]   = "white"
-        self.btn_show_status["bg"]   = "#2196F3"
+        self.btn_show_status["bg"]   = "#2196F3" 
         self.btn_show_status["command"] = self.show_status
     
         self.btn_shutdown = tk.Button(self)
@@ -104,6 +128,13 @@ class Application(tk.Frame):
     def test(self):
         self.custom_calibration(5, "img")
         
+    def test_fixation(self):
+        self.training_exercise("fixation")
+        
+    def test_pursuit(self, path_type):
+        self.training_exercise("pursuit", path_type)
+        
+        
         
     def make_test_button(self, title, cal_type):
         btn = tk.Button(self)
@@ -116,7 +147,7 @@ class Application(tk.Frame):
     def run_test(self, cal_type):
         if cal_type == "default":
             pass
-        elif cal_type == "2p  ":
+        elif cal_type == "2p":
             self.custom_calibration(2)
         elif cal_type == "5p":
             self.custom_calibration(5)

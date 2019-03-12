@@ -383,8 +383,6 @@ class tobii_controller:
             self.calibration_target_disc.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
         
         
-        
-        
         if not (2 <= len(calibration_points) <= 9):
             raise ValueError('Calibration points must be 2~9')
         
@@ -723,7 +721,7 @@ class tobii_controller:
                 gaze_data_writer.writerow(gaze_data)   
     
     
-    def calc_pursuit_route(self, pathing, frame_delay=0.03, move_duration=1):
+    def calc_pursuit_route(self, pathing, frame_delay=0.03, move_duration=5):
         move_steps = move_duration / frame_delay
         
         # Normal coordinate system
@@ -733,12 +731,22 @@ class tobii_controller:
         if pathing == "linear":
             img_positions = [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]  # turning points
             
+            total_dist = 0
+            for i in range(len(img_positions) - 1):
+                total_dist += self.get_euclidean_distance(img_positions[i], img_positions[i + 1])
+            
             # intermediate points
             for i in range(len(img_positions)):
                 if i+1 < len(img_positions):
                     start_pos = img_positions[i]
                     end_pos = img_positions[i+1]
-                    img_intermediate_positions.extend(self.get_equidistant_points(start_pos, end_pos, move_steps))
+                                
+                    euc_dist = self.get_euclidean_distance(start_pos, end_pos)
+                    amount_of_path = euc_dist / total_dist
+                    move_steps_for_path = amount_of_path * move_steps
+                    
+                    intermediate_posisions = self.get_equidistant_points(start_pos, end_pos, move_steps_for_path)
+                    img_intermediate_positions.extend(intermediate_posisions)
             
         elif pathing == "spiral":
             start = (-0.7, 0.0)
@@ -753,9 +761,12 @@ class tobii_controller:
             
             theta = theta_x if theta_y >= 0 else -theta_x
             
+            dr = r / move_steps
+            
             while r >= 0:
-                r -= frame_delay/3
-                theta = theta + 0.05 * math.pi
+                r -= dr
+                print(str(r) + " ----- " + str(r**2) + " --------- " + str((r * (move_duration + 1/r))))
+                theta = theta + (0.05 * math.pi) / (r * (move_duration + 1/r))
                 pos = (r*math.cos(theta), r*math.sin(theta))
                 img_intermediate_positions.append(pos)
         
@@ -792,7 +803,7 @@ class tobii_controller:
     
         
         frame_delay = 0.03
-        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=0.03)
+        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay)
         
         self.subscribe_dict()        
         for i, img_pos in enumerate(img_intermediate_positions):
@@ -834,6 +845,8 @@ class tobii_controller:
             for gaze_data in self.global_gaze_data:
                 gaze_data_writer.writerow(gaze_data)   
 
+    def get_euclidean_distance(self, p1, p2):
+        return ((p1[0] - p2[0])**2+(p1[1] - p2[1])**2)**0.5
 
     def get_equidistant_points(self, p1, p2, parts):
         return zip(np.linspace(p1[0], p2[0], parts), np.linspace(p1[1], p2[1], parts))
