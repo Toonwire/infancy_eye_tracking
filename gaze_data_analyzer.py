@@ -74,7 +74,6 @@ class GazeDataAnalyzer:
 #        self.analyze_errors(fixations_filtered_left, fixations_filtered_right, target_points)
         
         
-        
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
         rmse_cor = (self.rmse(gaze_data_left_corrected, target_points) + self.rmse(gaze_data_right_corrected, target_points)) / 2

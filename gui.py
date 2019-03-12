@@ -20,6 +20,7 @@ except ImportError:
 
 from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 import datetime
+import time
 import csv
 import gaze_data_analyzer as gda
 import os
@@ -49,16 +50,17 @@ class Application(tk.Frame):
         self.pack(fill="both", expand=True)
         self.create_widgets()
         
-        # Initialize tobii_controller with configurations
+        # Initialize tobii_controller with configurations 
         self.controller = tobii_controller(self.screen_width, self.screen_height)
         self.controller.show_status()
-         
+        
         try:
             os.makedirs(self.cal_path)
         except Exception:
             # directory already exists
             pass
-                
+        
+        
     def create_widgets(self):        
         
         config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
@@ -80,7 +82,7 @@ class Application(tk.Frame):
         self.training_fixation_button["command"] = lambda training_type="fixation": self.training_exercise(training_type)
         
         
-        self.training_pursuit_button = tk.Button(self)
+        self.training_pursuit_button = tk.Button(self) 
         self.training_pursuit_button["text"] = "Start pursuit exercise"
         self.training_pursuit_button["fg"]   = "white"
         self.training_pursuit_button["bg"]   = "#4CAF50"
