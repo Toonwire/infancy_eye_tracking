@@ -1,0 +1,20 @@
+
+
+
+
+
+
+- Use alphabetic bibliography (done)
+- Sync delays in graphics buffers - PsychoPy for visual stimuli to handle desync
+- Single number for erro: RMS error rate (RMSE) --> https://stackoverflow.com/questions/17197492/is-there-a-library-function-for-root-mean-square-error-rmse-in-python
+
+- control group in final compare: active calibration on healthy adults  - measure of goodness
+- Fetch Tobii estimate (number?) for accuraccy of active calibration
+- WHat types of stimuli are most suited for attention (saliency)?
+
+- Etwin dalmeier 2016 (error stuff?)
+
+
+- Sequences of approaches in concise form: A1 A2 D1 D2 (Active / Default) and all permutations 
+
+- Latin squares

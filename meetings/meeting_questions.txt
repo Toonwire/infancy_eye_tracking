@@ -1,0 +1,80 @@
+07/02 - Per
+---------------
+Produkt (endelig aflevering)
+	- inkorporere eye training exercises sådan så der er samspil mellem algoritme og spil, target vs fix @ time t_0
+	- system som forældre kan tage med hjem, software justerer øvelsesudfordringer/indsamle statistisk data til næste lægecheck
+	- Vi er ikke så meget i den cognitive / psykolgiske afdeling, og tager lidt fokus væk fra vores umiddelbare område (IT)
+	- 3 faser: simulated data (få generelle errors/distortions )
+	- Hvor mange tilgange må man tage til projektet? (linear regression, clustering, entropy-based, unrestricted head-movement etc)
+
+Forventningsafstemning
+	- Hvad forventer de forskellige parter? 
+	- Elsass Institutet sent i forløbet mht. reél data på småbørn
+	- Eye training opgaver
+	- Aldersgruppe for børn hos Elsass Intitutet?
+
+
+12/02 - Mikkel
+---------------
+På institutet
+	- Visit
+	- Hvornår i forløbet
+	- Forudsætninger inden besøg
+	- En man kan tale med (psykolog eller lign.)
+	- Hvor gamle er børnene? Target group (infants, toddlers, children)
+	- Sidste master student pro/cons
+
+Risk anaylsis gennemgang - re-iterate
+
+Exercises til børn
+	- Exercise med første gang?
+	- Feedback, se deres udvikling (time constraint)
+
+
+
+19/02 - Elsass besøg - Mikkel
+--------------------------------
+Samme data i hver iteration? 
+Nye iterationer som i statisk/saccader/smooth persuit 
+Alt sammen noget der kunne indsamles i én forsøgsperiode
+Risiko for overfitting hvis samme data bruges
+
+
+27/02 - Per + Mikkel
+-----------------------
+Vise project so far (program)
+	- afstemning
+	- har vi samme mål, outcome?
+	
+
+Project plan gennemgang
+Project plan med i endelig thesis handin?
+
+Thesis layout (use template, own layout, 2 column?)
+References style?
+
+
+
+
+12/03 - Mikkel
+-----------------------
+Vise flow
+	- Diskutér experiment flow (hvor meget interaktion med participant?)
+	- Sekvens ok? Inden file write
+
+Høre om skærm/computer
+
+Latency threshold
+
+Hvilke stimuli har i prøvet / erfaringer med?
+
+Filtrering af data (behold / discard outliers)
+	- Attention section kunne godt bruge outlier data mellem target punkter
+
+
+
+21/03 - Per
+-----------------------
+
+
+
