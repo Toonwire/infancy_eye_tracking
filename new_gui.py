@@ -127,7 +127,7 @@ class Application(tk.Frame):
         
     def test(self):
         self.controller.make_psycho_window()
-        self.custom_calibration(5, "img")
+        self.custom_calibration(5, "img") 
         self.controller.close_psycho_window()
         
     def test_fixation(self):
