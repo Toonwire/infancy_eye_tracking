@@ -1,19 +1,17 @@
 
 
 - rotation af statiske stimuli for at lave dem dynamiske
-	- stimuli prøvet af Elsass (teletubbies ansigter)
-- mere kontrast - patterned (striber sort/hvid) hjælper også
+	- stimuli prøvet af Elsass (teletubbies/ansigter)
+
+- mere kontrast: patterned (striber sort/hvid) hjælper også
+
 - hdmi til extern skærm (tilpas tobii software til den skærm)
 	- Vis blank/sort skærm hvis ingen exercise i gang (blink)
 
-sekvens er ok
+Exercises: Sekvens er ok
 
-Nødvendighed for distance mellem skærm og person
+Overvej nødvendighed for distance mellem skærm og person
 
 
 Kan vi "skippe" punkter hvis der er clusters a fixations der ikke tilsvarer antallet af targets?
 	- Hvis fx. barnet ikke opdager at stimuli target skifter
-
-
-
-send mail omkring møde torsdag 21/03
