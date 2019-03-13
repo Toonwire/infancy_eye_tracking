@@ -66,6 +66,15 @@ class tobii_controller:
 
     
     
+    """
+    PsychoPy specfications
+    """
+    default_background_color = 'black'
+    is_mouse_enabled = False
+    
+    
+    
+    
     
     default_calibration_target_dot_size = {
             'pix': 2.0, 'norm':0.004, 'height':0.002, 'cm':0.05,
@@ -198,16 +207,23 @@ class tobii_controller:
         return self.cm2deg(cmSize, monitor, correctFlat)
 
 
-    def make_psycho_window(self):
-        mon = psychopy.monitors.Monitor('MyScreen')
+    def make_psycho_window(self, background_color=None):
+        self.bg_color = background_color
         
-        # get distance to dcreen from config
+        # make a new monitor for the window - ignore the warning (we dont store any calibrations for this monitor)
+        mon = psychopy.monitors.Monitor('MyScreen')
         mon.setDistance(self.dist_to_screen)
         mon.setSizePix((self.screen_width, self.screen_height))
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon, rgb=(0,0,0))
+        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon)
+        
+        bg = self.bg_color if self.bg_color != None else self.default_background_color
+        self.win.setColor(bg)
+        
+        psychopy.event.Mouse(visible=self.is_mouse_enabled, win=self.win)
         
     def close_psycho_window(self):
+        self.bg_color = None    # reset color scheme
         self.win.winHandle.set_fullscreen(False) # disable fullscreen
         self.win.close()
         
@@ -221,7 +237,7 @@ class tobii_controller:
             Default value is False.
         """
         
-        self.make_psycho_window()
+        self.make_psycho_window(background_color="gray")
         
             
         
@@ -298,8 +314,6 @@ class tobii_controller:
         self.gaze_data_status = (lp, lv, rp, rv)
 
     def start_custom_calibration(self, num_points=2, stim_type="default"):
-        self.make_psycho_window()
-            
             
         # Run calibration.
         target_points = [(-0.5, 0.0), (0.5, 0.0)]
@@ -343,7 +357,7 @@ class tobii_controller:
 #            # Close the data file.
 #            self.close_datafile()
         
-        self.close_psycho_window()
+#        self.close_psycho_window()
         
         
     def run_calibration(self, calibration_points, move_duration=1.5,
@@ -566,15 +580,17 @@ class tobii_controller:
         if enable_mouse == False:
             mouse.setVisible(False)
 
-    
-    
-    def make_transformation(self, enable_mouse=False):
-        self.make_psycho_window()
+    def flash_screen(self):      
+        win_color = self.win.color
+        self.win.setColor((1,1,1), colorSpace='rgb')
+        self.win.flip()
+        psychopy.core.wait(0.2)
+        self.win.setColor(win_color)
+        self.win.flip()
+        psychopy.core.wait(0.2)
         
-        psychopy.event.Mouse(visible=enable_mouse, win=self.win)
-        
-        background = Image.new('RGBA',tuple(self.win.size))
-        ImageDraw.Draw(background)
+    
+    def make_transformation(self, enable_mouse=False):        
         
         # Setup gif (frames)
         img = Image.open("stimuli/original-pony-dancing.gif")
@@ -616,7 +632,7 @@ class tobii_controller:
 #                break
             
         self.unsubscribe_dict()
-        self.close_psycho_window()
+#        self.close_psycho_window()
 
          # write data to file
         self.cal_file_index = self.cal_file_index + 1
@@ -642,13 +658,6 @@ class tobii_controller:
 
 
     def start_fixation_exercise(self):
-        self.make_psycho_window()
-        
-        psychopy.event.Mouse(visible=False, win=self.win)
-        
-        background = Image.new('RGBA',tuple(self.win.size))
-        ImageDraw.Draw(background)
-        
         
         # Setup gif (frames)
         imgs = []
@@ -697,7 +706,7 @@ class tobii_controller:
 #                break
             
         self.unsubscribe_dict()
-        self.close_psycho_window()
+#        self.close_psycho_window()
 
          # write data to file
         self.training_file_index = self.training_file_index + 1
@@ -765,7 +774,6 @@ class tobii_controller:
             
             while r >= 0:
                 r -= dr
-                print(str(r) + " ----- " + str(r**2) + " --------- " + str((r * (move_duration + 1/r))))
                 theta = theta + (0.05 * math.pi) / (r * (move_duration + 1/r))
                 pos = (r*math.cos(theta), r*math.sin(theta))
                 img_intermediate_positions.append(pos)
@@ -775,13 +783,6 @@ class tobii_controller:
         
     
     def start_pursuit_exercise(self, pathing="linear"):
-        self.make_psycho_window()
-        
-        psychopy.event.Mouse(visible=False, win=self.win)
-        
-        background = Image.new('RGBA',tuple(self.win.size))
-        ImageDraw.Draw(background)
-        
         
         # Setup gif (frames)
         img = None
@@ -803,7 +804,7 @@ class tobii_controller:
     
         
         frame_delay = 0.03
-        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay)
+        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay, move_duration=5)
         
         self.subscribe_dict()        
         for i, img_pos in enumerate(img_intermediate_positions):
@@ -822,7 +823,7 @@ class tobii_controller:
 #                break
             
         self.unsubscribe_dict()
-        self.close_psycho_window()
+#        self.close_psycho_window()
 
          # write data to file
         self.training_file_index = self.training_file_index + 1
