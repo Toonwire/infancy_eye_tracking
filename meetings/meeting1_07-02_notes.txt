@@ -1,0 +1,38 @@
+
+Problemstilling
+- Børn med cp kan ikke fokusere på caliberering
+
+- HVis vi ikke er sikre på hvad der sker (hvor der fokuseres) : Apdaptivt gæt over en antagelse af hvor participant kigger hen (probobalistisk tilnærmelse)
+
+- Exercises med høj saliency (i deres verden - lyd, popop, peak deres interesse (e.g. ansigter))
+
+
+- Tag højde for Tobii's model  af øjet (hvor mange dimensioner) og så bestem en transformation ud fra dette i formål til data
+
+- PUPIL LABS
+
+
+Books
+----------
+Andrew Duchowski - Eye tracking stuff
+Holquist GET THIS
+
+
+Bojko, A. - HVordan man bruger eye tracking i reklameindustrien
+
+
+Literaturstudie
+-----------
+- Vi er intereseret i de her områder
+- Hvad har andre gjort?
+-- Vi har fundet de her kilder:
+--- Søgt på findit.dtu.dk, Google Scholar etc.
+---- Inkludér søgekriterier og antal matches på disse
+---- Indsnævring: ekslusionskriterier/inklusionskriterier
+---- Frasorteret/valgt disse X artikler, som har gjort Y,Z
+--- Snowball: De valgte artikler refereres af/til andre artikler (Holmquist)
+
+
+Projektplan
+----------
+- Opskriv en liste af potentielle hypoteser samt deres tiltænkte eksperimentopstilling

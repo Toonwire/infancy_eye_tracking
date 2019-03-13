@@ -20,6 +20,7 @@ except ImportError:
 
 from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 import datetime
+import time
 import csv
 import gaze_data_analyzer as gda
 import os
@@ -49,16 +50,17 @@ class Application(tk.Frame):
         self.pack(fill="both", expand=True)
         self.create_widgets()
         
-        # Initialize tobii_controller with configurations
+        # Initialize tobii_controller with configurations 
         self.controller = tobii_controller(self.screen_width, self.screen_height)
         self.controller.show_status()
-         
+        
         try:
             os.makedirs(self.cal_path)
         except Exception:
             # directory already exists
             pass
-                
+        
+        
     def create_widgets(self):        
         
         config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
@@ -80,7 +82,7 @@ class Application(tk.Frame):
         self.training_fixation_button["command"] = lambda training_type="fixation": self.training_exercise(training_type)
         
         
-        self.training_pursuit_button = tk.Button(self)
+        self.training_pursuit_button = tk.Button(self) 
         self.training_pursuit_button["text"] = "Start pursuit exercise"
         self.training_pursuit_button["fg"]   = "white"
         self.training_pursuit_button["bg"]   = "#4CAF50"
@@ -182,19 +184,13 @@ class Application(tk.Frame):
         
     
         # Start eye traking
-        if self.controller.eyetracker != None:
-            print("Starting simulation with eye tracker")
             
-            if training_type == "fixation":
-                self.controller.start_fixation_exercise()
+        if training_type == "fixation":
+            self.controller.start_fixation_exercise()
+            
+        elif training_type == "pursuit":
+            self.controller.start_pursuit_exercise(pathing="spiral")
                 
-            elif training_type == "pursuit":
-                self.controller.start_pursuit_exercise()
-                
-                
-        else:
-            print("Starting simulation without eye tracker")
-        
         
 
 #    def training_exercise(self):
@@ -230,48 +226,6 @@ class Application(tk.Frame):
         
     def start_calibration_exercise(self):
         self.controller.make_transformation()
-        
-    def stop_calibration_exercise(self):
-        print("Simulation ended")
-        
-        # Stop eye tracking
-        if self.controller.eyetracker != None:
-#            self.eye_tracking.end_gaze_tracking()
-#            
-#            self.cal_file_index = self.cal_file_index + 1
-#            self.training_file_index = 0
- #             
-#            try:
-#                os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
-#            except Exception:
-#                # directory already exists
-#                pass
-#            
-#            cal_filename = self.cal_path + "cal_" + str(self.cal_file_index) + ".csv"
-#            
-#            # PYTHON 2.x
-#            with open(cal_filename, mode='wb') as gaze_data_file:
-#            
-#                field_names = [data for data in self.eye_tracking.gaze_params]
-#                gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
-#            
-#                gaze_data_writer.writeheader()
-#                for gaze_data in self.eye_tracking.global_gaze_data:
-#                    gaze_data_writer.writerow(gaze_data)
-#
-#                    
-#            try:
-#                self.analyzer.setup(self.config_filename, cal_filename)
-#                self.analyzer.analyze(cal_filename)
-#            except:
-#                print("Bad data obtained")
-                
-            pass
-   
-        # Hide canvas
-        # Show button after exercise
-        #self.show_main_panel()
-       
    
         
     def custom_calibration(self, num_points):
@@ -279,8 +233,7 @@ class Application(tk.Frame):
         # we can only check if there is an existing eye tracking device.
         # this will still fail whenever the device is there but turned off 
         # TobiiProSDK does not support activity checks this for python it seems..
-        if self.controller.eyetracker != None:
-            self.controller.start_custom_calibration(num_points)
+        self.controller.start_custom_calibration(num_points)
             
             
             

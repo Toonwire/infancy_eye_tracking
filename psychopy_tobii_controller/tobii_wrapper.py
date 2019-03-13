@@ -30,6 +30,7 @@ import psychopy.monitors
 
 import os
 import csv
+import math
 
 class tobii_controller:
     global_gaze_data = []
@@ -111,6 +112,7 @@ class tobii_controller:
         self.current_target = (0.5, 0.5)
         self.eyetracker_id = id
         
+        self.dist_to_screen = 55            # defualt estimate
         self.screen_width = screen_width
         self.screen_height = screen_height
         
@@ -126,29 +128,34 @@ class tobii_controller:
         eyetrackers = tobii_research.find_all_eyetrackers()
 
         if len(eyetrackers)==0:
-            raise RuntimeError('No Tobii eyetrackers')
+            print('No Tobii eyetrackers')
         
-        try:
-            self.eyetracker = eyetrackers[self.eyetracker_id]
-            
-            #"C:\Users\s144451\git\infancy_eye_tracking\licenses\license_key_00395217_-_DTU_Compute_IS404-100106342114"
-            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-#            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
-            with open(license_file, "rb") as f:
-                license = f.read()
-                res = self.eyetracker.apply_licenses(license)
+        else:
+            try:
+                self.eyetracker = eyetrackers[self.eyetracker_id]
                 
-                if len(res) == 0:
-                    print("Successfully applied license from single key")
-                else:
-                    print("Failed to apply license from single key. Validation result: %s." % (res[0].validation_result))
+                #"C:\Users\s144451\git\infancy_eye_tracking\licenses\license_key_00395217_-_DTU_Compute_IS404-100106342114"
+                license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+    #            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
+                with open(license_file, "rb") as f:
+                    license = f.read()
+                    res = self.eyetracker.apply_licenses(license)
                     
-        except:
-            raise ValueError(
-                'Invalid eyetracker ID {}\n({} eyetrackers found)'.format(
-                    self.eyetracker_id, len(eyetrackers)))
+                    if len(res) == 0:
+                        print("Successfully applied license from single key")
+                    else:
+                        print("Failed to apply license from single key. Validation result: %s." % (res[0].validation_result))
+                        
+            except:
+                raise ValueError(
+                    'Invalid eyetracker ID {}\n({} eyetrackers found)'.format(
+                        self.eyetracker_id, len(eyetrackers)))
         
-        self.calibration = tobii_research.ScreenBasedCalibration(self.eyetracker)
+            if self.is_eye_tracker_on():
+                self.calibration = tobii_research.ScreenBasedCalibration(self.eyetracker)
+            else:
+                self.eyetracker = None
+        
 
     def set_dist_to_screen(self, dist_to_screen):
         self.dist_to_screen = dist_to_screen
@@ -198,7 +205,7 @@ class tobii_controller:
         mon.setDistance(self.dist_to_screen)
         mon.setSizePix((self.screen_width, self.screen_height))
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon, rgb=(1,1,1))
+        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon, rgb=(0,0,0))
         
     def close_psycho_window(self):
         self.win.winHandle.set_fullscreen(False) # disable fullscreen
@@ -214,19 +221,19 @@ class tobii_controller:
             Default value is False.
         """
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor="testMonitor", rgb=(0,0,0))
+        self.make_psycho_window()
         
-        if self.eyetracker is None:
-            raise RuntimeError('Eyetracker is not found.')
+            
         
         if enable_mouse == False:
             mouse = psychopy.event.Mouse(visible=False, win=self.win)
         
         self.gaze_data_status = None
-        self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data_status)
+        if self.eyetracker is not None:
+            self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data_status)
         
         msg = psychopy.visual.TextStim(self.win, color=text_color,
-            height=0.02, pos=(0,-0.35), units='height', autoLog=False)
+            height=0.02, pos=(0,-0.35), units='height', autoLog=False, text="No eye tracker data detected")
         bgrect = psychopy.visual.Rect(self.win,
             width=0.6, height=0.6, lineColor='white', fillColor='black',
             units='height', autoLog=False)
@@ -262,12 +269,20 @@ class tobii_controller:
             
             msg.draw()
             self.win.flip()
+            
+        if self.eyetracker is not None:
+            self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
         
-        self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
-        
-        self.win.winHandle.set_fullscreen(False) # disable fullscreen
-        self.win.close()
+        self.close_psycho_window()
 
+
+    def is_eye_tracker_on(self):
+        self.subscribe_dict()
+        time.sleep(1)
+        self.unsubscribe_dict()         
+        return len(self.global_gaze_data) > 0
+        
+        
     def on_gaze_data_status(self, gaze_data):
         """
         Callback function used by
@@ -282,64 +297,58 @@ class tobii_controller:
         rv = gaze_data.right_eye.gaze_origin.validity
         self.gaze_data_status = (lp, lv, rp, rv)
 
-    def start_custom_calibration(self, num_points=2):
+    def start_custom_calibration(self, num_points=2, stim_type="default"):
         self.make_psycho_window()
             
             
-        # Open data file if you want to save gaze data.
-        self.open_datafile('test.tsv', embed_events=False)
-        
-        # Show Tobii status display.
-        # Press space to exit status display.
-#        self.show_status()
-        
         # Run calibration.
         target_points = [(-0.5, 0.0), (0.5, 0.0)]
         if num_points == 5:
             target_points = [(-0.4,0.4), (0.4,0.4), (0.0,0.0), (-0.4,-0.4), (0.4,-0.4)]
-        ret = self.run_calibration(target_points)       
+        self.run_calibration(target_points, stim_type=stim_type)       
         
         
-        # If calibration is aborted by pressing ESC key, return value of run_calibration()
-        # is 'abort'.
-        if ret != 'abort':
-            
-            marker = psychopy.visual.Rect(self.win, width=0.01, height=0.01)
-            
-            # Start recording.
-            self.subscribe()
-            waitkey = True
-            while waitkey:
-                # Get the latest gaze position data.
-                currentGazePosition = self.get_current_gaze_position()
-                
-                # Gaze position is a tuple of four values (lx, ly, rx, ry).
-                # The value is numpy.nan if Tobii failed to detect gaze position.
-                if not np.nan in currentGazePosition:
-                    marker.setPos(currentGazePosition[0:2])
-                    marker.setLineColor('white')
-                else:
-                    marker.setLineColor('red')
-                keys = psychopy.event.getKeys ()
-                if 'space' in keys:
-                    waitkey=False
-                elif len(keys)>=1:
-                    # Record the first key name to the data file.
-                    self.record_event(keys[0])
-                
-                marker.draw()
-                self.win.flip()
-            # Stop recording.
-            self.unsubscribe()
-            # Close the data file.
-            self.close_datafile()
+        # THIS CODE MAKES A GAZE TRACE AFTER THE CALIBRATION
+#        # If calibration is aborted by pressing ESC key, return value of run_calibration()
+#        # is 'abort'.
+#        if ret != 'abort':
+#            
+#            marker = psychopy.visual.Rect(self.win, width=0.01, height=0.01)
+#            
+#            # Start recording.
+#            self.subscribe()
+#            waitkey = True
+#            while waitkey:
+#                # Get the latest gaze position data.
+#                currentGazePosition = self.get_current_gaze_position()
+#                
+#                # Gaze position is a tuple of four values (lx, ly, rx, ry).
+#                # The value is numpy.nan if Tobii failed to detect gaze position.
+#                if not np.nan in currentGazePosition:
+#                    marker.setPos(currentGazePosition[0:2])
+#                    marker.setLineColor('white')
+#                else:
+#                    marker.setLineColor('red')
+#                keys = psychopy.event.getKeys ()
+#                if 'space' in keys:
+#                    waitkey=False
+#                elif len(keys)>=1:
+#                    # Record the first key name to the data file.
+#                    self.record_event(keys[0])
+#                
+#                marker.draw()
+#                self.win.flip()
+#            # Stop recording.
+#            self.unsubscribe()
+#            # Close the data file.
+#            self.close_datafile()
         
         self.close_psycho_window()
         
         
     def run_calibration(self, calibration_points, move_duration=1.5,
             shuffle=True, start_key='space', decision_key='space',
-            text_color='white', enable_mouse=False):
+            text_color='white', enable_mouse=False, stim_type="default"):
         """
         Run calibration.
         
@@ -374,12 +383,6 @@ class tobii_controller:
             self.calibration_target_disc.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
         
         
-        
-        
-        
-        if self.eyetracker is None:
-            raise RuntimeError('Eyetracker is not found.')
-        
         if not (2 <= len(calibration_points) <= 9):
             raise ValueError('Calibration points must be 2~9')
         
@@ -393,14 +396,29 @@ class tobii_controller:
         result_img = psychopy.visual.SimpleImageStim(self.win, img, autoLog=False)
         result_msg = psychopy.visual.TextStim(self.win, pos=(0,-self.win.size[1]/4),
             color=text_color, units='pix', autoLog=False)
+        
+       
         remove_marker = psychopy.visual.Circle(
             self.win, radius=self.calibration_target_dot.radius*5,
             fillColor='black', lineColor='white', lineWidth=1, autoLog=False)
         if self.win.units == 'norm': # fix oval
             remove_marker.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
             remove_marker.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
+             
+        frames = []
+        if stim_type == "img":            
+            # Setup gif (frames)
+            stim_img = Image.open("stimuli/original-pony-dancing.gif")
+        
+            try:
+                while True:
+                    frames.append(stim_img.resize((200,200), Image.ANTIALIAS))
+                    stim_img.seek(stim_img.tell() + 1)
+            except EOFError:
+                pass
 
-        self.calibration.enter_calibration_mode()
+        if self.eyetracker is not None:
+            self.calibration.enter_calibration_mode()
 
         self.move_duration = move_duration
         self.original_calibration_points = calibration_points[:]
@@ -438,16 +456,22 @@ class tobii_controller:
             else:
                 self.win.flip()
             
-            self.update_calibration()
-            
-            calibration_result = self.calibration.compute_and_apply()
+            if stim_type == "default":
+                self.update_calibration()
+            elif stim_type == "img":
+                self.update_calibration_img(frames)
+                
+            calibration_result = None
+            if self.eyetracker is not None:
+                calibration_result = self.calibration.compute_and_apply()
             
             self.win.flip()
             
             img_draw.rectangle(((0,0),tuple(self.win.size)),fill=(0,0,0,0))
-            if calibration_result.status == tobii_research.CALIBRATION_STATUS_FAILURE:
+            if calibration_result is None or calibration_result.status == tobii_research.CALIBRATION_STATUS_FAILURE:
                 #computeCalibration failed.
                 pass
+            
             else:
                 if len(calibration_result.calibration_points) == 0:
                     pass
@@ -467,9 +491,9 @@ class tobii_controller:
                                          (p[0]*self.win.size[0]+3, p[1]*self.win.size[1]+3)), outline=(0,0,0,255))
 
             if enable_mouse == False:
-                result_msg.setText('Accept/Retry: {} or right-click\nSelect recalibration points: 0-9 key or left-click\nAbort: esc'.format(decision_key))
+                result_msg.setText('Accept/Retry: {} or right-click\nSelect recalibration points: 0-9 key or left-click'.format(decision_key))
             else:
-                result_msg.setText('Accept/Retry: {}\nSelect recalibration points: 0-9 key\nAbort: esc'.format(decision_key))
+                result_msg.setText('Accept/Retry: {}\nSelect recalibration points: 0-9 key'.format(decision_key))
             result_img.setImage(img)
             
             waitkey = True
@@ -520,28 +544,28 @@ class tobii_controller:
         
             if key == decision_key:
                 if len(self.retry_points) == 0:
-                    retval = 'accept'
+#                    retval = 'accept'
                     in_calibration_loop = False
                 else: #retry
                     for point_index in self.retry_points:
                         x, y = self.get_tobii_pos(self.original_calibration_points[point_index])
-                        self.calibration.discard_data(x, y)
+                        if self.eyetracker is not None:
+                            self.calibration.discard_data(x, y)
             elif key == 'escape':
-                retval = 'abort'
+#                retval = 'abort'
                 in_calibration_loop = False
             else:
                 raise RuntimeError('Calibration: Invalid key')
                 
             if enable_mouse == False:
                 mouse.setVisible(False)
-
-
-        self.calibration.leave_calibration_mode()
+        
+        if self.eyetracker is not None:
+            self.calibration.leave_calibration_mode()
 
         if enable_mouse == False:
             mouse.setVisible(False)
 
-        return retval
     
     
     def make_transformation(self, enable_mouse=False):
@@ -697,7 +721,60 @@ class tobii_controller:
                 gaze_data_writer.writerow(gaze_data)   
     
     
-    def start_pursuit_exercise(self):
+    def calc_pursuit_route(self, pathing, frame_delay=0.03, move_duration=5):
+        move_steps = move_duration / frame_delay
+        
+        # Normal coordinate system
+        img_positions = []
+        img_intermediate_positions = []
+        
+        if pathing == "linear":
+            img_positions = [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]  # turning points
+            
+            total_dist = 0
+            for i in range(len(img_positions) - 1):
+                total_dist += self.get_euclidean_distance(img_positions[i], img_positions[i + 1])
+            
+            # intermediate points
+            for i in range(len(img_positions)):
+                if i+1 < len(img_positions):
+                    start_pos = img_positions[i]
+                    end_pos = img_positions[i+1]
+                                
+                    euc_dist = self.get_euclidean_distance(start_pos, end_pos)
+                    amount_of_path = euc_dist / total_dist
+                    move_steps_for_path = amount_of_path * move_steps
+                    
+                    intermediate_posisions = self.get_equidistant_points(start_pos, end_pos, move_steps_for_path)
+                    img_intermediate_positions.extend(intermediate_posisions)
+            
+        elif pathing == "spiral":
+            start = (-0.7, 0.0)
+            end = (0.0, 0.0)
+            
+            img_intermediate_positions.append(start)
+            
+            r = ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
+            
+            theta_x = math.acos(start[0] / r)
+            theta_y = math.asin(start[1] / r)
+            
+            theta = theta_x if theta_y >= 0 else -theta_x
+            
+            dr = r / move_steps
+            
+            while r >= 0:
+                r -= dr
+                print(str(r) + " ----- " + str(r**2) + " --------- " + str((r * (move_duration + 1/r))))
+                theta = theta + (0.05 * math.pi) / (r * (move_duration + 1/r))
+                pos = (r*math.cos(theta), r*math.sin(theta))
+                img_intermediate_positions.append(pos)
+        
+        
+        return img_intermediate_positions
+        
+    
+    def start_pursuit_exercise(self, pathing="linear"):
         self.make_psycho_window()
         
         psychopy.event.Mouse(visible=False, win=self.win)
@@ -707,7 +784,11 @@ class tobii_controller:
         
         
         # Setup gif (frames)
-        img = Image.open("stimuli/pkmon_pikachu_running.gif")
+        img = None
+        if pathing == "linear":
+            img = Image.open("stimuli/pkmon_pikachu_running.gif")
+        elif pathing == "spiral":
+            img = Image.open("stimuli/pkmon_hitmontop.gif")
         
         frames = []
         
@@ -721,25 +802,10 @@ class tobii_controller:
             pass
     
         
-        self.subscribe_dict()
-                
-        # Normal coordinate system
-        img_positions = [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]
-        
-        img_intermediate_positions = []
-        
         frame_delay = 0.03
-        move_duration = 1
+        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay)
         
-        move_steps = move_duration / frame_delay
-        
-        for i in range(len(img_positions)):
-            
-            if i+1 < len(img_positions):
-                start_pos = img_positions[i]
-                end_pos = img_positions[i+1]
-                img_intermediate_positions.extend(self.get_equidistant_points(start_pos, end_pos, move_steps))
-        
+        self.subscribe_dict()        
         for i, img_pos in enumerate(img_intermediate_positions):
             self.current_target = self.get_tobii_pos(img_pos)
             
@@ -779,6 +845,8 @@ class tobii_controller:
             for gaze_data in self.global_gaze_data:
                 gaze_data_writer.writerow(gaze_data)   
 
+    def get_euclidean_distance(self, p1, p2):
+        return ((p1[0] - p2[0])**2+(p1[1] - p2[1])**2)**0.5
 
     def get_equidistant_points(self, p1, p2, parts):
         return zip(np.linspace(p1[0], p2[0], parts), np.linspace(p1[1], p2[1], parts))
@@ -826,7 +894,31 @@ class tobii_controller:
                 self.calibration_target_dot.draw()
                 self.win.flip()
                 current_time = clock.getTime()
-            self.calibration.collect_data(x, y)
+            
+            if self.eyetracker is not None:
+                self.calibration.collect_data(x, y)
+                
+    def update_calibration_img(self, frames):
+        clock = psychopy.core.Clock()
+        for point_index in range(len(self.calibration_points)):
+            x, y = self.get_tobii_pos(self.calibration_points[point_index])
+            i = 0
+            
+            clock.reset()
+            current_time = clock.getTime()
+            while current_time < self.move_duration:
+                psychopy.event.getKeys()
+                stimuli = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
+                stimuli.setPos(self.calibration_points[point_index])
+                stimuli.draw()
+                self.win.flip()
+                
+                i += 1
+                psychopy.core.wait(0.1)
+                current_time = clock.getTime()
+            
+            if self.eyetracker is not None:
+                self.calibration.collect_data(x, y)
 
 
     def set_custom_calibration(self, func):
@@ -928,10 +1020,11 @@ class tobii_controller:
         Start recording.
         """
         
-        self.gaze_data = []
-        self.event_data = []
-        self.recording = True
-        self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data)
+        if self.eyetracker is not None:
+            self.gaze_data = []
+            self.event_data = []
+            self.recording = True
+            self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data)
 
 
     def unsubscribe(self):
@@ -939,19 +1032,22 @@ class tobii_controller:
         Stop recording.
         """
         
-        self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
-        self.recording = False
-        self.flush_data()
-        self.gaze_data = []
-        self.event_data = []
+        if self.eyetracker is not None:
+            self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
+            self.recording = False
+            self.flush_data()
+            self.gaze_data = []
+            self.event_data = []
 
 
     def subscribe_dict(self):
-        self.global_gaze_data = []
-        self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.gaze_data_callback, as_dictionary=True)
+        if self.eyetracker is not None:
+            self.global_gaze_data = []
+            self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.gaze_data_callback, as_dictionary=True)
 
-    def unsubscribe_dict(self):
-        self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
+    def unsubscribe_dict(self):        
+        if self.eyetracker is not None:
+            self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA, self.gaze_data_callback)
         
        
         
