@@ -66,27 +66,15 @@ background = Image.new('RGBA',tuple(win.size))
 ImageDraw.Draw(background)
 
 
-# Setup gif (frames)
-img = Image.open("stimuli/pkmon_pikachu_running.gif")
-
-frames = []
-
-   
-try:
-    while True:
-        frames.append(img.resize((200,200), Image.ANTIALIAS))
-        img.seek(img.tell() + 1)
-
-except EOFError:        
-    pass
-
-
+img = Image.open("stimuli/star_yellow.png")
+stimuli = psychopy.visual.ImageStim(win, image=img, autoLog=False)
+stimuli.size = (0.2,0.2)
 
 for i, img_pos in enumerate(img_intermediate_positions):
     
-    img_stim = psychopy.visual.ImageStim(win, image=frames[i % len(frames)], autoLog=False)
-    img_stim.setPos(img_pos)
-    img_stim.draw()
+    stimuli.setPos(img_pos)
+    stimuli.ori = i*20
+    stimuli.draw()
     win.flip()
     
     psychopy.core.wait(0.1)
