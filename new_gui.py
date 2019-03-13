@@ -126,13 +126,19 @@ class Application(tk.Frame):
         
         
     def test(self):
+        self.controller.make_psycho_window()
         self.custom_calibration(5, "img")
+        self.controller.close_psycho_window()
         
     def test_fixation(self):
+        self.controller.make_psycho_window()
         self.training_exercise("fixation")
+        self.controller.close_psycho_window()
         
     def test_pursuit(self, path_type):
+        self.controller.make_psycho_window()
         self.training_exercise("pursuit", path_type)
+        self.controller.close_psycho_window()
         
         
         
@@ -145,6 +151,8 @@ class Application(tk.Frame):
         return btn
         
     def run_test(self, cal_type):
+        self.controller.make_psycho_window()
+        
         if cal_type == "default":
             pass
         elif cal_type == "2p":
@@ -154,11 +162,16 @@ class Application(tk.Frame):
         elif cal_type == "5p_img":
             self.custom_calibration(5, "img")
         
+        self.controller.flash_screen()
         self.make_transformation()
+        self.controller.flash_screen()
         self.training_exercise("fixation")
+        self.controller.flash_screen()
         self.training_exercise("pursuit", "linear")
+        self.controller.flash_screen()
         self.training_exercise("pursuit", "spiral")
         
+        self.controller.close_psycho_window()
         
     def config_setup(self, root, fields, values):
         entries = []
