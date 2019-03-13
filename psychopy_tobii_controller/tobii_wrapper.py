@@ -657,57 +657,36 @@ class tobii_controller:
                 gaze_data_writer.writerow(gaze_data)    
 
 
-    def start_fixation_exercise(self):
+    def start_fixation_exercise(self, stimuli_path="stimuli/star_yellow.png"):
         
-        # Setup gif (frames)
-        imgs = []
-        imgs.append(Image.open("stimuli/pkmon_hitmontop.gif"))
-        imgs.append(Image.open("stimuli/pkmon_spoink.gif"))
-        
-        frames = []
-        
-        for img in imgs:
-            try:
-                img_frames = []
-                while True:
-                    img_frames.append(img.resize((200,200), Image.ANTIALIAS))
-                    img.seek(img.tell() + 1)
-        
-            except EOFError:        
-                frames.append(img_frames)
-    
-        
+        img = Image.open(stimuli_path)
+        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+        img_stim.size = (0.15, 0.15)
+       
         self.subscribe_dict()
                 
         img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
         np.random.shuffle(img_positions)
         
-        img_indices = np.random.randint(len(imgs), size=len(img_positions))
         clock = psychopy.core.Clock()
-        
-        for j, img_pos in enumerate(img_positions):
+        for img_pos in img_positions:
             self.current_target = self.get_tobii_pos(img_pos)
             i = 0
             clock.reset()
             current_time = clock.getTime()
             while current_time < 3:
-                img_stim = psychopy.visual.ImageStim(self.win, image=frames[img_indices[j]][i % len(frames[img_indices[j]])], autoLog=False)
                 img_stim.setPos(img_pos)
+                img_stim.ori = i * 10
                 img_stim.draw()
                 self.win.flip()
                 
                 i += 1
-                psychopy.core.wait(0.03)
+                psychopy.core.wait(0.015)
                 current_time = clock.getTime()
                 
-                
-#        while True:
-#            if 'escape' in psychopy.event.waitKeys():
-#                break
-            
         self.unsubscribe_dict()
-#        self.close_psycho_window()
-
+        
+        
          # write data to file
         self.training_file_index = self.training_file_index + 1
             
@@ -782,48 +761,27 @@ class tobii_controller:
         return img_intermediate_positions
         
     
-    def start_pursuit_exercise(self, pathing="linear"):
+    def start_pursuit_exercise(self, pathing="linear", stimuli_path="stimuli/smiley_yellow.png"):
         
-        # Setup gif (frames)
-        img = None
-        if pathing == "linear":
-            img = Image.open("stimuli/pkmon_pikachu_running.gif")
-        elif pathing == "spiral":
-            img = Image.open("stimuli/pkmon_hitmontop.gif")
+        img = Image.open(stimuli_path)
+        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+        img_stim.size = (0.15, 0.15)
         
-        frames = []
-        
-       
-        try:
-            while True:
-                frames.append(img.resize((200,200), Image.ANTIALIAS))
-                img.seek(img.tell() + 1)
-    
-        except EOFError:        
-            pass
-    
-        
-        frame_delay = 0.03
+        frame_delay = 0.015
         img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay, move_duration=5)
         
         self.subscribe_dict()        
         for i, img_pos in enumerate(img_intermediate_positions):
             self.current_target = self.get_tobii_pos(img_pos)
             
-            img_stim = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
             img_stim.setPos(img_pos)
+            img_stim.ori = i * 10
             img_stim.draw()
             self.win.flip()
             
             psychopy.core.wait(frame_delay)
-                
-                
-#        while True:
-#            if 'escape' in psychopy.event.waitKeys():
-#                break
             
         self.unsubscribe_dict()
-#        self.close_psycho_window()
 
          # write data to file
         self.training_file_index = self.training_file_index + 1
