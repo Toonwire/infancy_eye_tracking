@@ -657,7 +657,7 @@ class tobii_controller:
                 gaze_data_writer.writerow(gaze_data)    
 
 
-    def start_fixation_exercise(self, stimuli_path="stimuli/star_red.png"):
+    def start_fixation_exercise(self, stimuli_path="stimuli/star_yellow.png"):
         
         img = Image.open(stimuli_path)
         img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
