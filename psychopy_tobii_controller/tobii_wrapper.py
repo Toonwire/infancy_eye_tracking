@@ -13,6 +13,7 @@ import datetime
 import numpy as np
 import time
 import warnings
+import math
 
 import tobii_research
 
@@ -27,21 +28,60 @@ import psychopy.visual
 import psychopy.event
 import psychopy.core
 import psychopy.monitors
+import psychopy.logging
 
-import os
-import csv
-import math
 
 class tobii_controller:
-    global_gaze_data = []
+
+    """
+    Default estimates
+    """
+    dist_to_screen = 60
+    screen_width = 1200
+    screen_height = 800
+
+    """
+    PsychoPy specfications
+    """
+    psychopy.logging.console.setLevel(psychopy.logging.CRITICAL)    # IGNORE UNSAVED MONITOR WARNINGS IN CONSOLE    
+    default_background_color = 'black'
+    is_mouse_enabled = False
     
-    session_path = "session_data/" + datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S/")
-    config_filename = session_path + "config.csv"
-    cal_path = session_path + "calibrations/"
     
-    cal_file_index = 0
-    training_file_index = 0
+    default_calibration_target_dot_size = {
+            'pix': 2.0, 'norm':0.004, 'height':0.002, 'cm':0.05,
+            'deg':0.05, 'degFlat':0.05, 'degFlatPos':0.05
+        }
+    default_calibration_target_disc_size = {
+            'pix': 2.0*20, 'norm':0.004*20, 'height':0.002*20, 'cm':0.05*20,
+            'deg':0.05*20, 'degFlat':0.05*20, 'degFlatPos':0.05*20
+        }
     
+    default_key_index_dict = {
+            '1':0, 'num_1':0, '2':1, 'num_2':1, '3':2, 'num_3':2,
+            '4':3, 'num_4':3, '5':4, 'num_5':4, '6':5, 'num_6':5,
+            '7':6, 'num_7':6, '8':7, 'num_8':7, '9':8, 'num_9':8
+        }
+
+    
+    """
+    Tobii controller for PsychoPy
+    tobii_research package is required to use this class.
+    """
+    eyetracker = None
+    calibration = None
+    win = None
+    gaze_data = []
+    event_data = []
+    retry_points = []
+    datafile = None
+    embed_events = False
+    recording = False
+    key_index_dict = default_key_index_dict.copy()
+
+    # Tobii data collection parameters
+    current_target = (0.5, 0.5)
+    global_gaze_data = []    
     gaze_params = [
         'device_time_stamp',
         'left_gaze_origin_in_trackbox_coordinate_system',
@@ -63,53 +103,11 @@ class tobii_controller:
         'system_time_stamp',
         'current_target_point_on_display_area'
     ]
-
     
+    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
+#    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
     
-    """
-    PsychoPy specfications
-    """
-    default_background_color = 'black'
-    is_mouse_enabled = False
-    
-    
-    
-    
-    
-    default_calibration_target_dot_size = {
-            'pix': 2.0, 'norm':0.004, 'height':0.002, 'cm':0.05,
-            'deg':0.05, 'degFlat':0.05, 'degFlatPos':0.05
-        }
-    default_calibration_target_disc_size = {
-            'pix': 2.0*20, 'norm':0.004*20, 'height':0.002*20, 'cm':0.05*20,
-            'deg':0.05*20, 'degFlat':0.05*20, 'degFlatPos':0.05*20
-        }
-    
-    default_key_index_dict = {
-            '1':0, 'num_1':0, '2':1, 'num_2':1, '3':2, 'num_3':2,
-            '4':3, 'num_4':3, '5':4, 'num_5':4, '6':5, 'num_6':5,
-            '7':6, 'num_7':6, '8':7, 'num_8':7, '9':8, 'num_9':8
-        }
-    
-    """
-    Tobii controller for PsychoPy
-    tobii_research package is required to use this class.
-    """
-    
-    eyetracker = None
-    calibration = None
-    eyetracker_id = None
-    win = None
-    gaze_data = []
-    event_data = []
-    retry_points = []
-    datafile = None
-    embed_events = False
-    recording = False
-    key_index_dict = default_key_index_dict.copy()
-
-
-    def __init__(self, screen_width, screen_height, id=0):
+    def __init__(self, screen_width, screen_height, eyetracker_id=0):
         """
         Initialize tobii_controller object.
         
@@ -118,22 +116,12 @@ class tobii_controller:
             Default value is 0.
         """
         
-        self.current_target = (0.5, 0.5)
-        self.eyetracker_id = id
-        
-        self.dist_to_screen = 55            # defualt estimate
         self.screen_width = screen_width
         self.screen_height = screen_height
+            
+        self.set_up_eyetracker(eyetracker_id)
         
-        
-        try:
-            os.makedirs(self.cal_path)
-        except Exception:
-            # directory already exists
-            pass
-        
-        
-        
+    def set_up_eyetracker(self, eyetracker_id=0):
         eyetrackers = tobii_research.find_all_eyetrackers()
 
         if len(eyetrackers)==0:
@@ -143,10 +131,7 @@ class tobii_controller:
             try:
                 self.eyetracker = eyetrackers[self.eyetracker_id]
                 
-                #"C:\Users\s144451\git\infancy_eye_tracking\licenses\license_key_00395217_-_DTU_Compute_IS404-100106342114"
-                license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-    #            license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
-                with open(license_file, "rb") as f:
+                with open(self.license_file, "rb") as f:
                     license = f.read()
                     res = self.eyetracker.apply_licenses(license)
                     
@@ -165,7 +150,12 @@ class tobii_controller:
             else:
                 self.eyetracker = None
         
-
+    def is_eye_tracker_on(self):
+        self.subscribe_dict()
+        time.sleep(1)
+        self.unsubscribe_dict()         
+        return len(self.global_gaze_data) > 0
+        
     def set_dist_to_screen(self, dist_to_screen):
         self.dist_to_screen = dist_to_screen
 
@@ -290,14 +280,6 @@ class tobii_controller:
             self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
         
         self.close_psycho_window()
-
-
-    def is_eye_tracker_on(self):
-        self.subscribe_dict()
-        time.sleep(1)
-        self.unsubscribe_dict()         
-        return len(self.global_gaze_data) > 0
-        
         
     def on_gaze_data_status(self, gaze_data):
         """
@@ -313,13 +295,13 @@ class tobii_controller:
         rv = gaze_data.right_eye.gaze_origin.validity
         self.gaze_data_status = (lp, lv, rp, rv)
 
-    def start_custom_calibration(self, num_points=2, stim_type="default"):
+    def start_custom_calibration(self, num_points=2, stim_type="default", stimuli_path="stimuli/smiley_yellow.png"):
             
         # Run calibration.
         target_points = [(-0.5, 0.0), (0.5, 0.0)]
         if num_points == 5:
             target_points = [(-0.4,0.4), (0.4,0.4), (0.0,0.0), (-0.4,-0.4), (0.4,-0.4)]
-        self.run_calibration(target_points, stim_type=stim_type)       
+        self.run_calibration(target_points, stim_type=stim_type, stimuli_path="stimuli/smiley_yellow.png")       
         
         
         # THIS CODE MAKES A GAZE TRACE AFTER THE CALIBRATION
@@ -362,7 +344,7 @@ class tobii_controller:
         
     def run_calibration(self, calibration_points, move_duration=1.5,
             shuffle=True, start_key='space', decision_key='space',
-            text_color='white', enable_mouse=False, stim_type="default"):
+            text_color='white', enable_mouse=False, stim_type="default", stimuli_path="stimuli/smiley_yellow.png"):
         """
         Run calibration.
         
@@ -419,18 +401,6 @@ class tobii_controller:
             remove_marker.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
             remove_marker.setSize([float(self.win.size[1])/self.win.size[0], 1.0])
              
-        frames = []
-        if stim_type == "img":            
-            # Setup gif (frames)
-            stim_img = Image.open("stimuli/original-pony-dancing.gif")
-        
-            try:
-                while True:
-                    frames.append(stim_img.resize((200,200), Image.ANTIALIAS))
-                    stim_img.seek(stim_img.tell() + 1)
-            except EOFError:
-                pass
-
         if self.eyetracker is not None:
             self.calibration.enter_calibration_mode()
 
@@ -473,7 +443,7 @@ class tobii_controller:
             if stim_type == "default":
                 self.update_calibration()
             elif stim_type == "img":
-                self.update_calibration_img(frames)
+                self.update_calibration_img(stimuli_path)
                 
             calibration_result = None
             if self.eyetracker is not None:
@@ -590,87 +560,21 @@ class tobii_controller:
         psychopy.core.wait(0.2)
         
     
-    def make_transformation(self, enable_mouse=False):        
+    def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        
         
-        # Setup gif (frames)
-        img = Image.open("stimuli/original-pony-dancing.gif")
-        
-        frames = []
-        try:
-            while True:
-                frames.append(img.resize((200,200), Image.ANTIALIAS))
-                img.seek(img.tell() + 1)
-        except EOFError:
-            pass
-        
-        
-        self.subscribe_dict()
-        
-        
+        img = Image.open(stimuli_path)
+        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+        img_stim.size = (0.15,0.15)
+                
         img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
         np.random.shuffle(img_positions)
+
+        self.subscribe_dict()
         clock = psychopy.core.Clock()
         
         for img_pos in img_positions:       
             self.current_target = self.get_tobii_pos(img_pos)
             
-            i = 0
-            clock.reset()
-            current_time = clock.getTime()
-            while current_time < 3:
-                img_stim = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
-                img_stim.setPos(img_pos)
-                img_stim.draw()
-                self.win.flip()
-                
-                i += 1
-                psychopy.core.wait(0.1)
-                current_time = clock.getTime()
-        
-#        while True:
-#            if 'escape' in psychopy.event.waitKeys():
-#                break
-            
-        self.unsubscribe_dict()
-#        self.close_psycho_window()
-
-         # write data to file
-        self.cal_file_index = self.cal_file_index + 1
-        self.training_file_index = 0
-            
-        try:
-            os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
-        except Exception:
-            # directory already exists
-            pass
-        
-        cal_filename = self.cal_path + "cal_" + str(self.cal_file_index) + ".csv"
-        
-        # PYTHON 2.x
-        with open(cal_filename, mode='wb') as gaze_data_file:
-        
-            field_names = [data for data in self.gaze_params]
-            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
-        
-            gaze_data_writer.writeheader()
-            for gaze_data in self.global_gaze_data:
-                gaze_data_writer.writerow(gaze_data)    
-
-
-    def start_fixation_exercise(self, stimuli_path="stimuli/star_yellow.png"):
-        
-        img = Image.open(stimuli_path)
-        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
-        img_stim.size = (0.15, 0.15)
-       
-        self.subscribe_dict()
-                
-        img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
-        np.random.shuffle(img_positions)
-        
-        clock = psychopy.core.Clock()
-        for img_pos in img_positions:
-            self.current_target = self.get_tobii_pos(img_pos)
             i = 0
             clock.reset()
             current_time = clock.getTime()
@@ -683,69 +587,81 @@ class tobii_controller:
                 i += 1
                 psychopy.core.wait(0.015)
                 current_time = clock.getTime()
-                
+        
         self.unsubscribe_dict()
+
+    def start_fixation_exercise(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
         
+        img_stims = []
+        for stimuli_path in stimuli_paths:
+            img = Image.open(stimuli_path)
+            img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+            img_stim.size = (0.15, 0.15)
+            img_stims.append(img_stim)        
         
-         # write data to file
-        self.training_file_index = self.training_file_index + 1
-            
-        try: # just in case we run exercise before calibration
-            os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
-        except Exception:
-            # directory already exists
-            pass
+        np.random.shuffle(positions)
         
-        training_filename = self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/fixation_training_" + str(self.training_file_index) + ".csv"
+        self.subscribe_dict()
+        clock = psychopy.core.Clock()
         
-        # PYTHON 2.x
-        with open(training_filename, mode='wb') as gaze_data_file:
+        pos_index = 0
+        for pos in positions:
+            self.current_target = self.get_tobii_pos(pos)
+            i = 0
+            clock.reset()
+            current_time = clock.getTime()
+            while current_time < 3:
+                img_stim = img_stims[(pos_index - 1) % len(img_stims)]
+                img_stim.setPos(pos)
+                img_stim.ori = i * 10
+                img_stim.draw()
+                self.win.flip()
+                
+                i += 1
+                
+                psychopy.core.wait(0.015)
+                current_time = clock.getTime()
+                
+            pos_index += 1
         
-            field_names = [data for data in self.gaze_params]
-            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
-        
-            gaze_data_writer.writeheader()
-            for gaze_data in self.global_gaze_data:
-                gaze_data_writer.writerow(gaze_data)   
+        self.unsubscribe_dict()
     
     
-    def calc_pursuit_route(self, pathing, frame_delay=0.03, move_duration=5):
-        move_steps = move_duration / frame_delay
+    def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5):
+        
         
         # Normal coordinate system
-        img_positions = []
-        img_intermediate_positions = []
+        intermediate_positions = []
+        move_steps = move_duration / frame_delay
         
         if pathing == "linear":
-            img_positions = [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]  # turning points
             
             total_dist = 0
-            for i in range(len(img_positions) - 1):
-                total_dist += self.get_euclidean_distance(img_positions[i], img_positions[i + 1])
+            for i in range(len(positions) - 1):
+                total_dist += self.get_euclidean_distance(positions[i], positions[i + 1])
             
             # intermediate points
-            for i in range(len(img_positions)):
-                if i+1 < len(img_positions):
-                    start_pos = img_positions[i]
-                    end_pos = img_positions[i+1]
+            for i in range(len(positions)):
+                if i+1 < len(positions):
+                    start_pos = positions[i]
+                    end_pos = positions[i+1]
                                 
                     euc_dist = self.get_euclidean_distance(start_pos, end_pos)
                     amount_of_path = euc_dist / total_dist
                     move_steps_for_path = amount_of_path * move_steps
                     
-                    intermediate_posisions = self.get_equidistant_points(start_pos, end_pos, move_steps_for_path)
-                    img_intermediate_positions.extend(intermediate_posisions)
+                    intermediate_positions.extend(self.get_equidistant_points(start_pos, end_pos, move_steps_for_path))
+                    
+        elif pathing == "spiral" and len(positions) == 2:
+            start_pos = positions[0]
+            end_pos = positions[1]
             
-        elif pathing == "spiral":
-            start = (-0.7, 0.0)
-            end = (0.0, 0.0)
+            intermediate_positions.append(start_pos)
             
-            img_intermediate_positions.append(start)
+            r = ((start_pos[0] - end_pos[0]) ** 2 + (start_pos[1] - end_pos[1]) ** 2) ** 0.5
             
-            r = ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
-            
-            theta_x = math.acos(start[0] / r)
-            theta_y = math.asin(start[1] / r)
+            theta_x = math.acos(start_pos[0] / r)
+            theta_y = math.asin(start_pos[1] / r)
             
             theta = theta_x if theta_y >= 0 else -theta_x
             
@@ -755,54 +671,53 @@ class tobii_controller:
                 r -= dr
                 theta = theta + (0.05 * math.pi) / (r * (move_duration + 1/r))
                 pos = (r*math.cos(theta), r*math.sin(theta))
-                img_intermediate_positions.append(pos)
+                intermediate_positions.append(pos)
         
         
-        return img_intermediate_positions
+        return intermediate_positions
         
     
-    def start_pursuit_exercise(self, pathing="linear", stimuli_path="stimuli/smiley_yellow.png"):
+    def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
         
-        img = Image.open(stimuli_path)
-        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
-        img_stim.size = (0.15, 0.15)
+        img_stims = []
+        for stimuli_path in stimuli_paths:
+            img = Image.open(stimuli_path)
+            img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+            img_stim.size = (0.15, 0.15)
+            img_stims.append(img_stim)
         
         frame_delay = 0.015
-        img_intermediate_positions = self.calc_pursuit_route(pathing, frame_delay=frame_delay, move_duration=5)
+        intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=5)
         
-        self.subscribe_dict()        
-        for i, img_pos in enumerate(img_intermediate_positions):
-            self.current_target = self.get_tobii_pos(img_pos)
-            
-            img_stim.setPos(img_pos)
+        self.subscribe_dict()
+        
+        pos_index = 0
+        for i, pos in enumerate(intermediate_positions):
+            self.current_target = self.get_tobii_pos(pos)
+            img_stim = img_stims[(pos_index) % len(img_stims)]
+            img_stim.setPos(pos)
             img_stim.ori = i * 10
+            img_stim.opacity = 1.0
             img_stim.draw()
+            
+            if pathing == "spiral":
+                img_stim = img_stims[(pos_index + 1) % len(img_stims)]
+                img_stim.setPos(pos)
+                img_stim.ori = i * 10
+                img_stim.opacity = (i % int(len(intermediate_positions) / len(img_stims) + 1)) / int(len(intermediate_positions) / len(img_stims))
+                img_stim.draw()
+            
             self.win.flip()
+            
+            if pathing == "linear" and pos[0] == positions[pos_index + 1][0] and pos[1] == positions[pos_index + 1][1]:
+                pos_index += 1
+            
+            if pathing == "spiral" and i % int(len(intermediate_positions) / len(img_stims)) == 0 and i > 0:
+                pos_index += 1
             
             psychopy.core.wait(frame_delay)
             
         self.unsubscribe_dict()
-
-         # write data to file
-        self.training_file_index = self.training_file_index + 1
-            
-        try: # just in case we run exercise before calibration
-            os.makedirs(self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/")
-        except Exception:
-            # directory already exists
-            pass
-        
-        training_filename = self.session_path + "training_with_cal_" + str(self.cal_file_index) + "/pursuit_training_" + str(self.training_file_index) + ".csv"
-        
-        # PYTHON 2.x
-        with open(training_filename, mode='wb') as gaze_data_file:
-        
-            field_names = [data for data in self.gaze_params]
-            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
-        
-            gaze_data_writer.writeheader()
-            for gaze_data in self.global_gaze_data:
-                gaze_data_writer.writerow(gaze_data)   
 
     def get_euclidean_distance(self, p1, p2):
         return ((p1[0] - p2[0])**2+(p1[1] - p2[1])**2)**0.5
@@ -857,7 +772,12 @@ class tobii_controller:
             if self.eyetracker is not None:
                 self.calibration.collect_data(x, y)
                 
-    def update_calibration_img(self, frames):
+    def update_calibration_img(self, stimuli_path):
+
+        stim_img = Image.open(stimuli_path)        
+        stimuli = psychopy.visual.ImageStim(self.win, image=stim_img, autoLog=False)
+        stimuli.size = (0.15,0.15)        
+                
         clock = psychopy.core.Clock()
         for point_index in range(len(self.calibration_points)):
             x, y = self.get_tobii_pos(self.calibration_points[point_index])
@@ -867,13 +787,13 @@ class tobii_controller:
             current_time = clock.getTime()
             while current_time < self.move_duration:
                 psychopy.event.getKeys()
-                stimuli = psychopy.visual.ImageStim(self.win, image=frames[i % len(frames)], autoLog=False)
                 stimuli.setPos(self.calibration_points[point_index])
+                stimuli.ori = i * 10
                 stimuli.draw()
                 self.win.flip()
                 
                 i += 1
-                psychopy.core.wait(0.1)
+                psychopy.core.wait(0.015)
                 current_time = clock.getTime()
             
             if self.eyetracker is not None:

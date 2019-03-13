@@ -25,14 +25,10 @@ class Application(tk.Frame):
     
     analyzer = gda.GazeDataAnalyzer()
     
-    session_path = "session_data/" + datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S/")
-    
-    cal_file_index = 0
-    training_file_index = 0
+    session_path = "session_data/" + datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S") + "/"
     
     config_filename = session_path + "config.csv"
-    
-    cal_path = session_path + "calibrations/"
+    test_folder = None
     
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
@@ -41,6 +37,7 @@ class Application(tk.Frame):
         # Get width and height of screen
         self.screen_width = self.master.winfo_screenwidth()
         self.screen_height = self.master.winfo_screenheight()
+        self.screen_size_inches = 27
         
         self.pack(fill="both", expand=True)
         
@@ -50,17 +47,68 @@ class Application(tk.Frame):
         self.controller.show_status()
         
         try:
-            os.makedirs(self.cal_path)
+            os.makedirs(self.session_path)
         except Exception:
             # directory already exists
             pass
         
-        config_fields = ["Age (Months)", "Sex", "Severity (1-5)", "Screen size (inches)", "Distance to screen (cm)"]
-        config_values = ["12", "M", "1", "27", "60"]
-        self.panel_config = tk.Frame(self)
-        self.config_setup(self.panel_config, config_fields, config_values)
-        self.panel_config.pack(side=tk.TOP, pady=(self.screen_height / 2, 0))
+        self.config_setup()
         
+        
+             
+    def config_setup(self):
+        self.panel_config = tk.Frame(self)
+        
+        fields = ["Age (Months)", "Sex", "Distance to screen (cm)"]
+        values = ["12", "M", "60"]
+        
+        entries = []
+        for field, value in zip(fields, values):
+            row = tk.Frame(self.panel_config)
+            label = tk.Label(row, width=20, text=field, anchor='w')
+            entry = tk.Entry(row)
+            entry.insert(tk.END, value)
+            row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+            label.pack(side=tk.LEFT)
+            entry.pack(side=tk.RIGHT, expand=True, fill=tk.X)
+            entries.append((field, entry))
+            
+        btn_config_save = tk.Button(self.panel_config)
+        btn_config_save["text"] = "Save configuration"
+        btn_config_save["fg"]   = "black"
+        btn_config_save["bg"]   = "#b2b2b2"
+        btn_config_save["command"] = lambda e=entries: self.config_save(e)
+        btn_config_save.pack(side=tk.LEFT, padx=5, pady=10)
+        
+        self.panel_config.pack(side=tk.TOP, pady=(self.screen_height / 2, 0))
+    
+    def config_save(self, entries):
+        
+        # PYTHON 2.x
+        with open(self.config_filename, mode='wb') as csv_file:
+            field_names = [row[0] for row in entries]
+            entry_texts = [row[1].get() for row in entries]
+            
+            field_names.extend(["Screen size (inches)", "Screen width (px)", "Screen height (px)"])
+            entry_texts.extend([self.screen_size_inches, self.screen_width, self.screen_height])
+            
+            config_writer = csv.DictWriter(csv_file, fieldnames=field_names, delimiter=";")
+            config_writer.writeheader()
+            
+            config_dict = {}
+            for f, e in zip(field_names, entry_texts):
+                config_dict[f] = e
+            
+            config_writer.writerow(config_dict)
+            
+            self.controller.set_dist_to_screen(config_dict["Distance to screen (cm)"])        
+            
+        print("Configurations saved")
+        self.panel_config.pack_forget()
+        self.show_main_panel() 
+    
+    
+
         
     def show_main_panel(self):
 
@@ -132,14 +180,18 @@ class Application(tk.Frame):
         
     def test_fixation(self):
         self.controller.make_psycho_window()
-        self.training_exercise("fixation")
+        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png","stimuli/star_blue.png","stimuli/star_green.png","stimuli/star_red.png","stimuli/star_purple.png"])
         self.controller.close_psycho_window()
         
     def test_pursuit(self, path_type):
         self.controller.make_psycho_window()
-        self.training_exercise("pursuit", path_type)
+
+        if path_type == "linear":
+            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+        elif path_type == "spiral":
+            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+            
         self.controller.close_psycho_window()
-        
         
         
     def make_test_button(self, title, cal_type):
@@ -153,6 +205,8 @@ class Application(tk.Frame):
     def run_test(self, cal_type):
         self.controller.make_psycho_window()
         
+        self.test_folder = "test_" + cal_type + "/"
+        
         if cal_type == "default":
             pass
         elif cal_type == "2p":
@@ -162,77 +216,30 @@ class Application(tk.Frame):
         elif cal_type == "5p_img":
             self.custom_calibration(5, "img")
         
+        
         self.controller.flash_screen()
         self.make_transformation()
+        self.store_data("transformation")
+        
         self.controller.flash_screen()
-        self.training_exercise("fixation")
+        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png","stimuli/star_blue.png","stimuli/star_green.png","stimuli/star_red.png","stimuli/star_purple.png"])
+        self.store_data("training_fixation")
+        
         self.controller.flash_screen()
-        self.training_exercise("pursuit", "linear")
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+        self.store_data("training_pursuit_linear")
+        
         self.controller.flash_screen()
-        self.training_exercise("pursuit", "spiral")
+        self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+        self.store_data("training_pursuit_spiral")
         
         self.controller.close_psycho_window()
-        
-    def config_setup(self, root, fields, values):
-        entries = []
-        for field, value in zip(fields, values):
-            row = tk.Frame(root)
-            label = tk.Label(row, width=15, text=field, anchor='w')
-            entry = tk.Entry(row)
-            entry.insert(tk.END, value)
-            row.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-            label.pack(side=tk.LEFT)
-            entry.pack(side=tk.RIGHT, expand=True, fill=tk.X)
-            entries.append((field, entry))
-        btn_config_save = tk.Button(root)
-        btn_config_save["text"] = "Save configuration"
-        btn_config_save["fg"]   = "black"
-        btn_config_save["bg"]   = "#b2b2b2"
-        btn_config_save["command"] = lambda e=entries: self.config_save(e)
-        btn_config_save.pack(side=tk.LEFT, padx=5, pady=10)
-    
-    def config_save(self, entries):
-        
-        # PYTHON 2.x
-        with open(self.config_filename, mode='wb') as csv_file:
-            field_names = [row[0] for row in entries]
-            entry_texts = [row[1].get() for row in entries]
-            
-            field_names.extend(["Screen width (px)", "Screen height (px)"])
-            entry_texts.extend([self.screen_width, self.screen_height])
-            
-            config_writer = csv.DictWriter(csv_file, fieldnames=field_names, delimiter=";")
-            config_writer.writeheader()
-            
-            config_dict = {}
-            for f, e in zip(field_names, entry_texts):
-                config_dict[f] = e
-            
-            config_writer.writerow(config_dict)
-            
-            self.controller.set_dist_to_screen(config_dict["Distance to screen (cm)"])        
-            
-        print("Configurations saved")
-        self.panel_config.pack_forget()
-        self.show_main_panel() 
-    
-    
-
+   
     def show_status(self):
         self.controller.show_status()
         
-    def training_exercise(self, training_type="fixation", pathing_type="linear"):
-        # Start eye traking
-        if training_type == "fixation":
-            self.controller.start_fixation_exercise()
-            
-        elif training_type == "pursuit":
-            self.controller.start_pursuit_exercise(pathing=pathing_type)
-            
-        
     def make_transformation(self):
         self.controller.make_transformation()
-   
         
     def custom_calibration(self, num_points, stim_type="default"):
         
@@ -240,10 +247,32 @@ class Application(tk.Frame):
         # this will still fail whenever the device is there but turned off 
         # TobiiProSDK does not support activity checks this for python it seems..
         self.controller.start_custom_calibration(num_points, stim_type=stim_type)
+        
+    def store_data(self, testname):
+        
+         # write data to file    
+        try: # just in case we run exercise before calibration
+            os.makedirs(self.session_path + self.test_folder)
+        except Exception:
+            # directory already exists
+            pass
+        
+        filename = self.session_path + self.test_folder + testname + ".csv"
+        
+        # PYTHON 2.x
+        with open(filename, mode='wb') as gaze_data_file:
+        
+            field_names = [data for data in self.controller.gaze_params]
+            gaze_data_writer = csv.DictWriter(gaze_data_file, fieldnames=field_names, delimiter=";")
             
+            gaze_data_writer.writeheader()
+            for gaze_data in self.controller.global_gaze_data:
+                gaze_data_writer.writerow(gaze_data)   
+                                
     def client_exit(self):
         print("Shutting down")
         self.quit()
+
 
 root = tk.Tk()
 #root = tk.Toplevel()
