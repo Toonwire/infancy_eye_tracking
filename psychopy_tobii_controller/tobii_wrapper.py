@@ -129,7 +129,7 @@ class tobii_controller:
         
         else:
             try:
-                self.eyetracker = eyetrackers[self.eyetracker_id]
+                self.eyetracker = eyetrackers[eyetracker_id]
                 
                 with open(self.license_file, "rb") as f:
                     license = f.read()
@@ -142,8 +142,7 @@ class tobii_controller:
                         
             except:
                 raise ValueError(
-                    'Invalid eyetracker ID {}\n({} eyetrackers found)'.format(
-                        self.eyetracker_id, len(eyetrackers)))
+                    'Invalid eyetracker ID {}\n({} eyetrackers found)'.format(eyetracker_id, len(eyetrackers)))
         
             if self.is_eye_tracker_on():
                 self.calibration = tobii_research.ScreenBasedCalibration(self.eyetracker)
