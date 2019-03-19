@@ -9,8 +9,8 @@ import gaze_data_analyzer as gda
 
 analyzer = gda.GazeDataAnalyzer()
 
-session_path = "2019-03-14 10.29.21"
-test_type = "5p_img"
+session_path = "2019-03-19 13.25.37"
+test_type = "default"
 
 session_path = "session_data/" + session_path + "/"
 test_folder = session_path + "test_" + test_type + "/"
