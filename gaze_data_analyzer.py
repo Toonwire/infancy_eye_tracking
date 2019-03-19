@@ -9,11 +9,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import math
 import data_correction as dc
+import dbscan
 import numpy as np
+
+
 
 class GazeDataAnalyzer:
 
-    def read_data(self, filename):
+    def read_data(self, filename, type_of_training):
         # read config csv file
         data_frame = pd.read_csv(filename, delimiter=";")
         
@@ -27,15 +30,139 @@ class GazeDataAnalyzer:
         self.N = len(data_frame)
         
         # fetch gaze points from data
-        gaze_data_left = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
-        gaze_data_right = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
-        target_points = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
+        gaze_data_left_temp = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
+        gaze_data_right_temp = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
+        target_points_temp = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
+        
+        gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
+        
+        gaze_data_left = []
+        gaze_data_right = []
+        target_points = []
+        
+        if type_of_training == "dbscan":
+            
+            db_scan = dbscan.DBScan()
+            clusters = db_scan.run(gaze_data_temp.T, 0.05, 10)
+            
+            colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
+            colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
+            plt.scatter(*zip(*clusters.keys()),c=colors)
+            plt.show()
+            
+            gaze_data_left_x = []
+            gaze_data_left_y = []
+            gaze_data_right_x = []
+            gaze_data_right_y = []
+            target_points_x = []
+            target_points_y = []
+            
+            prev_target = np.array([-1.0, -1.0])
+            prev_cluster = 0
+            clusters_used = set()
+            
+            for i in range(self.N):
+                current_target = target_points_temp[:,i]
+                p = (gaze_data_temp[0, i], gaze_data_temp[1, i])
+                
+                current_cluster = clusters[p]
+                
+                if not np.array_equal(current_target, prev_target):
+                    clusters_used.add(prev_cluster)
+                    
+                if current_cluster not in clusters_used:
+                    gaze_data_left_x.append(gaze_data_left_temp[0,i])
+                    gaze_data_left_y.append(gaze_data_left_temp[1,i])
+                    gaze_data_right_x.append(gaze_data_right_temp[0,i])
+                    gaze_data_right_y.append(gaze_data_right_temp[1,i])
+                    target_points_x.append(target_points_temp[0,i])
+                    target_points_y.append(target_points_temp[1,i])
+            
+                prev_target = current_target
+                prev_cluster = current_cluster
+            
+            gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
+            gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
+            target_points = np.array([target_points_x, target_points_y])
+
+        # Remove all points after a shift of target for a half second (45 measures)
+        elif type_of_training == "fixation":
+            prev_target = np.array([0.0, 0.0])
+            wait = 0
+            
+            gaze_data_left_x = []
+            gaze_data_left_y = []
+            gaze_data_right_x = []
+            gaze_data_right_y = []
+            target_points_x = []
+            target_points_y = []
+            
+            for i in range(self.N):
+                current_target = target_points_temp[:,i]
+                
+                if np.array_equal(current_target, prev_target):
+                    wait += 1
+                    
+                    if (wait > 45):
+                        gaze_data_left_x.append(gaze_data_left_temp[0,i])
+                        gaze_data_left_y.append(gaze_data_left_temp[1,i])
+                        gaze_data_right_x.append(gaze_data_right_temp[0,i])
+                        gaze_data_right_y.append(gaze_data_right_temp[1,i])
+                        target_points_x.append(current_target[0])
+                        target_points_y.append(current_target[1])
+    
+                        
+                else:
+                    wait = 0
+                    
+                prev_target = current_target
+                
+            gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
+            gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
+            target_points = np.array([target_points_x, target_points_y])
+
+        # Remove all points in the first half second (45 measures)
+        elif type_of_training == "pursuit":
+            
+            wait = 0
+            
+            gaze_data_left_x = []
+            gaze_data_left_y = []
+            gaze_data_right_x = []
+            gaze_data_right_y = []
+            target_points_x = []
+            target_points_y = []
+            
+            for i in range(self.N):
+                wait += 1
+                
+                if (wait > 10):
+                    gaze_data_left_x.append(gaze_data_left_temp[0,i])
+                    gaze_data_left_y.append(gaze_data_left_temp[1,i])
+                    gaze_data_right_x.append(gaze_data_right_temp[0,i])
+                    gaze_data_right_y.append(gaze_data_right_temp[1,i])
+                    target_points_x.append(target_points_temp[0,i])
+                    target_points_y.append(target_points_temp[1,i])
+
+                       
+            gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
+            gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
+            target_points = np.array([target_points_x, target_points_y])
+            
+        # Do nothing for filter out outliers
+        elif type_of_training == None:
+            gaze_data_left = gaze_data_left_temp
+            gaze_data_right = gaze_data_right_temp
+            target_points = target_points_temp
+            
+        
+        self.N = len(target_points[0,:])
 
         return (gaze_data_left, gaze_data_right, target_points)
     
     
     # set up the transformation matrices 
-    def setup(self, config_file, cal_filename):
+    def setup(self, config_file, cal_filename, type_of_training = None):
         
         # read config csv file
         data_frame = pd.read_csv(config_file, delimiter=";")
@@ -47,15 +174,15 @@ class GazeDataAnalyzer:
         self.dist_to_screen_cm = data_frame['Distance to screen (cm)'][0]
         self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
         
-        gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename)
+        gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename, type_of_training)
         
         self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
         self.data_correction.calibrate_left_eye(gaze_data_left)
         self.data_correction.calibrate_right_eye(gaze_data_right)
         
     
-    def analyze(self, training_filename):   
-        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename)
+    def analyze(self, training_filename, type_of_training = None):
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, type_of_training)
         
         ### error analysis - raw
         self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
@@ -68,7 +195,7 @@ class GazeDataAnalyzer:
         ### error analysis - corrected
         self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
-#        ### error analysis - corrected
+        ### error analysis - corrected
 #        fixations_filtered_left, filtered_targets = self.reject_outliers(gaze_data_left_corrected, target_points)
 #        fixations_filtered_right, filtered_targets = self.reject_outliers(gaze_data_right_corrected, target_points)
 #        self.analyze_errors(fixations_filtered_left, fixations_filtered_right, target_points)
@@ -97,7 +224,7 @@ class GazeDataAnalyzer:
         print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
         print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
         
-        return (gaze_data_left, gaze_data_right, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        return (gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         
     def rmse(self, fixations, targets):
         fixations_filtered, filtered_targets = self.reject_outliers(fixations, targets)
@@ -124,11 +251,6 @@ class GazeDataAnalyzer:
                 filtered_targets[1].append(ty)
                 
         return (np.array(filtered_data), np.array(filtered_targets))
-                
-        
-        
-#        data_filtered_x = data[0,:][abs(data[0,:] - np.mean(data[0,:])) < m * np.std(data[0,:])]
-#        data_filtered_y = data[1,:][abs(data[1,:] - np.mean(data[1,:])) < m * np.std(data[1,:])]
     
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
         # compute pixel deviations from fixation to target
@@ -137,7 +259,7 @@ class GazeDataAnalyzer:
         # compute euclidean pixel distance from fixation to target
         pixel_dist_err_left = [self.euclid_dist(err[0], err[1]) for err in pixel_err_left]
         pixel_dist_err_right = [self.euclid_dist(err[0], err[1]) for err in pixel_err_right]
-        
+
         # compute how much visual angle error the pixel errors correspond to
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
                 
@@ -213,10 +335,5 @@ class GazeDataAnalyzer:
         plt.title(title_string)
         plt.ylim(0,y_max)
         plt.show()
-
-
-
-
-
-
+#        pass
     

@@ -20,14 +20,14 @@ config_filename = session_path + "config.csv"
 
 cal_filename = test_folder + "transformation.csv"
 
-analyzer.setup(config_filename, cal_filename)
-analyzer.analyze(cal_filename)
+analyzer.setup(config_filename, cal_filename, "fixation")
+analyzer.analyze(cal_filename, "fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename)
+analyzer.analyze(training_filename, "fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze(training_filename)
+analyzer.analyze(training_filename, "pursuit")
 
 training_filename = test_folder + "training_pursuit_spiral.csv"
-analyzer.analyze(training_filename)
+analyzer.analyze(training_filename, "pursuit")
