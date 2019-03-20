@@ -75,7 +75,15 @@ Filtrering af data (behold / discard outliers)
 
 21/03 - Per (+Mikkel?)
 -----------------------
-Lån af eye tracker i forbindelse med pilot study (kan være mere eller mindre spontant? - que Mikkel)
+Lån af eye tracker i forbindelse med pilot study
+	- kan være mere eller mindre spontant? 
+	- que Mikkel
+
+Diskutér clustering algoritmer, fordele ulempter ved dbscan (as implemented)
+
+Vise progress
+	- check lige at skidtet virker på laptop inden..
+	- ingen eye tracker available, kør uden crash pls
 
 
 
