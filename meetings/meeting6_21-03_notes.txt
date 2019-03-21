@@ -1,22 +1,28 @@
-28/03
-11/04
-23/04
-mand 08/04- 10/04
+Umiddelbare datoer for børn til forsøg på Elsass
+------------------------------------
+	28/03			Enkelt familie
+	11/04			Nogle familier?
+	23/04			Nogle familier?
+	08/04 - 10/04	Ophold
 
+Cross-validation
+	- saml alt data
+	- train på én exercise
+	- test på de resterende exercises
+	- undgår på den måde en calibrerings exercise
+	- mere eller mindre det vi gør nu allerede?
 
-
-cross-validation
-	- saml alt, train på én exercise, test på andet
-
-smooth pursuit calibrering
-	- stikprøver på punkter (HVIS MULIGT?)
+Smooth pursuit calibrering
+	- evaluér trace, kan path følges?
+	- hvis muligt > override tobii calibrering stikprøver på pun
 	- dynamisk kaliberering over flere omgang
 
-hvordan kan vi være sikre på at delay på skræm ikke er transformationsfejl
+Hvordan kan vi være sikre på at delay på skræm ikke er transformationsfejl
 	- sammenlign kurver for et skarpt sving og se om target punkters usving stemmer overens med gaze points
 
-reducér rotationshastighed
+Reducér rotationshastighed
 
+Async collection og bliv ved med at animere
 
 
 Purpose med forsøg, how to kvantificere en sammenligning / resultat?
