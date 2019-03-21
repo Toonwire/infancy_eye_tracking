@@ -1,0 +1,27 @@
+28/03
+11/04
+23/04
+mand 08/04- 10/04
+
+
+
+cross-validation
+	- saml alt, train på én exercise, test på andet
+
+smooth pursuit calibrering
+	- stikprøver på punkter (HVIS MULIGT?)
+	- dynamisk kaliberering over flere omgang
+
+hvordan kan vi være sikre på at delay på skræm ikke er transformationsfejl
+	- sammenlign kurver for et skarpt sving og se om target punkters usving stemmer overens med gaze points
+
+reducér rotationshastighed
+
+
+
+Purpose med forsøg, how to kvantificere en sammenligning / resultat?
+	- Vær meget specfik omkring hvad der testes og hvilke parametre der indgår og er vigtig for resultatet
+
+	EX.
+	Stor stimuli = nemmere at opfange, mindre præcist
+	lille stimuli = sværre at opfange, mere præcist for de data punkter der så registreres
