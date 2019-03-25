@@ -257,12 +257,12 @@ class GazeDataAnalyzer:
         self.data_correction.calibrate_left_eye(gaze_data_left)
         self.data_correction.calibrate_right_eye(gaze_data_right)
 
-        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
-        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+        #gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        #gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
 
-        self.fine_data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
-        self.fine_data_correction.calibrate_left_eye(gaze_data_left_corrected)
-        self.fine_data_correction.calibrate_right_eye(gaze_data_right_corrected)
+        #self.fine_data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
+        #self.fine_data_correction.calibrate_left_eye(gaze_data_left_corrected)
+        #self.fine_data_correction.calibrate_right_eye(gaze_data_right_corrected)
 
 
         #self.data_correction.calibrate_left_eye_seb(gaze_data_left)
@@ -276,8 +276,8 @@ class GazeDataAnalyzer:
         self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
         
         #------ correct raw data ------#
-        gaze_data_left = self.data_correction.adjust_left_eye(gaze_data_left)
-        gaze_data_right = self.data_correction.adjust_right_eye(gaze_data_right)
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
 
         #gaze_data_left_corrected = self.data_correction.adjust_left_eye_seb_2(gaze_data_left)
         #gaze_data_right_corrected = self.data_correction.adjust_right_eye_seb_2(gaze_data_right)
