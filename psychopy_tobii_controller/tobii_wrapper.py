@@ -47,6 +47,8 @@ class tobii_controller:
     default_background_color = 'black'
     is_mouse_enabled = False
     
+    rot_deg_per_frame = 3     # how many degrees of rotation per frame
+    
     
     default_calibration_target_dot_size = {
             'pix': 2.0, 'norm':0.004, 'height':0.002, 'cm':0.05,
@@ -579,7 +581,7 @@ class tobii_controller:
             current_time = clock.getTime()
             while current_time < 3:
                 img_stim.setPos(img_pos)
-                img_stim.ori = i * 10
+                img_stim.ori = i * self.rot_deg_per_frame
                 img_stim.draw()
                 self.win.flip()
                 
@@ -612,7 +614,7 @@ class tobii_controller:
             while current_time < 3:
                 img_stim = img_stims[(pos_index - 1) % len(img_stims)]
                 img_stim.setPos(pos)
-                img_stim.ori = i * 10
+                img_stim.ori = i * self.rot_deg_per_frame
                 img_stim.draw()
                 self.win.flip()
                 
@@ -695,14 +697,14 @@ class tobii_controller:
             self.current_target = self.get_tobii_pos(pos)
             img_stim = img_stims[(pos_index) % len(img_stims)]
             img_stim.setPos(pos)
-            img_stim.ori = i * 10
+            img_stim.ori = i * self.rot_deg_per_frame
             img_stim.opacity = 1.0
             img_stim.draw()
             
             if pathing == "spiral":
                 img_stim = img_stims[(pos_index + 1) % len(img_stims)]
                 img_stim.setPos(pos)
-                img_stim.ori = i * 10
+                img_stim.ori = i * self.rot_deg_per_frame
                 img_stim.opacity = (i % int(len(intermediate_positions) / len(img_stims) + 1)) / int(len(intermediate_positions) / len(img_stims))
                 img_stim.draw()
             
@@ -787,7 +789,7 @@ class tobii_controller:
             while current_time < self.move_duration:
                 psychopy.event.getKeys()
                 stimuli.setPos(self.calibration_points[point_index])
-                stimuli.ori = i * 10
+                stimuli.ori = i * self.rot_deg_per_frame
                 stimuli.draw()
                 self.win.flip()
                 

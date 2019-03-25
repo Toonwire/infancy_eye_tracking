@@ -1,0 +1,54 @@
+Problem
+----
+In general, the attention span of young infants is far less than that of adults, and cannot as easily be requested.
+For eye tracking equipment to provide accurate and useful data, individual calibration for each participant is needed.
+The more calibration points (up to 9) will in general result in a more accurate detection of the participant's gaze. However keeping the attention of an infant to allow a 9-point calibration is a bit far fetched, as well as unreliable.
+
+- head movement correction (equipment takes care of this to some extent?)
+
+
+Proposed solution
+----
+Initial low point-count calibration (2-5 depending on age of infants). Then the development of eye training exercises to be deployed after initial calibration. An exercise is to be embedded with a re-calibration scheme such that, during the exercise, the eye tracking software is continously calibrated.*
+- *This is probably more aimed at a re-calibration in the sense that an algorithm with the purpose of adjusting the incoming gaze-point data is to be implemented?
+- Risk of dry eyes (exposure to infra-red)
+
+
+
+
+- Downtime of targets while still registering fixations 
+
+- As is, calibrations are to be repeated until satisfied (<= 1 visual angle error). To not put infants through extensive calibration schemes, the proposed correction-algorithm will handle the raw data from after the initial calibration (regardless of visual angle error). 
+
+# From entropy-based correction algorithm ..
+"Theoretically, a correction algorithm could also use information about object positions in the image that the participant will fixate. In practice, it is not necessarily known before the trial where the participant will look at.
+
+- Thus we should try to test our algorithm on both known target locations (eye training exercises), as well as when no known points are given ahead of time. Would be interesting to draw parallels, both from our take on the two scenarios, as well as in comparison to ex. Entropy-based correction algorithm
+
+
+- Include white noise (uniformly distributed fixations on the entire screen) in simulated data to account for real world data artifacts.
+
+- Restricting head movement of a child can often be uncomfortable and cause distress. Allow freedom? Tobii has 30x30x30 head box
+
+
+
+ "What you really need is a separate process that avoids the python Global Interpreter Lock (GIL). The GIL prevents different threads from running on different processors."
+
+
+
+Lave kvadrantinddelt transformationer istedet for én samlet.
+	- Sådan at en fixation i upper left bliver corrected med én transformation, mens punkter i lower right bliver corrected med en anden
+
+
+dbscan filtering vs waitthreshold filtering
+specfic number of clusters for pursuit exercises, e.g. 1 cluster expected for pursuit (k-means)
+modify dbscan to only look-ahead, expecting fixations to occur as a clustering of gaze points following each other.
+
+
+Explain how target and gaze points are paired
+	- We don't actually use timestamps, but have a target point for each gaze point in a 1:1 manner
+	- This way we are not affected by the issue of having to quantitatively decide 
+
+
+
+Filtering under Data Collection makes sense (mental note when writing report)

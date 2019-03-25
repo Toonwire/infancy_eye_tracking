@@ -206,7 +206,7 @@ class Application(tk.Frame):
         self.controller.make_psycho_window()
         
         self.test_folder = "test_" + cal_type + "/"
-        
+         
         if cal_type == "default":
             pass
         elif cal_type == "custom_2p":

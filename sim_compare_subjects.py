@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sessions_folder = "session_data/*"
-type_of_cal = "custom_2p"
+type_of_cal = "default"
 type_of_training = "pursuit"
 
 # Filtering data by
