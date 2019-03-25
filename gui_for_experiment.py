@@ -209,11 +209,11 @@ class Application(tk.Frame):
          
         if cal_type == "default":
             pass
-        elif cal_type == "2p":
+        elif cal_type == "custom_2p":
             self.custom_calibration(2)
-        elif cal_type == "5p":
+        elif cal_type == "custom_5p":
             self.custom_calibration(5)
-        elif cal_type == "5p_img":
+        elif cal_type == "custom_5p_img":
             self.custom_calibration(5, "img")
         
         
