@@ -344,21 +344,38 @@ class GazeDataAnalyzer:
                 
         return (np.array(filtered_data), np.array(filtered_targets))
     
+    
+    def reject_outliers_no_targets(self, data, m=1.5):
+        return [x if abs(x - np.mean(data)) < m * np.std(data) else -1 for x in data]
+    
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
         # compute pixel deviations from fixation to target
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         
-        # compute euclidean pixel distance from fixation to target
+        # compute euclidean pixel distance from fixation to target (NORMALIZED)
         pixel_dist_err_left = [self.euclid_dist(err[0], err[1]) for err in pixel_err_left]
         pixel_dist_err_right = [self.euclid_dist(err[0], err[1]) for err in pixel_err_right]
+       
 
         # compute how much visual angle error the pixel errors correspond to
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
+        
+        # convert normalized coordinates to pixel coordinates (as on screen)
+        pixel_err_left, pixel_err_right = self.compute_pixel_errors_non_abs(gaze_data_left, gaze_data_right, target_points)
+        
                 
         self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
         self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
         self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
         
+        
+        
+#        self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right)
+#        self.plot_pixel_errors_as_on_screen(pixel_err_left, pixel_err_right, title_string="Pixel error")
+         
+        
+        
+            
         
     def euclid_dist(self, a, b):
         return (a**2 + b**2) ** 0.5
@@ -367,6 +384,12 @@ class GazeDataAnalyzer:
     def compute_pixel_errors(self, gaze_data_left, gaze_data_right, target_points):
         pixel_err_left = [(abs(fix_x-tar_x), abs(fix_y-tar_y)) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], target_points[0,:], target_points[1,:])]
         pixel_err_right = [(abs(fix_x-tar_x), abs(fix_y-tar_y)) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:])]
+        return (pixel_err_left, pixel_err_right)
+    
+    
+    def compute_pixel_errors_non_abs(self, gaze_data_left, gaze_data_right, target_points):
+        pixel_err_left = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], target_points[0,:], target_points[1,:])]
+        pixel_err_right = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:])]
         return (pixel_err_left, pixel_err_right)
     
     def compute_visual_angle_error(self, pixel_err_left_norm, pixel_err_right_norm):
@@ -427,5 +450,54 @@ class GazeDataAnalyzer:
         plt.title(title_string)
         plt.ylim(0,y_max)
         plt.show()
-#        pass
+    
+    def plot_pixel_errors_as_on_screen(self, pixel_err_left, pixel_err_right, title_string=""):
+        px_err_left_x = []
+        px_err_left_y = []
+        px_err_right_x = []
+        px_err_right_y = []
+        
+        for err_left_norm, err_right_norm in zip(pixel_err_left, pixel_err_right):
+            px_err_left_x.append(err_left_norm[0] * self.screen_width_px)
+            px_err_left_y.append(err_left_norm[1] * self.screen_height_px)
+            px_err_right_x.append(err_right_norm[0] * self.screen_width_px)
+            px_err_right_y.append(err_right_norm[1] * self.screen_height_px) 
+            
+        
+        px_err_left_x = self.reject_outliers_no_targets(px_err_left_x)
+        px_err_left_y = self.reject_outliers_no_targets(px_err_left_y)
+        px_err_right_x = self.reject_outliers_no_targets(px_err_right_x)
+        px_err_right_y = self.reject_outliers_no_targets(px_err_right_y)
+        
+        # calculate polynomials
+#        poly_left_x = np.poly1d(np.polyfit(range(len(px_err_left_x)), px_err_left_x, 2))
+#        poly_left_y = np.poly1d(np.polyfit(range(len(px_err_left_y)), px_err_left_y, 2))
+#        poly_right_x = np.poly1d(np.polyfit(range(len(px_err_right_x)), px_err_left_x, 2))
+#        poly_right_y = np.poly1d(np.polyfit(range(len(px_err_right_y)), px_err_right_y, 2))
+        poly_left_x = np.poly1d(np.polyfit(range(len(self.screen_width_px)), px_err_left_y, 2))
+        poly_left_y = np.poly1d(np.polyfit(px_err_left_x, px_err_left_y, 2))
+        poly_right_x = np.poly1d(np.polyfit(px_err_right_x, px_err_right_y, 2))
+        poly_right_y = np.poly1d(np.polyfit(px_err_right_x, px_err_right_y, 2))
+        
+        # calculate new x's and y's
+        line_y_left = poly_left(px_err_left_x)
+        line_y_right = poly_left(px_err_right_x)
+        
+        
+        plot_left_x = plt.plot(px_err_left_x, px_err_left_y, 'o', px_err_left_x, line_y_left)      
+        plt.legend(plot_left_x, ("X Coordinate"))
+        plt.title(title_string)
+        plt.show()
+        
+        
+        
+        
+        
+#        scatter_right_x = plt.scatter(range(len(px_err_right_x)), px_err_right_x, marker='x', color='cyan')
+#        scatter_right_y = plt.scatter(range(len(px_err_right_y)), px_err_right_y, marker='o', color='magenta')
+#        plt.legend((scatter_right_x, scatter_right_y), ("X Coordinate", "Y Coordinate"))
+#        plt.title("Pixel error RIGHT eye (as on screen)")
+##        plt.xlim(0,1)
+##        plt.ylim(1,0)
+#        plt.show()
     

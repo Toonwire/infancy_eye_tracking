@@ -106,6 +106,7 @@ class Application(tk.Frame):
         print("Configurations saved")
         self.panel_config.pack_forget()
         self.show_main_panel() 
+        
     
     
 
@@ -148,9 +149,9 @@ class Application(tk.Frame):
         
         
         self.btn_default_test = self.make_test_button("Test default", "default")
-        self.btn_2p_test = self.make_test_button("Test 2-point", "2p")
-        self.btn_5p_test = self.make_test_button("Test 5-point", "5p")
-        self.btn_5p_img_test = self.make_test_button("Test 5-point (image)", "5p_img")   
+        self.btn_2p_test = self.make_test_button("Test 2-point", "custom_2p")
+        self.btn_5p_test = self.make_test_button("Test 5-point", "custom_5p")
+        self.btn_5p_img_test = self.make_test_button("Test 5-point (image)", "custom_5p_img")   
         
         self.btn_show_status = tk.Button(self)
         self.btn_show_status["text"] = "Check eye position"
@@ -180,16 +181,16 @@ class Application(tk.Frame):
         
     def test_fixation(self):
         self.controller.make_psycho_window()
-        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png","stimuli/star_blue.png","stimuli/star_green.png","stimuli/star_red.png","stimuli/star_purple.png"])
+        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.controller.close_psycho_window()
         
     def test_pursuit(self, path_type):
         self.controller.make_psycho_window()
 
         if path_type == "linear":
-            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         elif path_type == "spiral":
-            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
             
         self.controller.close_psycho_window()
         
@@ -222,15 +223,15 @@ class Application(tk.Frame):
         self.store_data("transformation")
         
         self.controller.flash_screen()
-        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png","stimuli/star_blue.png","stimuli/star_green.png","stimuli/star_red.png","stimuli/star_purple.png"])
+        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.store_data("training_fixation")
         
         self.controller.flash_screen()
-        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_linear")
         
         self.controller.flash_screen()
-        self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png", "stimuli/smiley_blue.png", "stimuli/smiley_green.png", "stimuli/smiley_red.png", "stimuli/smiley_purple.png"])
+        self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_spiral")
         
         self.controller.close_psycho_window()
