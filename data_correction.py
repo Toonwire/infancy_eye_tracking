@@ -58,6 +58,102 @@ class DataCorrection:
     
     
     
+    transformation_matrix_left_eye_poly = np.ones((2,3))
+    transformation_matrix_right_eye_poly = np.ones((2,3))
+    
+    def poly_coord(x, y, transformation):
+
+        a1 = transformation[0,0]
+        a2 = transformation[0,1] 
+        a3 = transformation[0,2]
+        
+        b1 = transformation[1,0]
+        b2 = transformation[1,1]
+        b3 = transformation[1,2]
+        
+        # Set position from -1;1
+        x = x * 2 - 1        
+        
+        # Calculate new point
+        x = x + (a2 * x)
+        
+        # Tranlate back again 0;1
+        x = x / 2 + 0.5
+        
+        y = y * 2 - 1
+        y = y + (b2 * y)
+        y = y / 2 + 0.5
+        
+        return (x, y)
+    
+    def avg_dist_to_closest_fixation_poly(self, transformation):
+        transformation = np.reshape(transformation, (2,-1))
+        
+        distClosest = np.zeros(len(self.calibration_fixations[0,:]))
+        
+        for i in range(len(self.calibration_fixations[0,:])):
+            current_fix = self.calibration_fixations[:,i]
+            
+            x,y = self.poly_coord(current_fix[0], current_fix[1], transformation)
+            
+            distClosest[i] = ((x-self.calibration_targets[0,i])**2 + (y-self.calibration_targets[1,i])**2)**0.5
+            
+            
+        avgDistance = np.mean(distClosest)
+        return avgDistance
+    
+    def calibrate_left_eye_poly(self, fixations):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        print("Calibrating left eye\n----------------")
+        self.transformation_matrix_left_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.ones((2,3)))
+        self.transformation_matrix_left_eye_poly = np.reshape(self.transformation_matrix_left_eye_poly, (2,-1))
+        print(self.transformation_matrix_left_eye_poly)
+        
+    def calibrate_right_eye_poly(self, fixations):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        print("Calibrating right eye\n----------------")
+        self.transformation_matrix_right_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.ones((2,3)))
+        self.transformation_matrix_right_eye_poly = np.reshape(self.transformation_matrix_right_eye_poly, (2,-1))
+    
+    def adjust_left_eye_poly(self, fixations):
+        if np.allclose(self.transformation_matrix_left_eye_poly, np.ones((2,3))):
+            raise Exception("No calibration for left eye exists")
+        
+        cor_x = []
+        cor_y = []
+
+        for i in range(len(fixations[0,:])):
+            current_fix = fixations[:,i]
+            
+            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
+            
+            cor_x.append(x)
+            cor_y.append(y)
+            
+        
+        return np.array([cor_x,cor_y])
+        
+    def adjust_right_eye_poly(self, fixations):
+        if np.allclose(self.transformation_matrix_right_eye_poly, np.ones((2,3))):
+            raise Exception("No calibration for left eye exists")
+        
+        cor_x = []
+        cor_y = []
+
+        for i in range(len(fixations[0,:])):
+            current_fix = fixations[:,i]
+            
+            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
+            
+            cor_x.append(x)
+            cor_y.append(y)
+            
+        
+        return np.array([cor_x,cor_y])
+    
+    
     # Fun with points
     transformation_matrices_left_eye = {}
     transformation_matrices_left_eye["upper_right"] = np.identity(2)

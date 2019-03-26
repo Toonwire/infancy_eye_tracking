@@ -28,11 +28,11 @@ cal_filename = test_folder + "transformation.csv"
 
 
 analyzer = gda.GazeDataAnalyzer()
-analyzer.setup_seb(config_filename, cal_filename, "dbscan", "fixation")
-analyzer.analyze_seb(cal_filename, "dbscan", "fixation")
+analyzer.setup(config_filename, cal_filename, "dbscan", "fixation")
+analyzer.analyze(cal_filename, "dbscan", "fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, filtering_method, filtering_training_type)
+analyzer.analyze(training_filename, filtering_method, "fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
 analyzer.analyze(training_filename, filtering_method, filtering_training_type)
