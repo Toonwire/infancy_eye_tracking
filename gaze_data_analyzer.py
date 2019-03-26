@@ -201,7 +201,9 @@ class GazeDataAnalyzer:
         
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+#        gaze_data_left_corrected = self.data_correction.adjust_by_cluster_center(gaze_data_left_corrected)
         gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+#        gaze_data_right_corrected = self.data_correction.adjust_by_cluster_center(gaze_data_right_corrected)
         #------------------------------#
         
         ### error analysis - corrected
