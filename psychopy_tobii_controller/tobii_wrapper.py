@@ -106,8 +106,8 @@ class tobii_controller:
         'current_target_point_on_display_area'
     ]
     
-    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114"
-#    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
+#    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106342114" #lab
+    license_file = "licenses/license_key_00395217_-_DTU_Compute_IS404-100106241134" #home
     
     def __init__(self, screen_width, screen_height, eyetracker_id=0):
         """
@@ -125,6 +125,7 @@ class tobii_controller:
         
     def set_up_eyetracker(self, eyetracker_id=0):
         eyetrackers = tobii_research.find_all_eyetrackers()
+        
 
         if len(eyetrackers)==0:
             print('No Tobii eyetrackers')
@@ -143,8 +144,7 @@ class tobii_controller:
                         print("Failed to apply license from single key. Validation result: %s." % (res[0].validation_result))
                         
             except:
-                raise ValueError(
-                    'Invalid eyetracker ID {}\n({} eyetrackers found)'.format(eyetracker_id, len(eyetrackers)))
+                raise ValueError('Invalid eyetracker ID {}\n({} eyetrackers found)'.format(eyetracker_id, len(eyetrackers)))
         
             if self.is_eye_tracker_on():
                 self.calibration = tobii_research.ScreenBasedCalibration(self.eyetracker)
@@ -206,7 +206,7 @@ class tobii_controller:
         mon.setDistance(self.dist_to_screen)
         mon.setSizePix((self.screen_width, self.screen_height))
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), fullscr=True, units='norm', monitor=mon)
+        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), screen=1, fullscr=True, units='norm', monitor=mon)
         
         bg = self.bg_color if self.bg_color != None else self.default_background_color
         self.win.setColor(bg)
@@ -552,13 +552,13 @@ class tobii_controller:
             mouse.setVisible(False)
 
     def flash_screen(self):      
-        win_color = self.win.color
-        self.win.setColor((1,1,1), colorSpace='rgb')
+#        win_color = self.win.color
+#        self.win.setColor((1,1,1), colorSpace='rgb')
         self.win.flip()
-        psychopy.core.wait(0.2)
-        self.win.setColor(win_color)
-        self.win.flip()
-        psychopy.core.wait(0.2)
+        psychopy.core.wait(0.5)
+#        self.win.setColor(win_color)
+#        self.win.flip()
+#        psychopy.core.wait(0.2)
         
     
     def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        

@@ -17,8 +17,7 @@ type_of_cal = "default"
 type_of_training = "pursuit"
 
 # Filtering data by
-filtering_method = "dbscan"
-filtering_training_type = "pursuit"
+filtering_method = "dbscan_pursuit"
 
 
 
@@ -43,10 +42,10 @@ for session_path in glob.glob(sessions_folder):
         training_filename = session_path + "/training_with_cal_" + type_of_cal + "/training_" + type_of_training + ".csv"
         
         
-        analyzer.setup(config_filename, cal_filename, "dbscan", "fixation")
-        analyzer.analyze(cal_filename, "dbscan", "fixation")
+        analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+        analyzer.analyze(cal_filename, "dbscan_fixation")
         
-        targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method, filtering_training_type)
+        targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method)
         
         gaze_data.append(np.mean(np.array([gaze_left, gaze_right]), axis=0))
         gaze_data_corrected.append(np.mean(np.array([gaze_data_left_corrected, gaze_data_right_corrected]), axis=0))
