@@ -10,11 +10,11 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "custom_5p_img"
+type_of_cal = "default"
 
 
 # Session to run
-session_folder = "2019-03-26 11.45.07"
+session_folder = "ctrl_group_lasse-kopi"
 
 
 # Setting path and files
@@ -25,18 +25,18 @@ cal_filename = test_folder + "transformation.csv"
 
 
 analyzer = gda.GazeDataAnalyzer()
-analyzer.setup(config_filename, cal_filename, "threshold_time_fixation")
-analyzer.analyze(cal_filename, "threshold_time_fixation")
+analyzer.setup_regression(config_filename, cal_filename, "threshold_time_fixation")
+analyzer.analyze_regression(cal_filename, "threshold_time_fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, "threshold_time_fixation")
+analyzer.analyze_regression(training_filename, "threshold_time_fixation")
 #analyzer.analyze(training_filename, filtering_method, "fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze(training_filename, "threshold_time_pursuit")
-#analyzer.analyze(training_filename, filtering_method, "pursuit")
+analyzer.analyze_regression(training_filename, "threshold_time_pursuit")
+##analyzer.analyze(training_filename, filtering_method, "pursuit")
 
-training_filename = test_folder + "training_pursuit_spiral.csv"
-analyzer.analyze(training_filename, "threshold_time_pursuit")
+#training_filename = test_folder + "training_pursuit_spiral.csv"
+#analyzer.analyze_regression(training_filename, "threshold_time_pursuit")
 #analyzer.analyze(training_filename, filtering_method, "pursuit")
 

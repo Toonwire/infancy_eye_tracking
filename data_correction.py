@@ -14,6 +14,8 @@ class DataCorrection:
     transformation_matrix_left_eye = np.identity(2)
     transformation_matrix_right_eye = np.identity(2)
     
+    
+    
     def __init__(self, targets, px_width, px_height):
         self.targets = targets
         self.px_width = px_width
@@ -54,8 +56,7 @@ class DataCorrection:
             raise Exception("No calibration for right eye exists")
         return np.matmul(self.transformation_matrix_right_eye, fixations)
     
-    
-    
+   
     def coef_func(self, transformation):
         transformation = np.reshape(transformation, (2,-1))
         a0 = transformation[0,0]
@@ -586,4 +587,125 @@ class DataCorrection:
                 self.target_center = current_target
                 
         return (np.array(fixation_upper_right), np.array(fixation_upper_left), np.array(fixation_bottom_right), np.array(fixation_bottom_left), np.array(fixation_center), np.array(target_points_upper_right), np.array(target_points_upper_left), np.array(target_points_bottom_right), np.array(target_points_bottom_left), np.array(target_points_center))
+    
+    
+    def calibrate_eyes_regression(self, gaze_data_left, gaze_data_right):
+        
+        degree = 2
+        
+        print("Calibrating eyes regression\n----------------")
+        target_points = self.targets
+        # the gaze data recorded is normalized
+        # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
+        px_left_x = gaze_data_left[0,:] * self.px_width
+        px_left_y = self.px_height - gaze_data_left[1,:] * self.px_height
+        px_right_x = gaze_data_left[0,:] * self.px_width
+        px_right_y = self.px_height - gaze_data_left[1,:] * self.px_height
+        
+        
+                
+#        px_target_x = target_points[0,:] * self.px_width
+#        px_target_y = self.screen_height_px - target_points[1,:] * self.px_height
+        
+        
+        
+        ## CAlCULATE VERTICAL ERRORS AS GAZE VARIES HORIZONTALLY
+        # convert normalized coordinates to pixel coordinates (as on screen)
+        pixel_err_left = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], target_points[0,:], target_points[1,:])]
+        pixel_err_right = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:])]
+        
+        px_err_left_x = []
+        px_err_left_y = []
+        px_err_right_x = []
+        px_err_right_y = []
+        for err_left_norm, err_right_norm in zip(pixel_err_left, pixel_err_right):
+            px_err_left_x.append(err_left_norm[0] * self.px_width)
+            px_err_left_y.append(err_left_norm[1] * self.px_height)
+            px_err_right_x.append(err_right_norm[0] * self.px_width)
+            px_err_right_y.append(err_right_norm[1] * self.px_height) 
+            
+        
+        px_err_left_x = [x if abs(x - np.mean(px_err_left_x)) < 1.5 * np.std(px_err_left_x) else -1 for x in px_err_left_x]
+        px_err_left_y = [x if abs(x - np.mean(px_err_left_y)) < 1.5 * np.std(px_err_left_y) else -1 for x in px_err_left_y]
+        px_err_right_x = [x if abs(x - np.mean(px_err_right_x)) < 1.5 * np.std(px_err_right_x) else -1 for x in px_err_right_x]
+        px_err_right_y = [x if abs(x - np.mean(px_err_right_y)) < 1.5 * np.std(px_err_right_y) else -1 for x in px_err_right_y]
+#        px_err_left_x = self.reject_outliers_no_targets(px_err_left_x)
+#        px_err_left_y = self.reject_outliers_no_targets(px_err_left_y)
+#        px_err_right_x = self.reject_outliers_no_targets(px_err_right_x)
+#        px_err_right_y = self.reject_outliers_no_targets(px_err_right_y)
+        
+        # fit a qudratic line for the vertical errors
+        self.poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, degree))
+        self.poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, degree))
+        self.poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_right_y, degree))
+        self.poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, degree))
+        
+        
+        
+     
+    def adjust_left_eye_regression(self, fixations):
+        gaze_data = self.norm_to_pixels(fixations)
+        corrected_x = []
+        corrected_y = []
+        for i in range(len(fixations[0,:])):
+            predicted_error_x = self.poly_left_y(gaze_data[1,i])
+            predicted_error_y = self.poly_left_x(gaze_data[0,i])
+            
+            corrected_x.append(gaze_data[0,i] + predicted_error_x)
+            corrected_y.append(gaze_data[1,i] + predicted_error_y)
+            
+        
+        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+     
+    def adjust_right_eye_regression(self, fixations):
+        gaze_data = self.norm_to_pixels(fixations)
+        corrected_x = []
+        corrected_y = []
+        for i in range(len(fixations[0,:])):
+            predicted_error_x = self.poly_right_y(gaze_data[1,i])
+            predicted_error_y = self.poly_right_x(gaze_data[0,i])
+            
+            corrected_x.append(gaze_data[0,i] + predicted_error_x)
+            corrected_y.append(gaze_data[1,i] + predicted_error_y)
+            
+        
+        
+        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+    
+    
+    def norm_to_pixels(self, data):
+        # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
+        px_x = data[0,:] * self.px_width
+        px_y = self.px_height - data[1,:] * self.px_height
+        
+        return np.array([px_x, px_y])
+        
+    
+    def pixels_to_norm(self, data):
+        # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
+        norm_x = data[0,:] / self.px_width
+        norm_y = 1 - data[1,:] / self.px_height
+        
+        return np.array([norm_x, norm_y])
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
