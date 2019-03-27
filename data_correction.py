@@ -70,19 +70,10 @@ class DataCorrection:
         b1 = transformation[1,0]
         b2 = transformation[1,1]
         b3 = transformation[1,2]
-        
-        # Set position from -1;1
-        x_cor = x * 2 - 1
-        
+                
         # Calculate new point
-        x_cor = x_cor + (b1 + b2*y + b3*y**2)
-        
-        # Tranlate back again 0;1
-        x_cor = x_cor / 2 + 0.5
-        
-        y_cor = y * 2 - 1
-        y_cor = y_cor + (a1 + a2*x + a3*x**2)
-        y_cor = y_cor / 2 + 0.5
+        x_cor = x + (b1 + b2*y + b3*y**2)
+        y_cor = y + (a1 + a2*x + a3*x**2)
         
         return (x_cor, y_cor)
     
@@ -97,7 +88,6 @@ class DataCorrection:
             x,y = self.poly_coord(current_fix[0], current_fix[1], transformation)
             
             distClosest[i] = ((x-self.calibration_targets[0,i])**2 + (y-self.calibration_targets[1,i])**2)**0.5
-            #print("("+str(self.calibration_targets[0,i])+","+self.calibration_targets[1,i]+")")
             
         avgDistance = np.mean(distClosest)
         return avgDistance
