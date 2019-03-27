@@ -201,7 +201,9 @@ class GazeDataAnalyzer:
         
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+#        gaze_data_left_corrected = self.data_correction.adjust_by_cluster_center(gaze_data_left_corrected)
         gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+#        gaze_data_right_corrected = self.data_correction.adjust_by_cluster_center(gaze_data_right_corrected)
         #------------------------------#
         
         ### error analysis - corrected
@@ -238,8 +240,9 @@ class GazeDataAnalyzer:
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         
+    
     # set up the transformation matrices 
-    def setup_seb(self, config_file, cal_filename, filtering_method = None):
+    def setup_poly(self, config_file, cal_filename, filtering_method = None):
         
         # read config csv file
         data_frame = pd.read_csv(config_file, delimiter=";")
@@ -254,33 +257,19 @@ class GazeDataAnalyzer:
         gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename, filtering_method)
         
         self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
-#        self.data_correction.calibrate_left_eye(gaze_data_left)
-#        self.data_correction.calibrate_right_eye(gaze_data_right)
-
-        #gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
-        #gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
-
-        #self.fine_data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
-        #self.fine_data_correction.calibrate_left_eye(gaze_data_left_corrected)
-        #self.fine_data_correction.calibrate_right_eye(gaze_data_right_corrected)
-
-
-        self.data_correction.calibrate_left_eye_seb(gaze_data_left)
-        self.data_correction.calibrate_right_eye_seb(gaze_data_right)
+        self.data_correction.calibrate_left_eye_poly(gaze_data_left)
+        self.data_correction.calibrate_right_eye_poly(gaze_data_right)
         
-        
-    def analyze_seb(self, training_filename, filtering_method = None):
+    
+    def analyze_poly(self, training_filename, filtering_method = None):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
         ### error analysis - raw
         self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
         
         #------ correct raw data ------#
-#        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
-#        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
-
-        gaze_data_left_corrected = self.data_correction.adjust_left_eye_seb(gaze_data_left)
-        gaze_data_right_corrected = self.data_correction.adjust_right_eye_seb(gaze_data_right)
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye_poly(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye_poly(gaze_data_right)
         #------------------------------#
         
         ### error analysis - corrected
@@ -316,7 +305,10 @@ class GazeDataAnalyzer:
         print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+    
+   
         
+    
      # set up the transformation matrices 
     def setup_regression(self, config_file, cal_filename, filtering_method = None):
         
@@ -347,6 +339,7 @@ class GazeDataAnalyzer:
         #self.data_correction.calibrate_right_eye_seb(gaze_data_right)
         
         
+        
     def analyze_regression(self, training_filename, filtering_method = None):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
@@ -356,7 +349,6 @@ class GazeDataAnalyzer:
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye_regression(gaze_data_left)
         gaze_data_right_corrected = self.data_correction.adjust_right_eye_regression(gaze_data_right)
-        #------------------------------#
         
         ### error analysis - corrected
         self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
@@ -389,6 +381,89 @@ class GazeDataAnalyzer:
         print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
         print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
         print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
+        
+        return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+    
+    # set up the transformation matrices 
+    def setup_seb(self, config_file, cal_filename, filtering_method = None):
+        
+        # read config csv file
+        data_frame = pd.read_csv(config_file, delimiter=";")
+        
+        # read global config variables in
+        self.screen_width_px = data_frame['Screen width (px)'][0]
+        self.screen_height_px = data_frame['Screen height (px)'][0]
+        self.screen_size_diag_inches = data_frame['Screen size (inches)'][0]
+        self.dist_to_screen_cm = data_frame['Distance to screen (cm)'][0]
+        self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
+        
+        gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename, filtering_method)
+        
+        self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
+        self.data_correction.calibrate_left_eye(gaze_data_left)
+        self.data_correction.calibrate_right_eye(gaze_data_right)
+
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+
+        self.data_correction.calibrate_left_eye_seb(gaze_data_left_corrected)
+        self.data_correction.calibrate_right_eye_seb(gaze_data_right_corrected)
+            
+        
+        
+    def analyze_seb(self, training_filename, filtering_method = None):
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
+        
+        ### error analysis - raw
+        self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
+        
+        #------ correct raw data ------#
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye_seb(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye_seb(gaze_data_right)
+        
+        gaze_data_left_corrected_2 = self.data_correction.adjust_left_eye_seb_2(gaze_data_left_corrected)
+        gaze_data_right_corrected_2 = self.data_correction.adjust_right_eye_seb_2(gaze_data_right_corrected)
+        #------------------------------#
+        
+        ### error analysis - corrected
+        self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+        self.analyze_errors(gaze_data_left_corrected_2, gaze_data_right_corrected_2, target_points)
+        
+        ### error analysis - corrected
+#        fixations_filtered_left, filtered_targets = self.reject_outliers(gaze_data_left_corrected, target_points)
+#        fixations_filtered_right, filtered_targets = self.reject_outliers(gaze_data_right_corrected, target_points)
+#        self.analyze_errors(fixations_filtered_left, fixations_filtered_right, target_points)
+        
+        
+        # RMSE values for raw and corrected data (averaged btween left- and right fixations)
+        rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
+        rmse_cor = (self.rmse(gaze_data_left_corrected, target_points) + self.rmse(gaze_data_right_corrected, target_points)) / 2
+        rmse_cor_2 = (self.rmse(gaze_data_left_corrected_2, target_points) + self.rmse(gaze_data_right_corrected_2, target_points)) / 2
+        
+        print("RMS error raw:\t\t" + str(rmse_raw))
+        print("RMS error corrected:\t" + str(rmse_cor))
+        print("RMS error corrected 2:\t" + str(rmse_cor_2))
+        print("Change:\t\t\t" + str((rmse_raw - rmse_cor) / max(rmse_raw, rmse_cor) * 100) + " %")
+        print("Change 2:\t\t\t" + str((rmse_raw - rmse_cor_2) / max(rmse_raw, rmse_cor_2) * 100) + " %")        
+        
+        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
+        angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
+        
+        pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+        angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
+        
+        pixel_err_left_corrected_2, pixel_err_right_corrected_2 = self.compute_pixel_errors(gaze_data_left_corrected_2, gaze_data_right_corrected_2, target_points)
+        angle_err_left_corrected_2, angle_err_right_corrected_2 = self.compute_visual_angle_error(pixel_err_left_corrected_2, pixel_err_right_corrected_2)
+
+        rmse_deg_raw = (self.rmse_deg(angle_err_left) + self.rmse_deg(angle_err_right)) / 2
+        rmse_deg_cor = (self.rmse_deg(angle_err_left_corrected) + self.rmse_deg(angle_err_right_corrected)) / 2
+        rmse_deg_cor_2 = (self.rmse_deg(angle_err_left_corrected_2) + self.rmse_deg(angle_err_right_corrected_2)) / 2
+        
+        print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
+        print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
+        print("RMS error corrected 2 (deg of visual angle):\t" + str(rmse_deg_cor_2))
+        print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
+        print("Change 2:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor_2) / max(rmse_deg_raw, rmse_deg_cor_2) * 100) + " %")
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         

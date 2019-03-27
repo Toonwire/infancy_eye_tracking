@@ -111,7 +111,6 @@ class DBScan:
                 q = neighbors[j]
                 j += 1
                 
-                labels[q] = clusterCount
                 newNeighbors = self.range_query_linear(points, j, q, eps)     # Find more neighbors
                 neighbors += newNeighbors                              # Add new neighbors
             
