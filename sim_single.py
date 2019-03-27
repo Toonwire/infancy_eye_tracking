@@ -10,8 +10,7 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "active"
-
+type_of_cal = "default"
 
 # Session to run
 session_folder = "ctrl_group_lasse-kopi"
@@ -25,16 +24,18 @@ cal_filename = test_folder + "transformation.csv"
 
 
 
-
 analyzer = gda.GazeDataAnalyzer()
-analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
-analyzer.analyze_poly(cal_filename, "dbscan_fixation")
+analyzer.setup_poly(config_filename, cal_filename, "threshold_time_fixation")
+analyzer.analyze_poly(cal_filename, "threshold_time_fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze_poly(training_filename, "dbscan_fixation")
+analyzer.analyze_poly(training_filename, "threshold_time_fixation")
+#analyzer.analyze(training_filename, filtering_method, "fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze_poly(training_filename, "dbscan_pursuit")
+analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+##analyzer.analyze(training_filename, filtering_method, "pursuit")
 
 #training_filename = test_folder + "training_pursuit_spiral.csv"
-#analyzer.analyze(training_filename, "dbscan_pursuit")
+#analyzer.analyze_regression(training_filename, "threshold_time_pursuit")
+#analyzer.analyze(training_filename, filtering_method, "pursuit")
