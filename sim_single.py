@@ -10,11 +10,11 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "custom_5p"
+type_of_cal = "active"
 
 
 # Session to run
-session_folder = "2019-03-26 11.45.07"
+session_folder = "ctrl_group_lasse-kopi"
 
 
 # Setting path and files
@@ -27,14 +27,14 @@ cal_filename = test_folder + "transformation.csv"
 
 
 analyzer = gda.GazeDataAnalyzer()
-analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
-analyzer.analyze(cal_filename, "dbscan_fixation")
+analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
+analyzer.analyze_poly(cal_filename, "dbscan_fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, "dbscan_fixation")
+analyzer.analyze_poly(training_filename, "dbscan_fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+analyzer.analyze_poly(training_filename, "dbscan_pursuit")
 
-training_filename = test_folder + "training_pursuit_spiral.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+#training_filename = test_folder + "training_pursuit_spiral.csv"
+#analyzer.analyze(training_filename, "dbscan_pursuit")
