@@ -100,7 +100,6 @@ class DataCorrection:
         print("Calibrating left eye\n----------------")
         self.transformation_matrix_left_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation_poly, x0=self.poly_init_matrix)
         self.transformation_matrix_left_eye_poly = np.reshape(self.transformation_matrix_left_eye_poly, (2,-1))
-        print(self.transformation_matrix_left_eye_poly)
         
     def calibrate_right_eye_poly(self, fixations):
         self.calibration_fixations = fixations
