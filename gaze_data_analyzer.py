@@ -8,6 +8,7 @@ Created on Wed Feb 20 14:05:05 2019
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+import sys
 import data_correction as dc
 import dbscan
 import numpy as np
@@ -273,6 +274,7 @@ class GazeDataAnalyzer:
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye_poly(gaze_data_left)
         gaze_data_right_corrected = self.data_correction.adjust_right_eye_poly(gaze_data_right)
+        gaze_data_left_corrected, gaze_data_right_corrected = self.center_by_cluster(gaze_data_left_corrected, gaze_data_right_corrected)
         #------------------------------#
         
         ### error analysis - corrected
@@ -481,14 +483,14 @@ class GazeDataAnalyzer:
 
     
     def reject_outliers(self, data, targets, m=1.5):
-        filtered_x = [x if abs(x - np.mean(data[0,:])) < m * np.std(data[0,:]) else -1 for x in data[0,:]]
-        filtered_y = [y if abs(y - np.mean(data[1,:])) < m * np.std(data[1,:]) else -1 for y in data[1,:]]
+        filtered_x = [x if abs(x - np.mean(data[0,:])) < m * np.std(data[0,:]) else sys.maxint for x in data[0,:]]
+        filtered_y = [y if abs(y - np.mean(data[1,:])) < m * np.std(data[1,:]) else sys.maxint for y in data[1,:]]
         
         filtered_data = [[],[]]
         filtered_targets = [[],[]]
         
         for x,y,tx,ty in zip(filtered_x, filtered_y, targets[0,:], targets[1,:]):
-            if x >= 0.0 and y >= 0.0:
+            if x != sys.maxint and y != sys.maxint:
                 filtered_data[0].append(x)
                 filtered_data[1].append(y)
                 
@@ -521,7 +523,7 @@ class GazeDataAnalyzer:
         
         
         
-#        self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
+        self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
          
         
         
@@ -607,28 +609,47 @@ class GazeDataAnalyzer:
         # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
         px_left_x = gaze_data_left[0,:] * self.screen_width_px
         px_left_y = self.screen_height_px - gaze_data_left[1,:] * self.screen_height_px
-        px_right_x = gaze_data_left[0,:] * self.screen_width_px
-        px_right_y = self.screen_height_px - gaze_data_left[1,:] * self.screen_height_px
+        px_right_x = gaze_data_right[0,:] * self.screen_width_px
+        px_right_y = self.screen_height_px - gaze_data_right[1,:] * self.screen_height_px
+        
+        px_target_x = target_points[0,:] * self.screen_width_px
+        px_target_y = self.screen_height_px - target_points[1,:] * self.screen_height_px
                 
         
-        plt.scatter(px_left_x, px_left_y, marker='x', color="red")
+#        px_left = np.array([px_left_x, px_left_y])
+#        px_right = np.array([px_right_x, px_right_y])        
+#        px_avg = (px_left + px_right)/2
+        
+        
+        ## PLOT LEFT EYE AND TARGETS
+        scatter_left = plt.scatter(px_left_x, px_left_y, marker='x', color="red")
+        scatter_targets = plt.scatter(px_target_x, px_target_y, marker='o', color="black")
         # plot lines from targets to gaze points
 #        for i in range(len(px_target_x)):
 #            plt.plot([px_target_x[i], px_left_x[i]],[px_target_y[i], px_left_y[i]], 'k-')
         plt.xlim(0,self.screen_width_px)
         plt.ylim(0,self.screen_height_px)
-        plt.title(title_string)
+        plt.title("Left eye gaze data as on screen")
+        plt.xlabel("Screen width (pixels)")
+        plt.ylabel("Screen height (pixels)")
+        plt.legend((scatter_left, scatter_targets),
+                   ("left eye", "target points"))
         plt.show()
         
-        
-#        plt.scatter(px_right_x, px_right_y, marker='x', color="green")
-#        # plot lines from targets to gaze points
-##        for i in range(len(px_target_x)):
-##            plt.plot([px_target_x[i], px_right_x[i]],[px_target_y[i], px_right_y[i]], 'k-')
-#        plt.xlim(0,self.screen_width_px)
-#        plt.ylim(0,self.screen_height_px)
-#        plt.title(title_string)
-#        plt.show()
+        ## PLOT RIGHT EYE AND TARGETS
+        scatter_right = plt.scatter(px_right_x, px_right_y, marker='x', color="green")
+        scatter_targets = plt.scatter(px_target_x, px_target_y, marker='o', color="black")
+        # plot lines from targets to gaze points
+#        for i in range(len(px_target_x)):
+#            plt.plot([px_target_x[i], px_left_x[i]],[px_target_y[i], px_left_y[i]], 'k-')
+        plt.xlim(0,self.screen_width_px)
+        plt.ylim(0,self.screen_height_px)
+        plt.title("Right eye gaze data as on screen")
+        plt.xlabel("Screen width (pixels)")
+        plt.ylabel("Screen height (pixels)")
+        plt.legend((scatter_right, scatter_targets),
+                   ("right eye", "target points"))
+        plt.show()
         
         
         ## CAlCULATE VERTICAL ERRORS AS GAZE VARIES HORIZONTALLY
@@ -644,17 +665,16 @@ class GazeDataAnalyzer:
             px_err_right_x.append(err_right_norm[0] * self.screen_width_px)
             px_err_right_y.append(err_right_norm[1] * self.screen_height_px) 
             
-        
-        px_err_left_x = self.reject_outliers_no_targets(px_err_left_x)
-        px_err_left_y = self.reject_outliers_no_targets(px_err_left_y)
-        px_err_right_x = self.reject_outliers_no_targets(px_err_right_x)
-        px_err_right_y = self.reject_outliers_no_targets(px_err_right_y)
+        px_err_left_x, px_left_y = self.data_correction.reject_outliers(px_err_left_x, px_left_y)
+        px_err_left_y, px_left_x = self.data_correction.reject_outliers(px_err_left_y, px_left_x)
+        px_err_right_x, px_right_y = self.data_correction.reject_outliers(px_err_right_x, px_right_y)
+        px_err_right_y, px_right_x = self.data_correction.reject_outliers(px_err_right_y, px_right_x)
         
         # fit a qudratic line for the vertical errors
         poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, 2))
-        poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_y, 2))
-        poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_left_y, 2))
-        poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_left_y, 2))
+        poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, 2))
+        poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_right_y, 2))
+        poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, 2))
         
         # calculate new x's and y's
         line_y_left_x = poly_left_x(px_left_x)
@@ -662,9 +682,12 @@ class GazeDataAnalyzer:
         line_y_right_x = poly_right_x(px_right_x)
         line_y_right_y = poly_right_y(px_right_y)
         
-        plot_left_x = plt.plot(px_left_x, px_err_left_y, 'o', px_left_x, line_y_left_x)      
-        plt.legend(plot_left_x, ("X Coordinate"))
+        plt.plot(px_left_x, px_err_left_y, 'o', px_left_x, line_y_left_x)  
         plt.xlim(0,self.screen_width_px)
-        plt.title(title_string)
+        plt.title("Left eye vertical error as gaze varies horizontally")
+        plt.xlabel("X Coordinate (pixels)")
+        plt.ylabel("Vertical error (pixels)")
+#        plt.savefig('foo.png')
         plt.show()
+        
     

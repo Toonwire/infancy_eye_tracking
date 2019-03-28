@@ -7,6 +7,7 @@ Created on Mon Feb 25 14:06:20 2019
 
 from scipy import optimize
 import numpy as np
+import sys
 
 
 class DataCorrection:
@@ -744,15 +745,13 @@ class DataCorrection:
             px_err_right_x.append(err_right_norm[0] * self.px_width)
             px_err_right_y.append(err_right_norm[1] * self.px_height) 
             
+        # remove outliers
+        px_err_left_x, px_left_y = self.reject_outliers(px_err_left_x, px_left_y)
+        px_err_left_y, px_left_x = self.reject_outliers(px_err_left_y, px_left_x)
+        px_err_right_x, px_right_y = self.reject_outliers(px_err_right_x, px_right_y)
+        px_err_right_y, px_right_x = self.reject_outliers(px_err_right_y, px_right_x)
         
-        px_err_left_x = [x if abs(x - np.mean(px_err_left_x)) < 1.5 * np.std(px_err_left_x) else -1 for x in px_err_left_x]
-        px_err_left_y = [x if abs(x - np.mean(px_err_left_y)) < 1.5 * np.std(px_err_left_y) else -1 for x in px_err_left_y]
-        px_err_right_x = [x if abs(x - np.mean(px_err_right_x)) < 1.5 * np.std(px_err_right_x) else -1 for x in px_err_right_x]
-        px_err_right_y = [x if abs(x - np.mean(px_err_right_y)) < 1.5 * np.std(px_err_right_y) else -1 for x in px_err_right_y]
-#        px_err_left_x = self.reject_outliers_no_targets(px_err_left_x)
-#        px_err_left_y = self.reject_outliers_no_targets(px_err_left_y)
-#        px_err_right_x = self.reject_outliers_no_targets(px_err_right_x)
-#        px_err_right_y = self.reject_outliers_no_targets(px_err_right_y)
+#        print(px_err_left_x)
         
         # fit a qudratic line for the vertical errors
         self.poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, degree))
@@ -761,6 +760,18 @@ class DataCorrection:
         self.poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, degree))
         
         
+    def reject_outliers(self, data, targets, m=1.5):
+        prep_data = [a if abs(a - np.mean(data)) < m * np.std(data) else sys.maxint for a in data]
+
+        filtered_data = []
+        filtered_targets = []
+        for a, b in zip(prep_data, targets):
+            if a != sys.maxint:
+                filtered_data.append(a)
+                filtered_targets.append(b)
+                
+        return (filtered_data, filtered_targets)
+    
         
      
     def adjust_left_eye_regression(self, fixations):
