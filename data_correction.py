@@ -22,15 +22,16 @@ class DataCorrection:
         self.px_height = px_height
     
     def avg_dist_to_closest_fixation(self, transformation):
+        
         transformation = np.reshape(transformation, (-1,2))
         coords = np.matmul(transformation, self.calibration_fixations)
-        distClosest = np.zeros(len(coords[0,:]))        
         
-        for fixNum in range(len(coords[0,:])):
-            distClosest[fixNum] = ((coords[0,fixNum]-self.calibration_targets[0,fixNum])**2 + (coords[1,fixNum]-self.calibration_targets[1,fixNum])**2) ** 0.5
+        distClosest = []
         
-        avgDistance = np.mean(distClosest)
-        return avgDistance
+        for f, t in zip(coords.T, self.calibration_targets.T):
+            distClosest.append(self.euclidean_distance(f,t))
+                        
+        return np.mean(distClosest)
     
     def calibrate_left_eye(self, fixations, initial_guess=np.identity(2)):
         self.calibration_fixations = fixations
@@ -144,10 +145,7 @@ class DataCorrection:
         return np.array([cor_x,cor_y])
     
     
-    
-    def euclidean_distance_2(self, q, p):
-        return ((q[0]-p[0])**2+(q[1]-p[1])**2)**0.5
-    
+        
     # Scan all points 
     # Compute distance and check eps
     # Add to result
@@ -160,7 +158,7 @@ class DataCorrection:
             
             q = points[i]
             
-            if p != q and self.euclidean_distance_2(p,q) <= eps:
+            if p != q and self.euclidean_distance(p,q) <= eps:
                 neighbors.add(q)
                 misses = 0
             else:
@@ -168,8 +166,6 @@ class DataCorrection:
 
             if misses == 3:
                 break
-            
-
             
         return neighbors
         

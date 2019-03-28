@@ -25,15 +25,15 @@ cal_filename = test_folder + "transformation.csv"
 
 
 analyzer = gda.GazeDataAnalyzer()
-analyzer.setup_poly(config_filename, cal_filename, "threshold_time_fixation")
-analyzer.analyze_poly(cal_filename, "threshold_time_fixation")
+analyzer.setup(config_filename, cal_filename, "threshold_time_fixation")
+analyzer.analyze(cal_filename, "threshold_time_fixation")
 
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze_poly(training_filename, "threshold_time_fixation")
+analyzer.analyze(training_filename, "threshold_time_fixation")
 #analyzer.analyze(training_filename, filtering_method, "fixation")
 
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+analyzer.analyze(training_filename, "threshold_time_pursuit")
 ##analyzer.analyze(training_filename, filtering_method, "pursuit")
 
 #training_filename = test_folder + "training_pursuit_spiral.csv"
