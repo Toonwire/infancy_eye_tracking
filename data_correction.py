@@ -62,7 +62,7 @@ class DataCorrection:
     transformation_matrix_right_eye_poly = np.ones((2,3))
     poly_init_matrix = np.array([[0,0,0],[0,0,0]])
     
-    def poly_coord(self, x, y, transformation):
+    def poly_coord(self, fixations, transformation):
 
         a1 = transformation[0,0]
         a2 = transformation[0,1] 
@@ -71,27 +71,32 @@ class DataCorrection:
         b1 = transformation[1,0]
         b2 = transformation[1,1]
         b3 = transformation[1,2]
-                
-        # Calculate new point
-        x_cor = x + (b1 + b2*y + b3*y**2)
-        y_cor = y + (a1 + a2*x + a3*x**2)
+    
+        cor_x = []
+        cor_y = []
+    
+        for x, y in fixations.T:
+            
+            # Calculate new point
+            x_cor = x + (b1 + b2*y + b3*y**2)
+            y_cor = y + (a1 + a2*x + a3*x**2)
+            
+            cor_x.append(x_cor)
+            cor_y.append(y_cor)
         
-        return (x_cor, y_cor)
+        return np.array([cor_x, cor_y])
     
     def avg_dist_to_closest_fixation_poly(self, transformation):
+            
         transformation = np.reshape(transformation, (2,-1))
+        fixations_cor = self.poly_coord(self.calibration_fixations, transformation)
         
-        distClosest = np.zeros(len(self.calibration_fixations[0,:]))
+        distClosest = []
         
-        for i in range(len(self.calibration_fixations[0,:])):
-            current_fix = self.calibration_fixations[:,i]
+        for f, t in zip(fixations_cor.T, self.calibration_targets.T):            
+            distClosest.append(self.euclidean_distance(f,t))
             
-            x,y = self.poly_coord(current_fix[0], current_fix[1], transformation)
-            
-            distClosest[i] = ((x-self.calibration_targets[0,i])**2 + (y-self.calibration_targets[1,i])**2)**0.5
-            
-        avgDistance = np.mean(distClosest)
-        return avgDistance
+        return np.mean(distClosest)
     
     def calibrate_left_eye_poly(self, fixations):
         self.calibration_fixations = fixations
@@ -112,39 +117,14 @@ class DataCorrection:
         if np.allclose(self.transformation_matrix_left_eye_poly, self.poly_init_matrix):
             raise Exception("No calibration for left eye exists")
         
-        cor_x = []
-        cor_y = []
-
-        for i in range(len(fixations[0,:])):
-            current_fix = fixations[:,i]
-            
-            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
-            
-            cor_x.append(x)
-            cor_y.append(y)
-            
-        
-        return np.array([cor_x,cor_y])
+        return self.poly_coord(fixations, self.transformation_matrix_left_eye_poly)
         
     def adjust_right_eye_poly(self, fixations):
         if np.allclose(self.transformation_matrix_right_eye_poly, self.poly_init_matrix):
             raise Exception("No calibration for left eye exists")
         
-        cor_x = []
-        cor_y = []
+        return self.poly_coord(fixations, self.transformation_matrix_right_eye_poly)
 
-        for i in range(len(fixations[0,:])):
-            current_fix = fixations[:,i]
-            
-            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
-            
-            cor_x.append(x)
-            cor_y.append(y)
-            
-        
-        return np.array([cor_x,cor_y])
-    
-    
         
     # Scan all points 
     # Compute distance and check eps
