@@ -13,7 +13,7 @@ import gaze_data_analyzer as gda
 type_of_cal = "default"
 
 # Session to run
-session_folder = "ctrl_group_lasse-kopi"
+session_folder = "ctrl_group_louise-kopi"
 
 
 # Setting path and files
