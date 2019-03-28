@@ -204,8 +204,8 @@ class GazeDataAnalyzer:
         self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
         
         #------ correct raw data ------#
-        gaze_data_left_corrected = self.data_correction.adjust_left_eye_poly(gaze_data_left)
-        gaze_data_right_corrected = self.data_correction.adjust_right_eye_poly(gaze_data_right)
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
         
 #        gaze_data_left_corrected, gaze_data_right_corrected = self.center_by_cluster(gaze_data_left_corrected, gaze_data_right_corrected)
         #------------------------------#

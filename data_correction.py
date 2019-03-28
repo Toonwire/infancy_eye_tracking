@@ -23,15 +23,16 @@ class DataCorrection:
         self.px_height = px_height
     
     def avg_dist_to_closest_fixation(self, transformation):
+        
         transformation = np.reshape(transformation, (-1,2))
         coords = np.matmul(transformation, self.calibration_fixations)
-        distClosest = np.zeros(len(coords[0,:]))        
         
-        for fixNum in range(len(coords[0,:])):
-            distClosest[fixNum] = ((coords[0,fixNum]-self.calibration_targets[0,fixNum])**2 + (coords[1,fixNum]-self.calibration_targets[1,fixNum])**2) ** 0.5
+        distClosest = []
         
-        avgDistance = np.mean(distClosest)
-        return avgDistance
+        for f, t in zip(coords.T, self.calibration_targets.T):
+            distClosest.append(self.euclidean_distance(f,t))
+                        
+        return np.mean(distClosest)
     
     def calibrate_left_eye(self, fixations, initial_guess=np.identity(2)):
         self.calibration_fixations = fixations
@@ -62,46 +63,37 @@ class DataCorrection:
     transformation_matrix_right_eye_poly = np.ones((2,3))
     poly_init_matrix = np.array([[0,0,0],[0,0,0]])
     
-    def poly_coord(self, x, y, transformation):
+    def apply_polynomial(self, fixations, transformation):
 
-        a1 = transformation[0,0]
-        a2 = transformation[0,1] 
-        a3 = transformation[0,2]
+        cor_x = []
+        cor_y = []
         
-        b1 = transformation[1,0]
-        b2 = transformation[1,1]
-        b3 = transformation[1,2]
+        for x, y in fixations.T:
+            
+            x_cor = x
+            y_cor = y
+            
+            for i, (a, b) in enumerate(transformation.T):
+                
+                x_cor += a * y**i
+                y_cor += b * x**i
+            
+            cor_x.append(x_cor)
+            cor_y.append(y_cor)
         
-        # Set position from -1;1
-        x_cor = x * 2 - 1
-        
-        # Calculate new point
-        x_cor = x_cor + (b1 + b2*y + b3*y**2)
-        
-        # Tranlate back again 0;1
-        x_cor = x_cor / 2 + 0.5
-        
-        y_cor = y * 2 - 1
-        y_cor = y_cor + (a1 + a2*x + a3*x**2)
-        y_cor = y_cor / 2 + 0.5
-        
-        return (x_cor, y_cor)
+        return np.array([cor_x, cor_y])
     
     def avg_dist_to_closest_fixation_poly(self, transformation):
+            
         transformation = np.reshape(transformation, (2,-1))
+        fixations_cor = self.apply_polynomial(self.calibration_fixations, transformation)
         
-        distClosest = np.zeros(len(self.calibration_fixations[0,:]))
+        distClosest = []
         
-        for i in range(len(self.calibration_fixations[0,:])):
-            current_fix = self.calibration_fixations[:,i]
+        for f, t in zip(fixations_cor.T, self.calibration_targets.T):            
+            distClosest.append(self.euclidean_distance(f,t))
             
-            x,y = self.poly_coord(current_fix[0], current_fix[1], transformation)
-            
-            distClosest[i] = ((x-self.calibration_targets[0,i])**2 + (y-self.calibration_targets[1,i])**2)**0.5
-            #print("("+str(self.calibration_targets[0,i])+","+self.calibration_targets[1,i]+")")
-            
-        avgDistance = np.mean(distClosest)
-        return avgDistance
+        return np.mean(distClosest)
     
     def calibrate_left_eye_poly(self, fixations):
         self.calibration_fixations = fixations
@@ -121,43 +113,15 @@ class DataCorrection:
         if np.allclose(self.transformation_matrix_left_eye_poly, self.poly_init_matrix):
             raise Exception("No calibration for left eye exists")
         
-        cor_x = []
-        cor_y = []
-
-        for i in range(len(fixations[0,:])):
-            current_fix = fixations[:,i]
-            
-            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
-            
-            cor_x.append(x)
-            cor_y.append(y)
-            
-        
-        return np.array([cor_x,cor_y])
+        return self.apply_polynomial(fixations, self.transformation_matrix_left_eye_poly)
         
     def adjust_right_eye_poly(self, fixations):
         if np.allclose(self.transformation_matrix_right_eye_poly, self.poly_init_matrix):
             raise Exception("No calibration for left eye exists")
         
-        cor_x = []
-        cor_y = []
+        return self.apply_polynomial(fixations, self.transformation_matrix_right_eye_poly)
 
-        for i in range(len(fixations[0,:])):
-            current_fix = fixations[:,i]
-            
-            x,y = self.poly_coord(current_fix[0], current_fix[1], self.transformation_matrix_left_eye_poly)
-            
-            cor_x.append(x)
-            cor_y.append(y)
-            
         
-        return np.array([cor_x,cor_y])
-    
-    
-    
-    def euclidean_distance_2(self, q, p):
-        return ((q[0]-p[0])**2+(q[1]-p[1])**2)**0.5
-    
     # Scan all points 
     # Compute distance and check eps
     # Add to result
@@ -170,7 +134,7 @@ class DataCorrection:
             
             q = points[i]
             
-            if p != q and self.euclidean_distance_2(p,q) <= eps:
+            if p != q and self.euclidean_distance(p,q) <= eps:
                 neighbors.add(q)
                 misses = 0
             else:
@@ -178,8 +142,6 @@ class DataCorrection:
 
             if misses == 3:
                 break
-            
-
             
         return neighbors
         

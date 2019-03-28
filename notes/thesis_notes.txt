@@ -48,6 +48,10 @@ modify dbscan to only look-ahead, expecting fixations to occur as a clustering o
 Explain how target and gaze points are paired
 	- We don't actually use timestamps, but have a target point for each gaze point in a 1:1 manner
 	- This way we are not affected by the issue of having to quantitatively decide 
+	
+Noise detection and artefacts
+	- System inherent artefacts: relates to precision of eye tracker, hard to separate from real eye movements
+	- optic artefacts: very quick jumps of eye movement, caused by eye tracker failing to track pupil/corneal reflection
 
 
 
