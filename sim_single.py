@@ -35,7 +35,3 @@ analyzer.analyze_regression(training_filename)
 training_filename = test_folder + "training_pursuit_linear.csv"
 analyzer.analyze_regression(training_filename)
 ##analyzer.analyze(training_filename, filtering_method, "pursuit")
-
-#training_filename = test_folder + "training_pursuit_spiral.csv"
-#analyzer.analyze_regression(training_filename, "threshold_time_pursuit")
-#analyzer.analyze(training_filename, filtering_method, "pursuit")
