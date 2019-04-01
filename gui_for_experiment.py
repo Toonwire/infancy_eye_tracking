@@ -141,7 +141,7 @@ class Application(tk.Frame):
         self.btn_test3["text"] = "TEST - Pursuit (spiral)"
         self.btn_test3["fg"]   = "white"
         self.btn_test3["bg"]   = "#000000"
-        self.btn_test3["command"] = lambda t="spiral": self.test_pursuit(t)
+        self.btn_test2["command"] = lambda t="spiral": self.test_pursuit(t)
         self.btn_test3.pack(side=tk.TOP, pady=(0, 10))
         
         
@@ -195,6 +195,12 @@ class Application(tk.Frame):
         self.controller.close_psycho_window()
         
         
+    def test_pursuit_horizontal(self):
+        self.controller.make_psycho_window()
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        self.controller.close_psycho_window()
+        
+        
     def make_test_button(self, title, cal_type):
         btn = tk.Button(self)
         btn["text"] = title
@@ -227,7 +233,8 @@ class Application(tk.Frame):
         self.store_data("training_fixation")
         
         self.controller.flash_screen()
-        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+#        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_linear")
         
         self.controller.flash_screen()

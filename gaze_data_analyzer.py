@@ -264,7 +264,6 @@ class GazeDataAnalyzer:
         self.data_correction.calibrate_left_eye_poly(gaze_data_left)
         self.data_correction.calibrate_right_eye_poly(gaze_data_right)
         
-    
     def analyze_poly(self, training_filename, filtering_method = None):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
@@ -332,17 +331,6 @@ class GazeDataAnalyzer:
         self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
         self.data_correction.calibrate_eyes_regression(gaze_data_left, gaze_data_right)
 
-        #gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
-        #gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
-
-        #self.fine_data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
-        #self.fine_data_correction.calibrate_left_eye(gaze_data_left_corrected)
-        #self.fine_data_correction.calibrate_right_eye(gaze_data_right_corrected)
-
-
-        #self.data_correction.calibrate_left_eye_seb(gaze_data_left)
-        #self.data_correction.calibrate_right_eye_seb(gaze_data_right)
-        
         
         
     def analyze_regression(self, training_filename, filtering_method = None):
@@ -569,7 +557,9 @@ class GazeDataAnalyzer:
             visual_angle_err_right.append(visual_angle_err_right_degrees)
             
         return (np.array(visual_angle_err_left), np.array(visual_angle_err_right))
-        
+    
+          
+  
     def plot_scatter(self, gaze_data_left, gaze_data_right, targets, title_string=""):
         
         x_left = gaze_data_left[0,:]
@@ -636,20 +626,27 @@ class GazeDataAnalyzer:
                    ("left eye", "target points"))
         plt.show()
         
+        
+        fig = plt.figure(1, figsize=(18,12))
+        subplot_gaze_pixels = fig.add_subplot(2,2,2)
+        subplot_vertical_err = fig.add_subplot(2,2,4)
+        subplot_horizontal_err = fig.add_subplot(2,2,1)
+        
+        plt.rcParams.update({'font.size': 18})
         ## PLOT RIGHT EYE AND TARGETS
-        scatter_right = plt.scatter(px_right_x, px_right_y, marker='x', color="green")
-        scatter_targets = plt.scatter(px_target_x, px_target_y, marker='o', color="black")
+        scatter_right = subplot_gaze_pixels.scatter(px_right_x, px_right_y, marker='x', color="green")
+        scatter_targets = subplot_gaze_pixels.scatter(px_target_x, px_target_y, marker='o', color="black")
         # plot lines from targets to gaze points
 #        for i in range(len(px_target_x)):
 #            plt.plot([px_target_x[i], px_left_x[i]],[px_target_y[i], px_left_y[i]], 'k-')
-        plt.xlim(0,self.screen_width_px)
-        plt.ylim(0,self.screen_height_px)
-        plt.title("Right eye gaze data as on screen")
-        plt.xlabel("Screen width (pixels)")
-        plt.ylabel("Screen height (pixels)")
-        plt.legend((scatter_right, scatter_targets),
+        subplot_gaze_pixels.set_xlim(0,self.screen_width_px)
+        subplot_gaze_pixels.set_ylim(0,self.screen_height_px)
+#        subplot_gaze_pixels.set_title("Right eye gaze data as on screen")
+        subplot_gaze_pixels.set_xlabel("Screen width (pixels)")
+        subplot_gaze_pixels.set_ylabel("Screen height (pixels)")
+        subplot_gaze_pixels.legend((scatter_right, scatter_targets),
                    ("right eye", "target points"))
-        plt.show()
+#        plt.show()
         
         
         ## CAlCULATE VERTICAL ERRORS AS GAZE VARIES HORIZONTALLY
@@ -665,16 +662,27 @@ class GazeDataAnalyzer:
             px_err_right_x.append(err_right_norm[0] * self.screen_width_px)
             px_err_right_y.append(err_right_norm[1] * self.screen_height_px) 
             
-        px_err_left_x, px_left_y = self.data_correction.reject_outliers(px_err_left_x, px_left_y)
-        px_err_left_y, px_left_x = self.data_correction.reject_outliers(px_err_left_y, px_left_x)
-        px_err_right_x, px_right_y = self.data_correction.reject_outliers(px_err_right_x, px_right_y)
-        px_err_right_y, px_right_x = self.data_correction.reject_outliers(px_err_right_y, px_right_x)
+#        px_err_left_x, px_left_y = self.data_correction.reject_outliers(px_err_left_x, px_left_y)
+#        px_err_left_y, px_left_x = self.data_correction.reject_outliers(px_err_left_y, px_left_x)
+#        px_err_right_x, px_right_y = self.data_correction.reject_outliers(px_err_right_x, px_right_y)
+#        px_err_right_y, px_right_x = self.data_correction.reject_outliers(px_err_right_y, px_right_x)
         
         # fit a qudratic line for the vertical errors
+#        poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, 2))
+#        poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, 2))
+#        poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_right_y, 2))
+#        poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, 2))
+        
+        
         poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, 2))
         poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, 2))
-        poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_right_y, 2))
-        poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, 2))
+        poly_right_x, det_right_x = self.polyfit(px_right_x, px_err_right_y, 2)
+        poly_right_y, det_right_y = self.polyfit(px_right_y, px_err_right_x, 2)
+        
+        xa,xb,xc, ya,yb,yc = self.data_correction.get_right_poly_coeffs()
+        poly_right_x = np.poly1d([xa,xb,xc])
+        poly_right_y = np.poly1d([ya,yb,yc])
+        
         
         # calculate new x's and y's
         line_y_left_x = poly_left_x(px_left_x)
@@ -682,12 +690,40 @@ class GazeDataAnalyzer:
         line_y_right_x = poly_right_x(px_right_x)
         line_y_right_y = poly_right_y(px_right_y)
         
-        plt.plot(px_left_x, px_err_left_y, 'o', px_left_x, line_y_left_x)  
-        plt.xlim(0,self.screen_width_px)
-        plt.title("Left eye vertical error as gaze varies horizontally")
-        plt.xlabel("X Coordinate (pixels)")
-        plt.ylabel("Vertical error (pixels)")
-#        plt.savefig('foo.png')
+        
+        subplot_vertical_err.plot(px_right_x, [-a for a in px_err_right_y], 'o', px_right_x, [-a for a in line_y_right_x]) 
+#        subplot_vertical_err.set_title("Right eye vertical error as gaze varies horizontally")
+        subplot_vertical_err.set_xlabel("X Coordinate (pixels)")
+        subplot_vertical_err.set_ylabel("Vertical error (pixels)")
+        subplot_vertical_err.set_xlim(0, self.screen_width_px)
+        
+        
+         
+        subplot_horizontal_err.plot(px_err_right_x, px_right_y, 'o', line_y_right_y, px_right_y)  
+#        subplot_horizontal_err.set_title("Right eye horizontal error as gaze varies vertically")
+        subplot_horizontal_err.set_xlabel("Horizontal error (pixels)")
+        subplot_horizontal_err.set_ylabel("Y Coordinate (pixels)")
+        subplot_horizontal_err.set_ylim(0,self.screen_height_px)
+#        
         plt.show()
         
     
+    # Polynomial Regression
+    def polyfit(self, x, y, degree):
+        coeffs = np.polyfit(x, y, degree)
+    
+    
+        # r-squared
+        p = np.poly1d(coeffs)
+        # fit values, and mean
+        yhat = p(x)                         # or [p(z) for z in x]
+        ybar = np.sum(y)/len(y)          # or sum(y)/len(y)
+        ssreg = np.sum((yhat-ybar)**2)   # or sum([ (yihat - ybar)**2 for yihat in yhat])
+        sstot = np.sum((y - ybar)**2)    # or sum([ (yi - ybar)**2 for yi in y])
+        det = ssreg / sstot
+    
+        return (p, det)
+    
+        
+    
+        

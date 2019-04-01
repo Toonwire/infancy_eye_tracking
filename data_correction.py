@@ -122,6 +122,14 @@ class DataCorrection:
         return self.apply_polynomial(fixations, self.transformation_matrix_right_eye_poly)
 
         
+    def get_left_poly_coeffs(self):
+        return (self.transformation_matrix_left_eye_poly[0,0], self.transformation_matrix_left_eye_poly[0,1], self.transformation_matrix_left_eye_poly[0,2],
+                self.transformation_matrix_left_eye_poly[1,0], self.transformation_matrix_left_eye_poly[1,1], self.transformation_matrix_left_eye_poly[1,2]) 
+              
+    def get_right_poly_coeffs(self):
+        return (self.transformation_matrix_right_eye_poly[0,0], self.transformation_matrix_right_eye_poly[0,1], self.transformation_matrix_right_eye_poly[0,2],
+                self.transformation_matrix_right_eye_poly[1,0], self.transformation_matrix_right_eye_poly[1,1], self.transformation_matrix_right_eye_poly[1,2]) 
+        
     # Scan all points 
     # Compute distance and check eps
     # Add to result
