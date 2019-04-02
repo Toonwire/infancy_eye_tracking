@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="321px" height="225px" viewBox="0 0 321 225" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>separation_of_screen</title>
+    <desc>Created with Sketch.</desc>
+    <g id="separation_of_screen" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(0.000000, 1.000000)">
+        <rect id="Rectangle" stroke="#979797" x="0.5" y="0.5" width="320" height="223"></rect>
+        <path d="M0,112 L321,112" id="Line-2" stroke="#979797" stroke-linecap="square"></path>
+        <path d="M160.5,5.68711744e-14 L160.5,224" id="Line-3" stroke="#979797" stroke-linecap="square"></path>
+        <ellipse id="Oval" stroke="#979797" fill="#FFFFFF" cx="161" cy="112.5" rx="73" ry="41.5"></ellipse>
+        <text id="Upper-Left-Transform" font-family="OpenSans, Open Sans" font-size="10" font-weight="normal" fill="#444444">
+            <tspan x="17.859375" y="56">Upper Left Transformation</tspan>
+        </text>
+        <text id="Upper-Right-Transfor" font-family="OpenSans, Open Sans" font-size="10" font-weight="normal" fill="#444444">
+            <tspan x="175.72168" y="56">Upper Right Transformation</tspan>
+        </text>
+        <text id="Bottom-Left-Transfor" font-family="OpenSans, Open Sans" font-size="10" font-weight="normal" fill="#444444">
+            <tspan x="15.1660156" y="179">Bottom Left Transformation</tspan>
+        </text>
+        <text id="Bottom-Right-Transfo" font-family="OpenSans, Open Sans" font-size="10" font-weight="normal" fill="#444444">
+            <tspan x="174.02832" y="179">Bottom Right Transformation</tspan>
+        </text>
+        <text id="Center-Transformatio" font-family="OpenSans, Open Sans" font-size="10" font-weight="normal" fill="#444444">
+            <tspan x="109.125977" y="116">Center Transformation</tspan>
+        </text>
+    </g>
+</svg>
