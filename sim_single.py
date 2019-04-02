@@ -10,10 +10,10 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "default"
+type_of_cal = "custom_2p"
 
 # Session to run
-session_folder = "ctrl_group_louise-kopi"
+session_folder = "2019-03-29 10.41.18"
 
 
 # Setting path and files
@@ -36,3 +36,4 @@ analyzer.analyze_seb(training_filename, "dbscan_pursuit")
 
 #training_filename = test_folder + "training_pursuit_spiral.csv"
 #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+
