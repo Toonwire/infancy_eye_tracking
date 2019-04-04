@@ -1,0 +1,110 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb 26 10:34:34 2019
+
+@author: Toonw
+"""
+
+import gaze_data_analyzer as gda
+
+
+def analyze(session_folder):
+    
+    print("Running for " + session_folder)
+    print("------------------------")
+    
+    # Setting path and files
+    session_path = "session_data/" + session_folder + "/"
+    test_folder = session_path + "test_" + type_of_cal + "/"
+    config_filename = session_path + "config.csv"
+    cal_filename = test_folder + "transformation.csv"
+
+    print("")
+    print("Computing analyze linear transformation")
+    print("------------------------")
+    
+    analyzer = gda.GazeDataAnalyzer()
+    analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+    print("")
+    analyzer.analyze(cal_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_fixation.csv"
+    analyzer.analyze(training_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_pursuit_linear.csv"
+    analyzer.analyze(training_filename, "dbscan_pursuit")
+    
+    #training_filename = test_folder + "training_pursuit_spiral.csv"
+    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+
+    print("") 
+    print("Computing analyze linear transformation mix")
+    print("------------------------")
+
+    
+    analyzer = gda.GazeDataAnalyzer()
+    analyzer.setup_seb(config_filename, cal_filename, "dbscan_fixation")
+    print("")
+    analyzer.analyze_seb(cal_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_fixation.csv"
+    analyzer.analyze_seb(training_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_pursuit_linear.csv"
+    analyzer.analyze_seb(training_filename, "dbscan_pursuit")
+    
+    #training_filename = test_folder + "training_pursuit_spiral.csv"
+    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+
+
+    print("")
+    print("Computing analyze regression by data driven")
+    print("------------------------")
+
+    analyzer = gda.GazeDataAnalyzer()
+    analyzer.setup_regression(config_filename, cal_filename, "dbscan_fixation")
+    print("")
+    analyzer.analyze_regression(cal_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_fixation.csv"
+    analyzer.analyze_regression(training_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_pursuit_linear.csv"
+    analyzer.analyze_regression(training_filename, "dbscan_pursuit")
+    
+    #training_filename = test_folder + "training_pursuit_spiral.csv"
+    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+
+    print("")
+    
+    print("Computing analyze regression by optimization")
+    print("------------------------")
+
+    analyzer = gda.GazeDataAnalyzer()
+    analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
+    print("")
+    analyzer.analyze_poly(cal_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_fixation.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_fixation")
+    print("")
+    training_filename = test_folder + "training_pursuit_linear.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
+    
+    #training_filename = test_folder + "training_pursuit_spiral.csv"
+    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+    
+    print("")
+    
+print("Calibrating for default:")
+print("------------------------")
+# Run analyse on
+type_of_cal = "custom_5p"
+
+print("")
+
+# Session to run
+analyze("ctrl_group_louise-kopi")
+analyze("ctrl_group_lasse-kopi")
+analyze("ctrl_group_marie-kopi")
+analyze("ctrl_group_mikkel-kopi")
