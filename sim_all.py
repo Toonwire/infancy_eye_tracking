@@ -24,18 +24,19 @@ def analyze(session_folder):
     print("------------------------")
     
     analyzer = gda.GazeDataAnalyzer()
+    print("\nSETUP TRANSFORMATION")
     analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTRAINING DATA")
     analyzer.analyze(cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze(training_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze(training_filename, "dbscan_pursuit")
-    
-    #training_filename = test_folder + "training_pursuit_spiral.csv"
-    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+    print("\nTEST DATA - PURSUIT (SPIRAL)")
+    training_filename = test_folder + "training_pursuit_spiral.csv"
+    analyzer.analyze(training_filename, "dbscan_pursuit")
 
     print("") 
     print("Computing analyze linear transformation mix")
@@ -43,18 +44,19 @@ def analyze(session_folder):
 
     
     analyzer = gda.GazeDataAnalyzer()
+    print("\nSETUP TRANSFORMATION")
     analyzer.setup_seb(config_filename, cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTRAINING DATA")
     analyzer.analyze_seb(cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_seb(training_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_seb(training_filename, "dbscan_pursuit")
-    
-    #training_filename = test_folder + "training_pursuit_spiral.csv"
-    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+    print("\nTEST DATA - PURSUIT (SPIRAL)")    
+    training_filename = test_folder + "training_pursuit_spiral.csv"
+    analyzer.analyze_seb(training_filename, "dbscan_pursuit")
 
 
     print("")
@@ -62,18 +64,19 @@ def analyze(session_folder):
     print("------------------------")
 
     analyzer = gda.GazeDataAnalyzer()
+    print("\nSETUP TRANSFORMATION")
     analyzer.setup_regression(config_filename, cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTRAINING DATA")
     analyzer.analyze_regression(cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_regression(training_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_regression(training_filename, "dbscan_pursuit")
-    
-    #training_filename = test_folder + "training_pursuit_spiral.csv"
-    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+    print("\nTEST DATA - PURSUIT (SPIRAL)")    
+    training_filename = test_folder + "training_pursuit_spiral.csv"
+    analyzer.analyze_regression(training_filename, "dbscan_pursuit")
 
     print("")
     
@@ -81,18 +84,19 @@ def analyze(session_folder):
     print("------------------------")
 
     analyzer = gda.GazeDataAnalyzer()
+    print("\nSETUP TRANSFORMATION")
     analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTRAINING DATA")
     analyzer.analyze_poly(cal_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_poly(training_filename, "dbscan_fixation")
-    print("")
+    print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_poly(training_filename, "dbscan_pursuit")
-    
-    #training_filename = test_folder + "training_pursuit_spiral.csv"
-    #analyzer.analyze_poly(training_filename, "threshold_time_pursuit")
+    print("\nTEST DATA - PURSUIT (SPIRAL)")    
+    training_filename = test_folder + "training_pursuit_spiral.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
     
     print("")
     
