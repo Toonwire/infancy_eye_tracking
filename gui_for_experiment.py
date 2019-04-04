@@ -217,9 +217,9 @@ class Application(tk.Frame):
         if cal_type == "default":
             pass
         elif cal_type == "custom_2p":
-            self.custom_calibration(2)
+            self.custom_calibration(2, "img")
         elif cal_type == "custom_5p":
-            self.custom_calibration(5)
+            self.custom_calibration(5, "img")
         elif cal_type == "custom_5p_img":
             self.custom_calibration(5, "img")
         
@@ -233,8 +233,8 @@ class Application(tk.Frame):
         self.store_data("training_fixation")
         
         self.controller.flash_screen()
-#        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
-        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+#        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_linear")
         
         self.controller.flash_screen()

@@ -726,15 +726,20 @@ class DataCorrection:
         target_points = self.targets
         # the gaze data recorded is normalized
         # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
-        px_left_x = gaze_data_left[0,:] * self.px_width
-        px_left_y = self.px_height - gaze_data_left[1,:] * self.px_height
-        px_right_x = gaze_data_left[0,:] * self.px_width
-        px_right_y = self.px_height - gaze_data_left[1,:] * self.px_height
+#        px_left_x = gaze_data_left[0,:] * self.px_width
+#        px_left_y = self.px_height - gaze_data_left[1,:] * self.px_height
+#        px_right_x = gaze_data_right[0,:] * self.px_width
+#        px_right_y = self.px_height - gaze_data_right[1,:] * self.px_height
+        
+        px_left_x = gaze_data_left[0,:]
+        px_left_y = gaze_data_left[1,:]
+        px_right_x = gaze_data_left[0,:]
+        px_right_y = gaze_data_left[1,:]
         
         
                 
 #        px_target_x = target_points[0,:] * self.px_width
-#        px_target_y = self.screen_height_px - target_points[1,:] * self.px_height
+#        px_target_y = self.screen_height_px - tar get_points[1,:] * self.px_height
         
         
         
@@ -748,16 +753,21 @@ class DataCorrection:
         px_err_right_x = []
         px_err_right_y = []
         for err_left_norm, err_right_norm in zip(pixel_err_left, pixel_err_right):
-            px_err_left_x.append(err_left_norm[0] * self.px_width)
-            px_err_left_y.append(err_left_norm[1] * self.px_height)
-            px_err_right_x.append(err_right_norm[0] * self.px_width)
-            px_err_right_y.append(err_right_norm[1] * self.px_height) 
+#            px_err_left_x.append(err_left_norm[0] * self.px_width)
+#            px_err_left_y.append(err_left_norm[1] * self.px_height)
+#            px_err_right_x.append(err_right_norm[0] * self.px_width)
+#            px_err_right_y.append(err_right_norm[1] * self.px_height) 
+            
+            px_err_left_x.append(err_left_norm[0])
+            px_err_left_y.append(err_left_norm[1])
+            px_err_right_x.append(err_right_norm[0])
+            px_err_right_y.append(err_right_norm[1]) 
             
         # remove outliers
-        px_err_left_x, px_left_y = self.reject_outliers(px_err_left_x, px_left_y)
-        px_err_left_y, px_left_x = self.reject_outliers(px_err_left_y, px_left_x)
-        px_err_right_x, px_right_y = self.reject_outliers(px_err_right_x, px_right_y)
-        px_err_right_y, px_right_x = self.reject_outliers(px_err_right_y, px_right_x)
+#        px_err_left_x, px_left_y = self.reject_outliers(px_err_left_x, px_left_y)
+#        px_err_left_y, px_left_x = self.reject_outliers(px_err_left_y, px_left_x)
+#        px_err_right_x, px_right_y = self.reject_outliers(px_err_right_x, px_right_y)
+#        px_err_right_y, px_right_x = self.reject_outliers(px_err_right_y, px_right_x)
         
 #        print(px_err_left_x)
         
@@ -783,7 +793,8 @@ class DataCorrection:
         
      
     def adjust_left_eye_regression(self, fixations):
-        gaze_data = self.norm_to_pixels(fixations)
+#        gaze_data = self.norm_to_pixels(fixations)
+        gaze_data = fixations
         corrected_x = []
         corrected_y = []
         for i in range(len(fixations[0,:])):
@@ -793,11 +804,12 @@ class DataCorrection:
             corrected_x.append(gaze_data[0,i] + predicted_error_x)
             corrected_y.append(gaze_data[1,i] + predicted_error_y)
             
-        
-        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+#        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+        return np.array([corrected_x, corrected_y])
      
     def adjust_right_eye_regression(self, fixations):
-        gaze_data = self.norm_to_pixels(fixations)
+#        gaze_data = self.norm_to_pixels(fixations)
+        gaze_data = fixations
         corrected_x = []
         corrected_y = []
         for i in range(len(fixations[0,:])):
@@ -809,7 +821,8 @@ class DataCorrection:
             
         
         
-        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+#        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
+        return np.array([corrected_x, corrected_y])
     
     
     def norm_to_pixels(self, data):

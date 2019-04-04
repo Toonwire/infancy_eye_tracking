@@ -16,6 +16,8 @@ import numpy as np
 
 
 class GazeDataAnalyzer:
+    
+    plt.rcParams.update({'font.size': 12})
 
     def read_data(self, filename, filtering_method):
         # read config csv file
@@ -264,11 +266,13 @@ class GazeDataAnalyzer:
         self.data_correction.calibrate_left_eye_poly(gaze_data_left)
         self.data_correction.calibrate_right_eye_poly(gaze_data_right)
         
+        
+        
     def analyze_poly(self, training_filename, filtering_method = None):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
         ### error analysis - raw
-        self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
+#        self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
         
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye_poly(gaze_data_left)
@@ -277,7 +281,7 @@ class GazeDataAnalyzer:
         #------------------------------#
         
         ### error analysis - corrected
-        self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+#        self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         ### error analysis - corrected
 #        fixations_filtered_left, filtered_targets = self.reject_outliers(gaze_data_left_corrected, target_points)
@@ -294,7 +298,6 @@ class GazeDataAnalyzer:
         print("Change:\t\t\t" + str((rmse_raw - rmse_cor) / max(rmse_raw, rmse_cor) * 100) + " %")
         
         
-        
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
@@ -307,6 +310,7 @@ class GazeDataAnalyzer:
         print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
         print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
         print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
+        
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
     
@@ -362,6 +366,7 @@ class GazeDataAnalyzer:
         
         
         
+        
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
@@ -374,6 +379,7 @@ class GazeDataAnalyzer:
         print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
         print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
         print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
+        
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
     
@@ -504,14 +510,13 @@ class GazeDataAnalyzer:
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
         
-                
         self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
         self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
         self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
         
         
         
-        self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
+#        self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
          
         
         
@@ -632,7 +637,7 @@ class GazeDataAnalyzer:
         subplot_vertical_err = fig.add_subplot(2,2,4)
         subplot_horizontal_err = fig.add_subplot(2,2,1)
         
-        plt.rcParams.update({'font.size': 18})
+#        plt.rcParams.update({'font.size': 12})
         ## PLOT RIGHT EYE AND TARGETS
         scatter_right = subplot_gaze_pixels.scatter(px_right_x, px_right_y, marker='x', color="green")
         scatter_targets = subplot_gaze_pixels.scatter(px_target_x, px_target_y, marker='o', color="black")
@@ -678,10 +683,6 @@ class GazeDataAnalyzer:
         poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, 2))
         poly_right_x, det_right_x = self.polyfit(px_right_x, px_err_right_y, 2)
         poly_right_y, det_right_y = self.polyfit(px_right_y, px_err_right_x, 2)
-        
-        xa,xb,xc, ya,yb,yc = self.data_correction.get_right_poly_coeffs()
-        poly_right_x = np.poly1d([xa,xb,xc])
-        poly_right_y = np.poly1d([ya,yb,yc])
         
         
         # calculate new x's and y's

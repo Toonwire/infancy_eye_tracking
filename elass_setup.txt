@@ -1,0 +1,7 @@
+Elsass setup
+--------------
+Monitor
+	resolution 		1280 x 1024
+	screen size 	19 in
+
+
