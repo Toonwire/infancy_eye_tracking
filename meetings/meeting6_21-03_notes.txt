@@ -25,7 +25,6 @@ Reducér rotationshastighed
 
 Async collection og bliv ved med at animere
 
-
 Purpose med forsøg, how to kvantificere en sammenligning / resultat?
 	- Vær meget specfik omkring hvad der testes og hvilke parametre der indgår og er vigtig for resultatet
 
