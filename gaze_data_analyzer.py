@@ -20,7 +20,7 @@ class GazeDataAnalyzer:
     plt.rcParams.update({'font.size': 12})
 
     show_graphs_bool = False
-    show_rms_pixel_bool = False
+    show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
     def read_data(self, filename, filtering_method):
@@ -53,7 +53,7 @@ class GazeDataAnalyzer:
         if filtering_method == "dbscan_fixation" or filtering_method == "dbscan_pursuit":
             
             db_scan = dbscan.DBScan()
-            clusters = db_scan.run(gaze_data_temp.T, 0.05, 10)
+            clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
             
 #            colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
 #            colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
@@ -228,6 +228,7 @@ class GazeDataAnalyzer:
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
         
+#        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
@@ -581,6 +582,42 @@ class GazeDataAnalyzer:
         
     def euclid_dist(self, a, b):
         return (a**2 + b**2) ** 0.5
+    
+    def compute_pixel_errors_to_closest_target(self, gaze_data_left, gaze_data_right, target_points):
+        pixel_err_left = []
+        pixel_err_right = []
+        
+        for left_x, left_y, right_x, right_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:]):
+            
+            min_euclid = 2
+            
+            min_left_x = 1
+            min_left_y = 1
+            min_right_x = 1
+            min_right_y = 1
+
+            for tar_x, tar_y in zip(target_points[0,:], target_points[1,:]):
+                
+                dist_left_x = abs(left_x - tar_x)
+                dist_left_y = abs(left_y - tar_y)
+                dist_right_x = abs(right_x - tar_x)
+                dist_right_y = abs(right_y - tar_y)
+                
+                euclid_left = self.euclid_dist(dist_left_x, dist_left_y)
+                euclid_right = self.euclid_dist(dist_right_x, dist_right_y)
+                
+                if euclid_left + euclid_right < min_euclid:
+                    min_euclid = euclid_left + euclid_right
+                    min_left_x = dist_left_x
+                    min_left_y = dist_left_y
+                    
+                    min_right_x = dist_right_x
+                    min_right_y = dist_right_y
+                    
+            pixel_err_left.append((min_left_x, min_left_y))
+            pixel_err_right.append((min_right_x, min_right_y))
+        
+        return (pixel_err_left, pixel_err_right)
     
     
     def compute_pixel_errors(self, gaze_data_left, gaze_data_right, target_points):
