@@ -23,34 +23,36 @@ class GazeDataAnalyzer:
     show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
-    def read_data(self, filename, filtering_method):
+    def read_data(self, filename, filtering_method, remove_nan_values = True):
         # read config csv file
         data_frame = pd.read_csv(filename, delimiter=";")
         
-        # check for corrupted/missing data in data frames
-        data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
-        data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
-        data_frame = data_frame[(data_frame['left_gaze_point_validity'] != 0)]
-        data_frame = data_frame[(data_frame['right_gaze_point_validity'] != 0)]
+        if remove_nan_values:
+            # check for corrupted/missing data in data frames
+            data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
+            data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
+            data_frame = data_frame[(data_frame['left_gaze_point_validity'] != 0)]
+            data_frame = data_frame[(data_frame['right_gaze_point_validity'] != 0)]
         
         # note number of data rows in csv file
         self.N = len(data_frame)
         
         # fetch gaze points from data
-        gaze_data_left_temp = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
-        gaze_data_right_temp = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
-        target_points_temp = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
+        gaze_data_left_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['left_gaze_point_on_display_area']]))
+        gaze_data_right_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['right_gaze_point_on_display_area']]))
+        target_points_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['current_target_point_on_display_area']]))
 
-        return self.filtering(filtering_method, gaze_data_left_temp,gaze_data_right_temp,target_points_temp)
+        return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
-    def filtering(self, filtering_method, gaze_data_left_temp,gaze_data_right_temp,target_points_temp):
-        gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
+    def filtering(self, filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp):
         
         gaze_data_left = []
         gaze_data_right = []
         target_points = []
         
         if filtering_method == "dbscan_fixation" or filtering_method == "dbscan_pursuit":
+            
+            gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
             
             db_scan = dbscan.DBScan()
             clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
@@ -184,7 +186,7 @@ class GazeDataAnalyzer:
         return (self.data_correction.adjust_by_cluster_center(gaze_data_left), self.data_correction.adjust_by_cluster_center(gaze_data_right))
     
     def animate(self, training_filename, filtering_method = None):
-        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method, remove_nan_values = False)
         
         #------ correct raw data ------#
         gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
@@ -635,7 +637,9 @@ class GazeDataAnalyzer:
         
             diff.append(i - min_j)
             
-        print(np.mean(diff))
+        print("")
+        print("Latency for eye to target: " + str(np.mean(diff)))
+        print("")
         
         return (pixel_err_left, pixel_err_right)
     
