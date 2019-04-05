@@ -226,11 +226,12 @@ class Application(tk.Frame):
         
         
         self.controller.flash_screen()
-        self.make_transformation()
+        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("transformation")
         
         self.controller.flash_screen()
-        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+#        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.store_data("training_fixation")
         
         self.controller.flash_screen()
@@ -246,9 +247,6 @@ class Application(tk.Frame):
    
     def show_status(self):
         self.controller.show_status()
-        
-    def make_transformation(self):
-        self.controller.make_transformation()
         
     def custom_calibration(self, num_points, stim_type="default"):
         

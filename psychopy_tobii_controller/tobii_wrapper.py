@@ -562,35 +562,36 @@ class tobii_controller:
 #        psychopy.core.wait(0.2)
         
     
-    def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        
+#    def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        
+#        
+#        img = Image.open(stimuli_path)
+#        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+#        img_stim.size = (0.15,0.15)
+#                
+#        img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
+#        np.random.shuffle(img_positions)
+#
+#        self.subscribe_dict()
+#        clock = psychopy.core.Clock()
+#        
+#        for img_pos in img_positions:       
+#            self.current_target = self.get_tobii_pos(img_pos)
+#            
+#            i = 0
+#            clock.reset()
+#            current_time = clock.getTime()
+#            while current_time < 3:
+#                img_stim.setPos(img_pos)
+#                img_stim.ori = i * self.rot_deg_per_frame
+#                img_stim.draw()
+#                self.win.flip()
+#                
+#                i += 1
+#                psychopy.core.wait(0.015)
+#                current_time = clock.getTime()
+#        
+#        self.unsubscribe_dict()
         
-        img = Image.open(stimuli_path)
-        img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
-        img_stim.size = (0.15,0.15)
-                
-        img_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
-        np.random.shuffle(img_positions)
-
-        self.subscribe_dict()
-        clock = psychopy.core.Clock()
-        
-        for img_pos in img_positions:       
-            self.current_target = self.get_tobii_pos(img_pos)
-            
-            i = 0
-            clock.reset()
-            current_time = clock.getTime()
-            while current_time < 3:
-                img_stim.setPos(img_pos)
-                img_stim.ori = i * self.rot_deg_per_frame
-                img_stim.draw()
-                self.win.flip()
-                
-                i += 1
-                psychopy.core.wait(0.015)
-                current_time = clock.getTime()
-        
-        self.unsubscribe_dict()
 
     def start_fixation_exercise(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
         
