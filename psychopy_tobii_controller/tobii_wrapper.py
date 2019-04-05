@@ -830,6 +830,9 @@ class tobii_controller:
         stim_img = Image.open(stimuli_path)        
         stimuli = psychopy.visual.ImageStim(self.win, image=stim_img, autoLog=False)
         stimuli.size = (0.15,0.15)        
+        
+        position_pairs = [[self.calibration_points[i], self.calibration_points[i+1]] for i in range(len(self.calibration_points)-1)]
+  
                 
         clock = psychopy.core.Clock()
         for point_index in range(len(self.calibration_points)):
@@ -851,6 +854,12 @@ class tobii_controller:
             
             if self.eyetracker is not None:
                 self.calibration.collect_data(x, y)
+            
+            if point_index < len(position_pairs):
+                self.subscribe_to_data = False
+                self.start_pursuit_exercise(pathing="linear", positions=position_pairs[point_index], stimuli_paths=[stimuli_path], move_duration=1)
+                self.subscribe_to_data = True
+            
 
 
     def set_custom_calibration(self, func):

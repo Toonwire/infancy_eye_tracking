@@ -2,9 +2,9 @@ Umiddelbare datoer for børn til forsøg på Elsass
 -----------------------------------------------------
 	28/03			Enkelt familie  			AFLYST
 	02/04			Enkelt familie (2 børn)		AFLYST
+	08/04 - 10/04	Ophold
 	11/04			Nogle familier?
 	23/04			Nogle familier?
-	08/04 - 10/04	Ophold
 
 Cross-validation
 	- saml alt data

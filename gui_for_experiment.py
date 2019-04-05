@@ -257,7 +257,7 @@ class Application(tk.Frame):
         
     def store_data(self, testname):
         
-         # write data to file    
+         # write data to file
         try: # just in case we run exercise before calibration
             os.makedirs(self.session_path + self.test_folder)
         except Exception:
