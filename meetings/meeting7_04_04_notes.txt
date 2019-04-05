@@ -1,0 +1,27 @@
+kompensering fra polynomial degree ved at indsætte penalty for antallet af grader / antallet af frihedsgrader
+
+
+
+god ting at forklare i rapport
+	data drevens- tobii siger 1-2 grader
+				 vi måler 1-2 grader (giver hvis kredibilitet)
+
+
+pupil labs transformation metode?
+
+
+
+søjlediagrammer over vores tabeller (aroc and stuff)
+
+
+segmentering af linear pursuit
+	visual angle heri tager både delay og selve error
+	tag delay ud af ligningen ved at sammenligne linære segmenter og finde nærmeste punkter fra targets til gaze points
+
+
+
+
+
+clustering af fixations kan være mere præcist jo flere fixations der er i ét cluster (forventet er, at mere data = mere præcision)
+derfor kan nogle clusters korrigere dets punkkter ud fra et større/mindre antal end andre og dermed være mere præcist defineret.
+Korrektionen tager imidlertid ikke højde for dette, da det bare korrigerer alt efter centeret for clusteret, uanset hvor manger der udgør det.

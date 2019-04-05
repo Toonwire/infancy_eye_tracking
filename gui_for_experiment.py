@@ -181,7 +181,8 @@ class Application(tk.Frame):
         
     def test_fixation(self):
         self.controller.make_psycho_window()
-        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+#        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.controller.close_psycho_window()
         
     def test_pursuit(self, path_type):
@@ -225,11 +226,12 @@ class Application(tk.Frame):
         
         
         self.controller.flash_screen()
-        self.make_transformation()
+        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("transformation")
         
         self.controller.flash_screen()
-        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+#        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.store_data("training_fixation")
         
         self.controller.flash_screen()
@@ -246,9 +248,6 @@ class Application(tk.Frame):
     def show_status(self):
         self.controller.show_status()
         
-    def make_transformation(self):
-        self.controller.make_transformation()
-        
     def custom_calibration(self, num_points, stim_type="default"):
         
         # we can only check if there is an existing eye tracking device.
@@ -258,7 +257,7 @@ class Application(tk.Frame):
         
     def store_data(self, testname):
         
-         # write data to file    
+         # write data to file
         try: # just in case we run exercise before calibration
             os.makedirs(self.session_path + self.test_folder)
         except Exception:
