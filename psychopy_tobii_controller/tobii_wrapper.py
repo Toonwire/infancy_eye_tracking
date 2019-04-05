@@ -82,6 +82,7 @@ class tobii_controller:
     key_index_dict = default_key_index_dict.copy()
 
     # Tobii data collection parameters
+    subscribe_to_data = True
     current_target = (0.5, 0.5)
     global_gaze_data = []    
     gaze_params = [
@@ -628,6 +629,54 @@ class tobii_controller:
         self.unsubscribe_dict()
     
     
+    
+    
+    def start_fixation_exercise_animate_transition(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
+        
+        img_stims = []
+        for stimuli_path in stimuli_paths:
+            img = Image.open(stimuli_path)
+            img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+            img_stim.size = (0.15, 0.15)
+            img_stims.append(img_stim)        
+        
+        np.random.shuffle(positions)
+        
+        position_pairs = [[positions[i], positions[i+1]] for i in range(len(positions)-1)]
+        
+        
+        
+        self.subscribe_dict()
+        clock = psychopy.core.Clock()
+        
+        pos_index = 0
+        for pos in positions:
+            self.current_target = self.get_tobii_pos(pos)
+            i = 0
+            clock.reset()
+            current_time = clock.getTime()
+            while current_time < 3:
+                img_stim = img_stims[(pos_index - 1) % len(img_stims)]
+                img_stim.setPos(pos)
+                img_stim.ori = i * self.rot_deg_per_frame
+                img_stim.draw()
+                self.win.flip()
+                
+                i += 1
+                
+                psychopy.core.wait(0.015)
+                current_time = clock.getTime()
+                
+            if pos_index < len(position_pairs):
+                self.subscribe_to_data = False
+                self.start_pursuit_exercise(pathing="linear", positions=position_pairs[pos_index], stimuli_paths=stimuli_paths, move_duration=1)
+                self.subscribe_to_data = True
+            pos_index += 1
+            
+            
+        self.unsubscribe_dict()
+        
+    
     def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5):
         
         
@@ -678,7 +727,7 @@ class tobii_controller:
         return intermediate_positions
         
     
-    def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
+    def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015, move_duration=5):
         
         img_stims = []
         for stimuli_path in stimuli_paths:
@@ -687,10 +736,11 @@ class tobii_controller:
             img_stim.size = (0.15, 0.15)
             img_stims.append(img_stim)
         
-        frame_delay = 0.015
-        intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=5)
+#        frame_delay = 0.015
+        intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=move_duration)
         
-        self.subscribe_dict()
+        if self.subscribe_to_data:
+            self.subscribe_dict()
         
         pos_index = 0
         for i, pos in enumerate(intermediate_positions):
@@ -718,7 +768,8 @@ class tobii_controller:
             
             psychopy.core.wait(frame_delay)
             
-        self.unsubscribe_dict()
+        if self.subscribe_to_data:
+            self.unsubscribe_dict()
 
     def get_euclidean_distance(self, p1, p2):
         return ((p1[0] - p2[0])**2+(p1[1] - p2[1])**2)**0.5
@@ -954,7 +1005,8 @@ class tobii_controller:
     def gaze_data_callback(self, gaze_data):        
         try:
             gaze_data['current_target_point_on_display_area'] = self.current_target
-            self.global_gaze_data.append(gaze_data)
+            if self.subscribe_to_data:
+                self.global_gaze_data.append(gaze_data)
             
         except:
             print("Error in callback (dict)")
