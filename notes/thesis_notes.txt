@@ -56,3 +56,8 @@ Noise detection and artefacts
 
 
 Filtering under Data Collection makes sense (mental note when writing report)
+
+
+
+Infants using default = transformation is good (accounts for already translated errors)
+Infants using custom = transformation is not so good (calibration is quite precise, given that they complete it)
