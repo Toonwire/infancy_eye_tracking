@@ -23,34 +23,36 @@ class GazeDataAnalyzer:
     show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
-    def read_data(self, filename, filtering_method):
+    def read_data(self, filename, filtering_method, remove_nan_values = True):
         # read config csv file
         data_frame = pd.read_csv(filename, delimiter=";")
         
-        # check for corrupted/missing data in data frames
-        data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
-        data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
-        data_frame = data_frame[(data_frame['left_gaze_point_validity'] != 0)]
-        data_frame = data_frame[(data_frame['right_gaze_point_validity'] != 0)]
+        if remove_nan_values:
+            # check for corrupted/missing data in data frames
+            data_frame = data_frame[(data_frame['left_gaze_point_on_display_area'] != '(nan, nan)')]
+            data_frame = data_frame[(data_frame['right_gaze_point_on_display_area'] != '(nan, nan)')]
+            data_frame = data_frame[(data_frame['left_gaze_point_validity'] != 0)]
+            data_frame = data_frame[(data_frame['right_gaze_point_validity'] != 0)]
         
         # note number of data rows in csv file
         self.N = len(data_frame)
         
         # fetch gaze points from data
-        gaze_data_left_temp = np.transpose(np.array([eval(coord) for coord in data_frame['left_gaze_point_on_display_area']]))
-        gaze_data_right_temp = np.transpose(np.array([eval(coord) for coord in data_frame['right_gaze_point_on_display_area']]))
-        target_points_temp = np.transpose(np.array([eval(coord) for coord in data_frame['current_target_point_on_display_area']]))
+        gaze_data_left_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['left_gaze_point_on_display_area']]))
+        gaze_data_right_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['right_gaze_point_on_display_area']]))
+        target_points_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['current_target_point_on_display_area']]))
 
-        return self.filtering(filtering_method, gaze_data_left_temp,gaze_data_right_temp,target_points_temp)
+        return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
-    def filtering(self, filtering_method, gaze_data_left_temp,gaze_data_right_temp,target_points_temp):
-        gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
+    def filtering(self, filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp):
         
         gaze_data_left = []
         gaze_data_right = []
         target_points = []
         
         if filtering_method == "dbscan_fixation" or filtering_method == "dbscan_pursuit":
+            
+            gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
             
             db_scan = dbscan.DBScan()
             clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
@@ -183,6 +185,16 @@ class GazeDataAnalyzer:
     def center_by_cluster(self, gaze_data_left, gaze_data_right):
         return (self.data_correction.adjust_by_cluster_center(gaze_data_left), self.data_correction.adjust_by_cluster_center(gaze_data_right))
     
+    def animate(self, training_filename, filtering_method = None):
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method, remove_nan_values = False)
+        
+        #------ correct raw data ------#
+        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+        
+        return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected)
+    
+    
     # set up the transformation matrices 
     def setup(self, config_file, cal_filename, filtering_method = None):
         
@@ -228,8 +240,8 @@ class GazeDataAnalyzer:
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
         
-#        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
-        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
+        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
+#        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
         pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
@@ -587,7 +599,9 @@ class GazeDataAnalyzer:
         pixel_err_left = []
         pixel_err_right = []
         
-        for left_x, left_y, right_x, right_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:]):
+        diff = []
+        
+        for i, (left_x, left_y, right_x, right_y) in enumerate(zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:])):
             
             min_euclid = 2
             
@@ -595,8 +609,10 @@ class GazeDataAnalyzer:
             min_left_y = 1
             min_right_x = 1
             min_right_y = 1
-
-            for tar_x, tar_y in zip(target_points[0,:], target_points[1,:]):
+            
+            min_j = 0
+            
+            for j, (tar_x, tar_y) in enumerate(zip(target_points[0,:], target_points[1,:])):
                 
                 dist_left_x = abs(left_x - tar_x)
                 dist_left_y = abs(left_y - tar_y)
@@ -614,8 +630,16 @@ class GazeDataAnalyzer:
                     min_right_x = dist_right_x
                     min_right_y = dist_right_y
                     
+                    min_j = j
+                    
             pixel_err_left.append((min_left_x, min_left_y))
             pixel_err_right.append((min_right_x, min_right_y))
+        
+            diff.append(i - min_j)
+            
+        print("")
+        print("Latency for eye to target: " + str(np.mean(diff)))
+        print("")
         
         return (pixel_err_left, pixel_err_right)
     
