@@ -29,7 +29,7 @@ import psychopy.event
 import psychopy.core
 import psychopy.monitors
 import psychopy.logging
-
+import psychopy.sound
 
 class tobii_controller:
 
@@ -637,6 +637,11 @@ class tobii_controller:
         win_color = self.win.color
         self.win.setColor((1,1,1), colorSpace='rgb')
         self.win.flip()
+        
+
+        ding_sound = psychopy.sound.Sound('sounds/ding.wav')
+        ding_sound.play()
+
         psychopy.core.wait(0.5)
         self.win.setColor(win_color)
         self.win.flip()
