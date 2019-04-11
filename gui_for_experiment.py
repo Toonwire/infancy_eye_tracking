@@ -223,7 +223,10 @@ class Application(tk.Frame):
         self.controller.make_psycho_window()
         
         self.test_folder = "test_" + cal_type + "/"
-         
+        
+        self.controller.play_sound()
+        self.controller.flash_screen()
+        
         if cal_type == "default":
             pass
         elif cal_type == "custom_2p":
@@ -233,26 +236,27 @@ class Application(tk.Frame):
         elif cal_type == "custom_5p_img":
             self.custom_calibration(5, "img")
         
-        self.controller.flash_screen()
         self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("transformation")
         
-        self.controller.flash_screen()
+#        self.controller.flash_screen()
  #        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.store_data("training_fixation")
         
-        self.controller.flash_screen()
+#        self.controller.flash_screen()
         self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
 #        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_linear")
         
-        self.controller.flash_screen()
+#        self.controller.flash_screen()
         self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_spiral")
-        
-        self.controller.close_psycho_window(screen = 1)
+        self.controller.pause_sound()
    
+     
+        self.controller.close_psycho_window(screen = 1)
+        
     def show_status(self, screen=1):
         self.controller.show_status(screen=screen)
    

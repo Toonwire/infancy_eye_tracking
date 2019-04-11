@@ -10,6 +10,9 @@ __pycache__/
 licenses/
 tobii_licenses/
 
+# big sound files
+sounds/
+
 # Distribution / packaging
 .Python
 build/

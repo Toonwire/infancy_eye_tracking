@@ -44,7 +44,7 @@ class tobii_controller:
     PsychoPy specfications
     """
     psychopy.logging.console.setLevel(psychopy.logging.CRITICAL)    # IGNORE UNSAVED MONITOR WARNINGS IN CONSOLE    
-    default_background_color = 'black'
+    default_background_color = [-1,-1,-1]
     is_mouse_enabled = False
     
     rot_deg_per_frame = 3     # how many degrees of rotation per frame
@@ -123,6 +123,8 @@ class tobii_controller:
         
         self.screen_width = screen_width
         self.screen_height = screen_height
+        
+        self.sound = psychopy.sound.Sound('sounds/baby_einstein.wav')
             
         self.set_up_eyetracker(eyetracker_id)
         
@@ -165,6 +167,12 @@ class tobii_controller:
     def set_dist_to_screen(self, dist_to_screen):
         self.dist_to_screen = dist_to_screen
 
+    def play_sound(self):
+        self.sound.play()
+        
+    def pause_sound(self):
+        self.sound.stop()
+        
     def cm2deg(self, cm, monitor, correctFlat=False):
         """
         Bug-fixed version of psychopy.tools.monitorunittools.cm2deg
@@ -219,11 +227,11 @@ class tobii_controller:
         
         if screen == 1: 
             self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), screen=screen, fullscr=True, units='norm', monitor=mon)
-            self.win.setColor(bg)
+            self.win.setColor(bg, colorSpace='rgb')
             psychopy.event.Mouse(visible=self.is_mouse_enabled, win=self.win)
         if screen == 0:
             self.control_window = psychopy.visual.Window(size=(width, height), screen=screen, fullscr=False, units='norm', monitor=mon, pos = [1920-width-10,1080/4])
-            self.control_window.setColor(bg)
+            self.control_window.setColor(bg, colorSpace='rgb')
             print(self.control_window.pos)
         
         
@@ -355,7 +363,7 @@ class tobii_controller:
 #            if enable_mouse and mouse.getPressed()[0]:
 #                b_show_status = False
             
-            msg.draw()
+#            msg.draw()
             window.flip()
             
             
@@ -502,7 +510,7 @@ class tobii_controller:
                 np.random.shuffle(self.calibration_points)
             
             if start_key is not None or enable_mouse:
-                waitkey = True
+                waitkey = False
                 if start_key is not None:
                     if enable_mouse == True:
                         result_msg.setText('Press {} or click left button to start calibration'.format(start_key))
@@ -633,19 +641,28 @@ class tobii_controller:
         if enable_mouse == False:
             mouse.setVisible(False)
 
-    def flash_screen(self):      
-        win_color = self.win.color
-        self.win.setColor((1,1,1), colorSpace='rgb')
-        self.win.flip()
+    def flash_screen(self):     
         
-
-        ding_sound = psychopy.sound.Sound('sounds/ding.wav')
-        ding_sound.play()
-
-        psychopy.core.wait(0.5)
-        self.win.setColor(win_color)
-        self.win.flip()
-        psychopy.core.wait(0.2)
+        r = self.win.color[0]
+        g = self.win.color[1]
+        b = self.win.color[2]
+        
+        while r <= 1:
+            r += 0.05
+            g += 0.05
+            b += 0.05
+            self.win.setColor((r,g,b), colorSpace='rgb')
+            psychopy.core.wait(0.05)
+            self.win.flip()
+        
+        while r >= -1:
+            r -= 0.05
+            g -= 0.05
+            b -= 0.05
+            self.win.setColor((r,g,b), colorSpace='rgb')
+            psychopy.core.wait(0.05)
+            self.win.flip()
+        
         
     def animate_test(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points, stimuli_paths=["stimuli/smiley_yellow.png"]):
         
