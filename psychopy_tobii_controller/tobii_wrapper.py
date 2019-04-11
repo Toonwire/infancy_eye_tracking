@@ -73,6 +73,7 @@ class tobii_controller:
     eyetracker = None
     calibration = None
     win = None
+    control_window = None
     gaze_data = []
     event_data = []
     retry_points = []
@@ -82,7 +83,8 @@ class tobii_controller:
     key_index_dict = default_key_index_dict.copy()
 
     # Tobii data collection parameters
-    subscribe_to_data = True
+    subscribe_to_data = False
+    do_reset_recording = True
     current_target = (0.5, 0.5)
     global_gaze_data = []    
     gaze_params = [
@@ -154,7 +156,9 @@ class tobii_controller:
         
     def is_eye_tracker_on(self):
         self.subscribe_dict()
+        self.start_recording()
         time.sleep(1)
+        self.stop_recording()
         self.unsubscribe_dict()         
         return len(self.global_gaze_data) > 0
         
@@ -199,28 +203,43 @@ class tobii_controller:
         return self.cm2deg(cmSize, monitor, correctFlat)
 
 
-    def make_psycho_window(self, background_color=None):
+    def make_psycho_window(self, background_color=None, screen=1):
         self.bg_color = background_color
         
         # make a new monitor for the window - ignore the warning (we dont store any calibrations for this monitor)
         mon = psychopy.monitors.Monitor('MyScreen')
-        mon.setDistance(self.dist_to_screen)
-        mon.setSizePix((self.screen_width, self.screen_height))
         
-        self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), screen=1, fullscr=True, units='norm', monitor=mon)
+        width = self.screen_width if screen == 1 else 700
+        height = self.screen_width if screen == 1 else 500
+            
+        mon.setDistance(self.dist_to_screen)
+        mon.setSizePix((width, height))
         
         bg = self.bg_color if self.bg_color != None else self.default_background_color
-        self.win.setColor(bg)
         
-        psychopy.event.Mouse(visible=self.is_mouse_enabled, win=self.win)
+        if screen == 1: 
+            self.win = psychopy.visual.Window(size=(self.screen_width, self.screen_height), screen=screen, fullscr=True, units='norm', monitor=mon)
+            self.win.setColor(bg)
+            psychopy.event.Mouse(visible=self.is_mouse_enabled, win=self.win)
+        if screen == 0:
+            self.control_window = psychopy.visual.Window(size=(width, height), screen=screen, fullscr=False, units='norm', monitor=mon, pos = [1920-width-10,1080/4])
+            self.control_window.setColor(bg)
+            print(self.control_window.pos)
         
-    def close_psycho_window(self):
+        
+        
+    def close_psycho_window(self, screen=1):
         self.bg_color = None    # reset color scheme
-        self.win.winHandle.set_fullscreen(False) # disable fullscreen
-        self.win.close()
+        if screen == 1:
+            self.win.winHandle.set_fullscreen(False) # disable fullscreen
+            self.win.close()
+        elif screen == 0:
+#            self.control_window.winHandle.set_fullscreen(False) # disable fullscreen
+            self.control_window.close()
+            
+     
         
-
-    def show_status(self, text_color='white', enable_mouse=False):
+    def show_status_admin(self, text_color='white', enable_mouse=False, screen=1):
         """
         Draw eyetracker status on the screen.
         
@@ -229,26 +248,24 @@ class tobii_controller:
             Default value is False.
         """
         
-        self.make_psycho_window(background_color="gray")
+        self.make_psycho_window(background_color="gray", screen=screen)
         
-            
+        window = self.win if screen == 1 else self.control_window
         
-        if enable_mouse == False:
-            mouse = psychopy.event.Mouse(visible=False, win=self.win)
+#        if enable_mouse == False:
+#            mouse = psychopy.event.Mouse(visible=False, win=self.win)
         
         self.gaze_data_status = None
-        if self.eyetracker is not None:
-            self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data_status)
         
-        msg = psychopy.visual.TextStim(self.win, color=text_color,
+        msg = psychopy.visual.TextStim(window, color=text_color,
             height=0.02, pos=(0,-0.35), units='height', autoLog=False, text="No eye tracker data detected")
-        bgrect = psychopy.visual.Rect(self.win,
+        bgrect = psychopy.visual.Rect(window,
             width=0.6, height=0.6, lineColor='white', fillColor='black',
             units='height', autoLog=False)
-        leye = psychopy.visual.Circle(self.win,
+        leye = psychopy.visual.Circle(window,
             size=0.05, units='height', lineColor=None, fillColor='green',
             autoLog=False)
-        reye = psychopy.visual.Circle(self.win, size=0.05, units='height',
+        reye = psychopy.visual.Circle(window, size=0.05, units='height',
             lineColor=None, fillColor='red', autoLog=False)
         
         b_show_status = True
@@ -272,16 +289,80 @@ class tobii_controller:
                 if key == 'escape' or key == 'space':
                     b_show_status = False
             
-            if enable_mouse and mouse.getPressed()[0]:
-                b_show_status = False
+#            if enable_mouse and mouse.getPressed()[0]:
+#                b_show_status = False
             
             msg.draw()
-            self.win.flip()
+            window.flip()
             
-        if self.eyetracker is not None:
-            self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
         
-        self.close_psycho_window()
+        self.close_psycho_window(screen=screen)
+        
+        
+        
+    def show_status(self, text_color='white', enable_mouse=False, screen=1):
+        """
+        Draw eyetracker status on the screen.
+        
+        :param text_color: Color of message text. Default value is 'white'
+        :param bool enable_mouse: If True, mouse operation is enabled.
+            Default value is False.
+        """
+        
+        self.make_psycho_window(background_color="gray", screen=screen)
+        
+        window = self.win if screen == 1 else self.control_window
+        
+#        if enable_mouse == False:
+#            mouse = psychopy.event.Mouse(visible=False, win=self.win)
+        
+        self.gaze_data_status = None
+#        if self.eyetracker is not None:
+#            self.eyetracker.subscribe_to(tobii_research.EYETRACKER_GAZE_DATA, self.on_gaze_data_status)
+        
+        msg = psychopy.visual.TextStim(window, color=text_color,
+            height=0.02, pos=(0,-0.35), units='height', autoLog=False, text="No eye tracker data detected")
+        bgrect = psychopy.visual.Rect(window,
+            width=0.6, height=0.6, lineColor='white', fillColor='black',
+            units='height', autoLog=False)
+        leye = psychopy.visual.Circle(window,
+            size=0.05, units='height', lineColor=None, fillColor='green',
+            autoLog=False)
+        reye = psychopy.visual.Circle(window, size=0.05, units='height',
+            lineColor=None, fillColor='red', autoLog=False)
+        
+        b_show_status = True
+        while b_show_status:
+            bgrect.draw()
+            if self.gaze_data_status is not None:
+                lp, lv, rp, rv = self.gaze_data_status
+                msgst = 'Left: {:.3f},{:.3f},{:.3f}\n'.format(*lp)
+                msgst += 'Right: {:.3f},{:.3f},{:.3f}\n'.format(*rp)
+                msg.setText(msgst)
+                if lv:
+                    leye.setPos(((1-lp[0]-0.5)/2,(1-lp[1]-0.5)/2))
+                    leye.setRadius((1-lp[2])/2)
+                    leye.draw()
+                if rv:
+                    reye.setPos(((1-rp[0]-0.5)/2,(1-rp[1]-0.5)/2))
+                    reye.setRadius((1-rp[2])/2)
+                    reye.draw()
+            
+            for key in psychopy.event.getKeys():
+                if key == 'escape' or key == 'space':
+                    b_show_status = False
+            
+#            if enable_mouse and mouse.getPressed()[0]:
+#                b_show_status = False
+            
+            msg.draw()
+            window.flip()
+            
+            
+#        if self.eyetracker is not None:
+#            self.eyetracker.unsubscribe_from(tobii_research.EYETRACKER_GAZE_DATA)
+        
+        self.close_psycho_window(screen=screen)
         
     def on_gaze_data_status(self, gaze_data):
         """
@@ -553,13 +634,13 @@ class tobii_controller:
             mouse.setVisible(False)
 
     def flash_screen(self):      
-#        win_color = self.win.color
-#        self.win.setColor((1,1,1), colorSpace='rgb')
+        win_color = self.win.color
+        self.win.setColor((1,1,1), colorSpace='rgb')
         self.win.flip()
         psychopy.core.wait(0.5)
-#        self.win.setColor(win_color)
-#        self.win.flip()
-#        psychopy.core.wait(0.2)
+        self.win.setColor(win_color)
+        self.win.flip()
+        psychopy.core.wait(0.2)
         
     def animate_test(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points, stimuli_paths=["stimuli/smiley_yellow.png"]):
         
@@ -605,7 +686,7 @@ class tobii_controller:
             
             psychopy.core.wait(0.015)
         
-        self.close_psycho_window()
+        self.close_psycho_window(screen=1)
         
     
 #    def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        
@@ -650,7 +731,8 @@ class tobii_controller:
         
         np.random.shuffle(positions)
         
-        self.subscribe_dict()
+#        self.subscribe_dict()
+        self.start_recording()
         clock = psychopy.core.Clock()
         
         pos_index = 0
@@ -673,7 +755,8 @@ class tobii_controller:
                 
             pos_index += 1
         
-        self.unsubscribe_dict()
+#        self.unsubscribe_dict()
+        self.stop_recording()
     
     
     
@@ -693,7 +776,8 @@ class tobii_controller:
         
         
         
-        self.subscribe_dict()
+#        self.subscribe_dict()
+        self.start_recording()
         clock = psychopy.core.Clock()
         
         pos_index = 0
@@ -716,12 +800,15 @@ class tobii_controller:
                 
             if pos_index < len(position_pairs):
                 self.subscribe_to_data = False
+                self.do_reset_recording = False
                 self.start_pursuit_exercise(pathing="linear", positions=position_pairs[pos_index], stimuli_paths=stimuli_paths, move_duration=1)
                 self.subscribe_to_data = True
+                self.do_reset_recording = True
             pos_index += 1
             
             
-        self.unsubscribe_dict()
+#        self.unsubscribe_dict()
+        self.stop_recording()
         
     
     def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5):
@@ -786,8 +873,9 @@ class tobii_controller:
 #        frame_delay = 0.015
         intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=move_duration)
         
-        if self.subscribe_to_data:
-            self.subscribe_dict()
+        if self.do_reset_recording:
+#            self.subscribe_dict()
+            self.start_recording()
         
         pos_index = 0
         for i, pos in enumerate(intermediate_positions):
@@ -815,8 +903,9 @@ class tobii_controller:
             
             psychopy.core.wait(frame_delay)
             
-        if self.subscribe_to_data:
-            self.unsubscribe_dict()
+        if self.do_reset_recording:
+#            self.unsubscribe_dict()
+            self.stop_recording()
 
     def get_euclidean_distance(self, p1, p2):
         return ((p1[0] - p2[0])**2+(p1[1] - p2[1])**2)**0.5
@@ -902,9 +991,9 @@ class tobii_controller:
                 self.calibration.collect_data(x, y)
             
             if point_index < len(position_pairs):
-                self.subscribe_to_data = False
+                self.do_reset_recording = False
                 self.start_pursuit_exercise(pathing="linear", positions=position_pairs[point_index], stimuli_paths=[stimuli_path], move_duration=1)
-                self.subscribe_to_data = True
+                self.do_reset_recording = True
             
 
 
@@ -1026,6 +1115,13 @@ class tobii_controller:
             self.gaze_data = []
             self.event_data = []
 
+    def start_recording(self):
+        self.global_gaze_data = []
+        self.subscribe_to_data = True
+    
+    def stop_recording(self):
+        self.subscribe_to_data = False
+        
 
     def subscribe_dict(self):
         if self.eyetracker is not None:
@@ -1056,10 +1152,19 @@ class tobii_controller:
         rp = gaze_data.right_eye.pupil.diameter
         rv = gaze_data.right_eye.gaze_point.validity
         self.gaze_data.append((t,lx,ly,lp,lv,rx,ry,rp,rv))
+        
 
 
     def gaze_data_callback(self, gaze_data):        
         try:
+            
+            
+            lp = gaze_data['left_gaze_origin_in_trackbox_coordinate_system']
+            lv = gaze_data['left_gaze_origin_validity']
+            rp = gaze_data['right_gaze_origin_in_trackbox_coordinate_system']
+            rv = gaze_data['right_gaze_origin_validity']
+            self.gaze_data_status = (lp, lv, rp, rv)
+                
             gaze_data['current_target_point_on_display_area'] = self.current_target
             if self.subscribe_to_data:
                 self.global_gaze_data.append(gaze_data)

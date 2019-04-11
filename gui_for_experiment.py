@@ -19,6 +19,8 @@ import datetime
 import csv
 import gaze_data_analyzer as gda
 import os
+from multiprocessing import Process
+
 
 
 class Application(tk.Frame):
@@ -44,7 +46,14 @@ class Application(tk.Frame):
         
         # Initialize tobii_controller with configurations 
         self.controller = tobii_controller(self.screen_width, self.screen_height)
-        self.controller.show_status()
+        self.controller.subscribe_dict()
+        
+        self.status_admin_process = Process(target=self.controller.show_status_admin(screen=0))
+        self.status_admin_process.start()
+        
+        
+        
+        self.controller.show_status(screen=1)
         
         try:
             os.makedirs(self.session_path)
@@ -80,7 +89,7 @@ class Application(tk.Frame):
         btn_config_save["command"] = lambda e=entries: self.config_save(e)
         btn_config_save.pack(side=tk.LEFT, padx=5, pady=10)
         
-        self.panel_config.pack(side=tk.TOP, pady=(self.screen_height / 2, 0))
+        self.panel_config.pack(side=tk.TOP, pady=(10,10))
     
     def config_save(self, entries):
         
@@ -166,7 +175,7 @@ class Application(tk.Frame):
         self.btn_shutdown["command"] = self.client_exit
         
         # pack it all
-        self.btn_default_test.pack(side=tk.TOP, pady=(self.screen_height / 2 - 50, 10))
+        self.btn_default_test.pack(side=tk.TOP, pady=(10,10))
         self.btn_2p_test.pack(side=tk.TOP, pady=(0, 10))
         self.btn_5p_test.pack(side=tk.TOP, pady=(0, 10))
         self.btn_5p_img_test.pack(side=tk.TOP, pady=(0, 10))
@@ -224,13 +233,12 @@ class Application(tk.Frame):
         elif cal_type == "custom_5p_img":
             self.custom_calibration(5, "img")
         
-        
         self.controller.flash_screen()
         self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("transformation")
         
         self.controller.flash_screen()
-#        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
+ #        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.controller.start_fixation_exercise_animate_transition(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
         self.store_data("training_fixation")
         
@@ -243,10 +251,11 @@ class Application(tk.Frame):
         self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_spiral")
         
-        self.controller.close_psycho_window()
+        self.controller.close_psycho_window(screen = 1)
    
-    def show_status(self):
-        self.controller.show_status()
+    def show_status(self, screen=1):
+        self.controller.show_status(screen=screen)
+   
         
     def custom_calibration(self, num_points, stim_type="default"):
         
@@ -278,6 +287,7 @@ class Application(tk.Frame):
                                 
     def client_exit(self):
         print("Shutting down")
+        self.controller.unsubscribe_dict()
         self.quit()
 
 
@@ -285,15 +295,14 @@ root = tk.Tk()
 #root = tk.Toplevel()
 
 # use the next line if you also want to get rid of the titlebar
-root.attributes("-fullscreen", True)
+#root.attributes("-fullscreen", True)
 
 # set focus
-root.lift()
-root.attributes("-topmost", True)
+#root.lift()
+#root.attributes("-topmost", True)
 
 # Set size of window to screen size
-#root.geometry("%dx%d+0+0" % (w, h))
-#root.geometry("1200x900")
+root.geometry("800x600")
 
 app = Application(master=root)
 app.mainloop()
