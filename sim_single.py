@@ -10,11 +10,11 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "custom_5p"
+type_of_cal = "custom_2p"
 
 # Session to run
 #session_folder = "2019-03-29 10.41.18"
-session_folder = "infant_noel_5m"
+session_folder = "infant_molly_5y"
 
 
 # Setting path and files

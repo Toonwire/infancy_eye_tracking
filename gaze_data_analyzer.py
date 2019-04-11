@@ -19,7 +19,7 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = False
+    show_graphs_bool = True
     show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
@@ -586,7 +586,7 @@ class GazeDataAnalyzer:
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
             self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
             self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
-            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
+            # self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
          
         
         
