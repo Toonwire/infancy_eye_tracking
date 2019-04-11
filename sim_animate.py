@@ -12,8 +12,8 @@ from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 type_of_cal = "custom_5p"
 
 # Session to run
-session_folder = "infant_noel_5m"
-#session_folder = "2019-03-19 13.17.10"
+#session_folder = "infant_noel_5m"
+session_folder = "2019-03-19 13.17.10"
 
 
 # Setting path and files

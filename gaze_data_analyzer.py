@@ -634,7 +634,7 @@ class GazeDataAnalyzer:
                     
             pixel_err_left.append((min_left_x, min_left_y))
             pixel_err_right.append((min_right_x, min_right_y))
-        
+            
             diff.append(i - min_j)
             
         print("")
