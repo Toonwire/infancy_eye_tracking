@@ -85,4 +85,15 @@ Vise progress
 Diskutér clustering algoritmer, fordele ulempter ved dbscan (as implemented)
 
 
+02/05 - Per
+-----------------------
+Hvis vi finder ud af at 2-/5 punktskalibrering virker, så er det bare den der skal bruges (< 4-5 grader)
+	- Basically stimuli orienteret kalibrering
+Målgruppe er 4-12 måneder, hvor 2-5år ikke virker så godt --> further work, tilpas stimuli behold metode?
+
+Selvjusterende del - Rejustering af data forventes at forøge præcision, men grænser for hvor lang tid barns opmærksomhed kan holdes.
+
+Mikkel: som produkt, hvad ville du/i gerne have at et sådan program skulle kunne?
+
+
 
