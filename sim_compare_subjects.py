@@ -8,13 +8,14 @@ Created on Mon Mar 11 11:02:06 2019
 
 
 import gaze_data_analyzer as gda
-import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
-sessions_folder = "session_data/*"
+
+session_folder = "session_data/"
+sessions = ["infant_josefine_4m","infant_noel_5m"]
 type_of_cal = "default"
-type_of_training = "pursuit"
+type_of_training = "fixation"
 
 # Filtering data by
 filtering_method = "dbscan_pursuit"
@@ -34,16 +35,17 @@ targets = None
 
 subject = 1
 
-for session_path in glob.glob(sessions_folder):
-    
+for session in sessions:
+
     try:
-        config_filename = session_path + "/config.csv"    
-        cal_filename = session_path + "/calibrations/cal_" + type_of_cal + ".csv"
-        training_filename = session_path + "/training_with_cal_" + type_of_cal + "/training_" + type_of_training + ".csv"
+        session_path = session_folder + session + "/"
+        config_filename = session_path + "config.csv"
+        test_path = session_path + "test_" + type_of_cal + "/"
+        transformation_filename = test_path + "transformation.csv"
+        training_filename = test_path + "training_" + type_of_training + ".csv"
         
-        
-        analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
-        analyzer.analyze(cal_filename, "dbscan_fixation")
+        analyzer.setup(config_filename, transformation_filename, "dbscan_fixation")
+        analyzer.analyze(transformation_filename, "dbscan_fixation")
         
         targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method)
         
