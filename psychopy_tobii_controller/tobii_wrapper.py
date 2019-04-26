@@ -142,7 +142,6 @@ class tobii_controller:
                 with open(self.license_file, "rb") as f:
                     license = f.read()
                     res = self.eyetracker.apply_licenses(license)
-                    
                     if len(res) == 0:
                         print("Successfully applied license from single key")
                     else:
@@ -821,10 +820,10 @@ class tobii_controller:
                 current_time = clock.getTime()
                 
             if pos_index < len(position_pairs):
-                self.subscribe_to_data = False
+#                self.subscribe_to_data = False
                 self.do_reset_recording = False
                 self.start_pursuit_exercise(pathing="linear", positions=position_pairs[pos_index], stimuli_paths=stimuli_paths, move_duration=1)
-                self.subscribe_to_data = True
+#                self.subscribe_to_data = True
                 self.do_reset_recording = True
             pos_index += 1
             
@@ -858,6 +857,28 @@ class tobii_controller:
                     
                     intermediate_positions.extend(self.get_equidistant_points(start_pos, end_pos, move_steps_for_path))
                     
+        elif pathing == "circle" and len(positions) == 2:
+            start_pos = positions[0]
+            center_pos = positions[1]
+            
+            intermediate_positions.append(start_pos)
+            
+            r = ((start_pos[0] - center_pos[0]) ** 2 + (start_pos[1] - center_pos[1]) ** 2) ** 0.5
+            
+            theta_x = math.acos(start_pos[0] / r)
+            theta_y = math.asin(start_pos[1] / r)
+            
+            theta = theta_x if theta_y >= 0 else -theta_x
+            
+            delta_theta = 2*math.pi / move_steps
+            
+            step = 0
+            while move_steps > step:
+                step = step + 1
+                theta = theta + delta_theta
+                pos = (r*math.cos(theta), r*math.sin(theta))
+                intermediate_positions.append(pos)
+                
         elif pathing == "spiral" and len(positions) == 2:
             start_pos = positions[0]
             end_pos = positions[1]
