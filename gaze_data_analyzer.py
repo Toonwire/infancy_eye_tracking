@@ -84,13 +84,22 @@ class GazeDataAnalyzer:
                 
                 current_cluster = clusters[p]
                 
+                # Check if current target is a new target, and if the future target is a new target
+                is_new_target = not np.array_equal(current_target, prev_target)
+                is_future_new_target = False
+                if (i + 3 < self.N):
+                    is_future_new_target = not np.array_equal(current_target, target_points_temp[:,i+3])
+                
                 # For fixation filtering
                 # A gaze point in a cluster has to be filtered away 
                 # If the current target point has changed but the gaze point has not, the gaze point can still be in the old cluster, for the old target point
                 # This gaze point should be filtered away, since it has a large visual angle error
                 # If the current target is different from the previous target, but the previous target is the same as the target before that, a change has been noted
-                if filtering_method == "dbscan_fixation" and not np.array_equal(current_target, prev_target):
+                if filtering_method == "dbscan_fixation" and is_new_target:
                     clusters_used.add(prev_cluster)
+                    
+                if filtering_method == "dbscan_fixation" and is_future_new_target:
+                    clusters_used.add(current_cluster)
                 
                 if current_cluster not in clusters_used:
                     gaze_data_left_x.append(gaze_data_left_temp[0,i])
@@ -211,6 +220,14 @@ class GazeDataAnalyzer:
         self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
         
         gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename, filtering_method)
+        
+        # filter gaze points, remove outliers
+        # then redefine target as those closest to gaze points
+        
+#        gaze_data_left = self.reject_outliers_gaze_only(gaze_data_left)
+#        gaze_data_right = self.reject_outliers_gaze_only(gaze_data_right)
+#        
+#        target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)
         
         self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
         self.data_correction.calibrate_left_eye(gaze_data_left)
@@ -571,6 +588,50 @@ class GazeDataAnalyzer:
     
     def reject_outliers_no_targets(self, data, m=1.5):
         return [x if abs(x - np.mean(data)) < m * np.std(data) else -1 for x in data]
+    
+    def reject_outliers_gaze_only(self, data, m=1.5):
+        filtered_x = [x if abs(x - np.mean(data[0,:])) < m * np.std(data[0,:]) else sys.maxint for x in data[0,:]]
+        filtered_y = [y if abs(y - np.mean(data[1,:])) < m * np.std(data[1,:]) else sys.maxint for y in data[1,:]]
+        
+        filtered_data = [[],[]]
+        
+        for x,y in zip(filtered_x, filtered_y):
+            if x != sys.maxint and y != sys.maxint:
+                filtered_data[0].append(x)
+                filtered_data[1].append(y)
+            
+        return np.array(filtered_data)
+    
+    def find_closest_target(self, target_points, gaze_data_left, gaze_data_right):
+        closest_target_points_x = []
+        closest_target_points_y = []        
+        
+        for i, (left_x, left_y, right_x, right_y) in enumerate(zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:])):
+            
+            min_euclid = 2
+            closest_target_x = 1
+            closest_target_y = 1
+            
+            
+            for j, (tar_x, tar_y) in enumerate(zip(target_points[0,:], target_points[1,:])):
+                
+                dist_left_x = abs(left_x - tar_x)
+                dist_left_y = abs(left_y - tar_y)
+                dist_right_x = abs(right_x - tar_x)
+                dist_right_y = abs(right_y - tar_y)
+                
+                euclid_left = self.euclid_dist(dist_left_x, dist_left_y)
+                euclid_right = self.euclid_dist(dist_right_x, dist_right_y)
+                
+                if euclid_left + euclid_right < min_euclid:
+                    min_euclid = euclid_left + euclid_right
+                    closest_target_x = tar_x
+                    closest_target_y = tar_y
+                    
+            closest_target_points_x.append(closest_target_x)
+            closest_target_points_y.append(closest_target_y)
+                    
+        return np.array([closest_target_points_x, closest_target_points_y])
     
     def analyze_errors(self, gaze_data_left, gaze_data_right, target_points):
         if self.show_graphs_bool:
