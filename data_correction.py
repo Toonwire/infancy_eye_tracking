@@ -40,6 +40,7 @@ class DataCorrection:
         print("Calibrating left eye\n----------------")
         self.transformation_matrix_left_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess)
         self.transformation_matrix_left_eye = np.reshape(self.transformation_matrix_left_eye, (-1,2))
+        print("")
         
     def calibrate_right_eye(self, fixations, initial_guess=np.identity(2)):
         self.calibration_fixations = fixations
@@ -47,7 +48,8 @@ class DataCorrection:
         print("Calibrating right eye\n----------------")
         self.transformation_matrix_right_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess)
         self.transformation_matrix_right_eye = np.reshape(self.transformation_matrix_right_eye, (-1,2))
-    
+        print("")
+                
     def adjust_left_eye(self, fixations):
         if np.allclose(self.transformation_matrix_left_eye, np.identity(2)):
             raise Exception("No calibration for left eye exists")

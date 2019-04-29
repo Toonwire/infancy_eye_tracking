@@ -77,7 +77,7 @@ class DBScan:
             
             q = points[i]
             
-            if p != q and self.euclidean_distance(p,q) <= eps:
+            if self.euclidean_distance(p,q) <= eps:
                 neighbors.append(q)
                 misses = 0
             else:
@@ -111,9 +111,9 @@ class DBScan:
                 q = neighbors[j]
                 j += 1
                 
-                newNeighbors = self.range_query_linear(points, j, q, eps)     # Find more neighbors
+                newNeighbors = self.range_query_linear(points, i+j, q, eps)     # Find more neighbors
                 neighbors += newNeighbors                              # Add new neighbors
-            
+
             
             if len(neighbors) < minPts:                             # Density check
                 labels[p] = 0                                       # Label as Noise

@@ -13,14 +13,12 @@ import data_correction as dc
 import dbscan
 import numpy as np
 
-
-
 class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
     show_graphs_bool = True
-    show_rms_pixel_bool = True
+    show_rms_pixel_bool = False
     show_rms_degree_bool = True
     
     def read_data(self, filename, filtering_method, remove_nan_values = True):
@@ -57,14 +55,15 @@ class GazeDataAnalyzer:
             db_scan = dbscan.DBScan()
             clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
             
-            colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
-            colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
-            plt.scatter(*zip(*clusters.keys()),c=colors)
-            plt.title("DBScan", y=1.08)
-            plt.gca().xaxis.tick_top()
-            plt.xlim(0,1)
-            plt.ylim(1,0)
-            plt.show()
+            if self.show_graphs_bool:
+                colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
+                colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
+                plt.scatter(*zip(*clusters.keys()),c=colors)
+                plt.title("DBScan", y=1.08)
+                plt.gca().xaxis.tick_top()
+                plt.xlim(0,1)
+                plt.ylim(1,0)
+                plt.show()
             
             gaze_data_left_x = []
             gaze_data_left_y = []
@@ -82,6 +81,9 @@ class GazeDataAnalyzer:
                 current_target = target_points_temp[:,i]
                 p = (gaze_data_temp[0, i], gaze_data_temp[1, i])
                 
+                if p not in clusters:
+                    continue;
+                    
                 current_cluster = clusters[p]
                 
                 # Check if current target is a new target, and if the future target is a new target
@@ -108,9 +110,21 @@ class GazeDataAnalyzer:
                     gaze_data_right_y.append(gaze_data_right_temp[1,i])
                     target_points_x.append(target_points_temp[0,i])
                     target_points_y.append(target_points_temp[1,i])
-            
+                else:
+                    del clusters[p]
+                        
                 prev_target = current_target
                 prev_cluster = current_cluster
+            
+            if self.show_graphs_bool:
+                colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
+                colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
+                plt.scatter(*zip(*clusters.keys()),c=colors)
+                plt.title("DBScan", y=1.08)
+                plt.gca().xaxis.tick_top()
+                plt.xlim(0,1)
+                plt.ylim(1,0)
+                plt.show()
             
             gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
@@ -224,17 +238,17 @@ class GazeDataAnalyzer:
         # filter gaze points, remove outliers
         # then redefine target as those closest to gaze points
         
-#        gaze_data_left = self.reject_outliers_gaze_only(gaze_data_left)
-#        gaze_data_right = self.reject_outliers_gaze_only(gaze_data_right)
-#        
-#        target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)
+        gaze_data_left = self.reject_outliers_gaze_only(gaze_data_left)
+        gaze_data_right = self.reject_outliers_gaze_only(gaze_data_right)
+        
+        target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)
         
         self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
         self.data_correction.calibrate_left_eye(gaze_data_left)
         self.data_correction.calibrate_right_eye(gaze_data_right)
         
     
-    def analyze(self, training_filename, filtering_method = None):
+    def analyze(self, training_filename, filtering_method = None, output = "points"):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
         ### error analysis - raw
@@ -260,7 +274,7 @@ class GazeDataAnalyzer:
         
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
-        self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -269,7 +283,10 @@ class GazeDataAnalyzer:
         pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
         
-        self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        
+        if output == "values":
+            return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         
@@ -540,25 +557,30 @@ class GazeDataAnalyzer:
         
     
     def show_rms_pixel(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points):
+        rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
+        rmse_cor = (self.rmse(gaze_data_left_corrected, target_points) + self.rmse(gaze_data_right_corrected, target_points)) / 2
+        rmse_imp = (rmse_raw - rmse_cor) / max(rmse_raw, rmse_cor) * 100
         
         if self.show_rms_pixel_bool:
-            rmse_raw = (self.rmse(gaze_data_left, target_points) + self.rmse(gaze_data_right, target_points)) / 2
-            rmse_cor = (self.rmse(gaze_data_left_corrected, target_points) + self.rmse(gaze_data_right_corrected, target_points)) / 2
             
             print("RMS error raw:\t\t" + str(rmse_raw))
             print("RMS error corrected:\t" + str(rmse_cor))
-            print("Change:\t\t\t" + str((rmse_raw - rmse_cor) / max(rmse_raw, rmse_cor) * 100) + " %")
-
+            print("Change:\t\t\t" + str(rmse_imp) + " %")
+    
+        return (rmse_raw, rmse_cor, rmse_imp)
+    
     
     def show_rms_degree(self, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected):
-
+        rmse_deg_raw = (self.rmse_deg(angle_err_left) + self.rmse_deg(angle_err_right)) / 2
+        rmse_deg_cor = (self.rmse_deg(angle_err_left_corrected) + self.rmse_deg(angle_err_right_corrected)) / 2
+        rmse_deg_imp = (rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100
         if self.show_rms_degree_bool:
-            rmse_deg_raw = (self.rmse_deg(angle_err_left) + self.rmse_deg(angle_err_right)) / 2
-            rmse_deg_cor = (self.rmse_deg(angle_err_left_corrected) + self.rmse_deg(angle_err_right_corrected)) / 2
             
             print("RMS error raw (deg of visual angle):\t\t" + str(rmse_deg_raw))
             print("RMS error corrected (deg of visual angle):\t" + str(rmse_deg_cor))
-            print("Change:\t\t\t" + str((rmse_deg_raw - rmse_deg_cor) / max(rmse_deg_raw, rmse_deg_cor) * 100) + " %")
+            print("Change:\t\t\t" + str(rmse_deg_imp) + " %")
+            
+        return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
     
     def rmse(self, fixations, targets):
         fixations_filtered, filtered_targets = self.reject_outliers(fixations, targets)
