@@ -12,21 +12,21 @@ from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 type_of_cal = "default"
 
 # Session to run
-session_folder = "infant_d25_gudrun_5m"
-
+#session_folder = "infant_d25_gudrun_5m"
+session_folder = "ctrl_2_lukas"
 
 # Setting path and files
 session_path = "session_data/" + session_folder + "/"
 test_folder = session_path + "test_" + type_of_cal + "/"
 config_filename = session_path + "config.csv"
-cal_filename = test_folder + "transformation.csv"
+cal_filename = test_folder + "training_pursuit_circle.csv"
 
 
 
 analyzer = gda.GazeDataAnalyzer()
 
 print("\nSETUP TRANSFORMATION")
-analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+analyzer.setup(config_filename, cal_filename, "dbscan_pursuit")
 
 print("\nRUN ANIMATION")
 #training_filename = test_folder + "transformation.csv"  # use "dbscan_fixation"
