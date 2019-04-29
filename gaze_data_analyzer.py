@@ -57,14 +57,14 @@ class GazeDataAnalyzer:
             db_scan = dbscan.DBScan()
             clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
             
-#            colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
-#            colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
-#            plt.scatter(*zip(*clusters.keys()),c=colors)
-#            plt.title("DBScan", y=1.08)
-#            plt.gca().xaxis.tick_top()
-#            plt.xlim(0,1)
-#            plt.ylim(1,0)
-#            plt.show()
+            colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
+            colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
+            plt.scatter(*zip(*clusters.keys()),c=colors)
+            plt.title("DBScan", y=1.08)
+            plt.gca().xaxis.tick_top()
+            plt.xlim(0,1)
+            plt.ylim(1,0)
+            plt.show()
             
             gaze_data_left_x = []
             gaze_data_left_y = []
@@ -230,7 +230,7 @@ class GazeDataAnalyzer:
 #        gaze_data_right_corrected = gaze_data_right
         
         
-        gaze_data_left_corrected, gaze_data_right_corrected = self.center_by_cluster(gaze_data_left_corrected, gaze_data_right_corrected)
+#        gaze_data_left_corrected, gaze_data_right_corrected = self.center_by_cluster(gaze_data_left_corrected, gaze_data_right_corrected)
         #------------------------------#
         
         ### error analysis - corrected
@@ -245,8 +245,8 @@ class GazeDataAnalyzer:
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
         
-        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
-#        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
+#        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
+        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
         
         pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)

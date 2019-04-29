@@ -17,7 +17,7 @@ def analyze(session_folder):
     session_path = "session_data/" + session_folder + "/"
     test_folder = session_path + "test_" + type_of_cal + "/"
     config_filename = session_path + "config.csv"
-    cal_filename = test_folder + "transformation.csv"
+    cal_filename = test_folder + "training_fixation.csv"
 
     print("")
     print("Computing analyze linear transformation")
@@ -31,6 +31,9 @@ def analyze(session_folder):
     print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze(training_filename, "dbscan_fixation")
+    print("\nTEST DATA - PURSUIT (CIRCLE)")
+    training_filename = test_folder + "training_pursuit_circle.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
     print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze(training_filename, "dbscan_pursuit")
@@ -51,6 +54,9 @@ def analyze(session_folder):
     print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_seb(training_filename, "dbscan_fixation")
+    print("\nTEST DATA - PURSUIT (CIRCLE)")
+    training_filename = test_folder + "training_pursuit_circle.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
     print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_seb(training_filename, "dbscan_pursuit")
@@ -71,6 +77,9 @@ def analyze(session_folder):
     print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_regression(training_filename, "dbscan_fixation")
+    print("\nTEST DATA - PURSUIT (CIRCLE)")
+    training_filename = test_folder + "training_pursuit_circle.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
     print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_regression(training_filename, "dbscan_pursuit")
@@ -91,6 +100,9 @@ def analyze(session_folder):
     print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
     analyzer.analyze_poly(training_filename, "dbscan_fixation")
+    print("\nTEST DATA - PURSUIT (CIRCLE)")
+    training_filename = test_folder + "training_pursuit_circle.csv"
+    analyzer.analyze_poly(training_filename, "dbscan_pursuit")
     print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
     analyzer.analyze_poly(training_filename, "dbscan_pursuit")
@@ -103,12 +115,12 @@ def analyze(session_folder):
 print("Calibrating for default:")
 print("------------------------")
 # Run analyse on
-type_of_cal = "custom_5p"
+type_of_cal = "default"
 
 print("")
 
 # Session to run
-analyze("ctrl_group_louise-kopi")
-analyze("ctrl_group_lasse-kopi")
-analyze("ctrl_group_marie-kopi")
-analyze("ctrl_group_mikkel-kopi")
+analyze("ctrl_group_louise")
+analyze("ctrl_group_lasse")
+analyze("ctrl_group_marie")
+analyze("ctrl_group_mikkel")
