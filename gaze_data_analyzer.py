@@ -17,9 +17,9 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = True
+    show_graphs_bool = False
     show_rms_pixel_bool = False
-    show_rms_degree_bool = True
+    show_rms_degree_bool = False
     
     def read_data(self, filename, filtering_method, remove_nan_values = True):
         # read config csv file
@@ -75,8 +75,6 @@ class GazeDataAnalyzer:
             
             prev_target = np.array([-1.0, -1.0])
             prev_cluster = 0
-            clusters_used = set()
-            clusters_used.add(0)
             
             for i in range(self.N):
                 current_target = target_points_temp[:,i]
@@ -85,37 +83,37 @@ class GazeDataAnalyzer:
                 if p not in clusters:
                     continue;
                     
-                current_cluster = clusters[p]
+#                current_cluster = clusters[p]
                 
                 # Check if current target is a new target, and if the future target is a new target
-                is_new_target = not np.array_equal(current_target, prev_target)
+#                is_new_target = not np.array_equal(current_target, prev_target)
+
+                dif_new_target = 5
+                is_past_new_target = False
+                if (i - dif_new_target >= 0):
+                    is_past_new_target = not np.array_equal(current_target, target_points_temp[:,i-dif_new_target])
+                    
                 is_future_new_target = False
-                if (i + 3 < self.N):
-                    is_future_new_target = not np.array_equal(current_target, target_points_temp[:,i+3])
+                if (i + dif_new_target < self.N):
+                    is_future_new_target = not np.array_equal(current_target, target_points_temp[:,i+dif_new_target])
                 
                 # For fixation filtering
                 # A gaze point in a cluster has to be filtered away 
                 # If the current target point has changed but the gaze point has not, the gaze point can still be in the old cluster, for the old target point
                 # This gaze point should be filtered away, since it has a large visual angle error
                 # If the current target is different from the previous target, but the previous target is the same as the target before that, a change has been noted
-                if filtering_method == "dbscan_fixation" and is_new_target:
-                    clusters_used.add(prev_cluster)
-                    
-                if filtering_method == "dbscan_fixation" and is_future_new_target:
-                    clusters_used.add(current_cluster)
-                
-                if current_cluster not in clusters_used:
+                if clusters[p] == 0 or (filtering_method == "dbscan_fixation" and (is_past_new_target or is_future_new_target)):
+                    del clusters[p]
+                else:
                     gaze_data_left_x.append(gaze_data_left_temp[0,i])
                     gaze_data_left_y.append(gaze_data_left_temp[1,i])
                     gaze_data_right_x.append(gaze_data_right_temp[0,i])
                     gaze_data_right_y.append(gaze_data_right_temp[1,i])
                     target_points_x.append(target_points_temp[0,i])
                     target_points_y.append(target_points_temp[1,i])
-                else:
-                    del clusters[p]
                         
                 prev_target = current_target
-                prev_cluster = current_cluster
+#                prev_cluster = current_cluster
             
             if self.show_graphs_bool:
                 colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
@@ -932,6 +930,68 @@ class GazeDataAnalyzer:
     
         return (p, det)
     
+    def pattern_recognition(self, training_filename, filtering_method = None, output = "points"):
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
-    
+        n = len(target_points[0,:])
+        
+        target_degrees = []
+        gaze_left_degrees = []
+        gaze_right_degrees = []
+        look_up = 5
+        for i in range(n):
+            
+            start_index = i - look_up
+            end_index = i + look_up
+            if i < look_up:
+                start_index = 0
+            if i + 5 > n - 1:
+                end_index = n - 1
+                
+            target_degree = []
+            gaze_left_degree = []
+            gaze_right_degree = []
+            while start_index < end_index:
+                
+                target_degree.append(self.find_degree(target_points, start_index))
+                gaze_left_degree.append(self.find_degree(gaze_data_left, start_index))
+                gaze_right_degree.append(self.find_degree(gaze_data_right, start_index))
+                start_index += 1
+            
+            target_degrees.append(np.average(target_degree))
+            gaze_left_degrees.append(np.average(gaze_left_degree))
+            gaze_right_degrees.append(np.average(gaze_right_degree))
+        
+        correct_left = 0
+        correct_right = 0
+        error_left = 0
+        error_right = 0
+        
+        for i in range(n):
+            if (target_degrees[i] > 0 and gaze_left_degrees[i] > 0) or (target_degrees[i] < 0 and gaze_left_degrees[i] < 0):
+                correct_left += 1
+            else:
+                error_left += 1
+                
+            if (target_degrees[i] > 0 and gaze_right_degrees[i] > 0) or (target_degrees[i] < 0 and gaze_right_degrees[i] < 0):
+                correct_right += 1
+            else:
+                error_right += 1
+        
+        print("Correct left: " + str(correct_left))
+        print("Correct right: " + str(correct_right))
+        print("Error left: " + str(error_left))
+        print("Error right: " + str(error_right))
+        
+    def find_degree(self, points, index):
+        s = points[:,index]
+        e = points[:,index + 1]
+        
+        radians = math.atan2(e[0] - s[0], e[1] - s[1])
+        degree = math.degrees(radians)
+
+        return degree
+        
+            
+            
         

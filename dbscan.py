@@ -112,7 +112,10 @@ class DBScan:
                 j += 1
                 
                 newNeighbors = self.range_query_linear(points, i+j, q, eps)     # Find more neighbors
-                neighbors += newNeighbors                              # Add new neighbors
+                
+                for n in newNeighbors:
+                    if n not in neighbors:
+                        neighbors.append(n)                                      # Add new neighbors
 
             
             if len(neighbors) < minPts:                             # Density check
