@@ -241,8 +241,8 @@ class Application(tk.Frame):
         
 #        self.controller.flash_screen()
 #        self.controller.start_fixation_exercise(positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/star_yellow.png"])
-        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.8,-0.8), (-0.8,-0.4), (-0.8, 0.0), (-0.8, 0.4), (-0.8, 0.8), (-0.4,-0.8), (-0.4,-0.4), (-0.4, 0.0), (-0.4, 0.4), (-0.4, 0.8), (0.0,-0.8), (0.0,-0.4), (0.0, 0.0), (0.0, 0.4), (0.4, 0.8), (0.4,-0.8), (0.4,-0.4), (0.4, 0.0), (0.4, 0.4), (0.4, 0.8), (0.8,-0.8), (0.8,-0.4), (0.8, 0.0), (0.8, 0.4), (0.8, 0.8)], stimuli_paths=["stimuli/star_yellow.png"], fixation_duration = 1.5)
-        self.store_data("training_fixation_2")
+#        self.controller.start_fixation_exercise_animate_transition(positions=[(-0.8,-0.8), (-0.8,-0.4), (-0.8, 0.0), (-0.8, 0.4), (-0.8, 0.8), (-0.4,-0.8), (-0.4,-0.4), (-0.4, 0.0), (-0.4, 0.4), (-0.4, 0.8), (0.0,-0.8), (0.0,-0.4), (0.0, 0.0), (0.0, 0.4), (0.4, 0.8), (0.4,-0.8), (0.4,-0.4), (0.4, 0.0), (0.4, 0.4), (0.4, 0.8), (0.8,-0.8), (0.8,-0.4), (0.8, 0.0), (0.8, 0.4), (0.8, 0.8)], stimuli_paths=["stimuli/star_yellow.png"], fixation_duration = 1.5)
+#        self.store_data("training_fixation_2")
  
         self.controller.start_pursuit_exercise(pathing="circle", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_circle")
