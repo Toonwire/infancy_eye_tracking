@@ -17,10 +17,10 @@ def analyze(session_folder):
     session_path = "session_data/" + session_folder + "/"
     test_folder = session_path + "test_" + type_of_cal + "/"
     config_filename = session_path + "config.csv"
-#    cal_filename = test_folder + "training_fixation.csv"
+    cal_filename = test_folder + "training_fixation.csv"
 #    cal_filename = test_folder + "training_pursuit_circle.csv"
 #    cal_filename = test_folder + "training_pursuit_linear.csv"
-    cal_filename = test_folder + "training_pursuit_spiral.csv"
+#    cal_filename = test_folder + "training_pursuit_spiral.csv"
     
     print("")
     print("Computing analyze linear transformation")
@@ -28,14 +28,14 @@ def analyze(session_folder):
     
     analyzer = gda.GazeDataAnalyzer()
     print("\nSETUP TRANSFORMATION")
-#    analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
-    analyzer.setup(config_filename, cal_filename, "dbscan_pursuit")
+    analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
+#    analyzer.setup(config_filename, cal_filename, "dbscan_pursuit")
 #    print("\nTRAINING DATA")
 #    analyzer.analyze(cal_filename, "dbscan_fixation")
     
     print("\nTEST DATA - FIXATION")
     training_filename = test_folder + "training_fixation.csv"
-    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_fixation", "values")
+    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_fixation", "values")
 
     fixation_deg_raw.append(rmse_deg_raw)    
     fixation_deg_cor.append(rmse_deg_cor)
@@ -43,7 +43,7 @@ def analyze(session_folder):
     
     print("\nTEST DATA - PURSUIT (CIRCLE)")
     training_filename = test_folder + "training_pursuit_circle.csv"
-    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
+    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_pursuit", "values")
 
     pursuit_circle_deg_raw.append(rmse_deg_raw)    
     pursuit_circle_deg_cor.append(rmse_deg_cor)
@@ -51,7 +51,7 @@ def analyze(session_folder):
     
     print("\nTEST DATA - PURSUIT (LINEAR)")
     training_filename = test_folder + "training_pursuit_linear.csv"
-    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
+    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_pursuit", "values")
 
     pursuit_linear_deg_raw.append(rmse_deg_raw)
     pursuit_linear_deg_cor.append(rmse_deg_cor)
@@ -59,7 +59,7 @@ def analyze(session_folder):
 
     print("\nTEST DATA - PURSUIT (SPIRAL)")
     training_filename = test_folder + "training_pursuit_spiral.csv"
-    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
+    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_pursuit", "values")
 
     pursuit_spiral_deg_raw.append(rmse_deg_raw)
     pursuit_spiral_deg_cor.append(rmse_deg_cor)

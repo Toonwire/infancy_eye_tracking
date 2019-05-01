@@ -15,6 +15,7 @@ class DataCorrection:
     transformation_matrix_left_eye = np.identity(2)
     transformation_matrix_right_eye = np.identity(2)
     
+    show_optimizing = False
     
     
     def __init__(self, targets, px_width, px_height):
@@ -37,16 +38,18 @@ class DataCorrection:
     def calibrate_left_eye(self, fixations, initial_guess=np.identity(2)):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating left eye\n----------------")
-        self.transformation_matrix_left_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess)
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        self.transformation_matrix_left_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess, disp=self.show_optimizing)
         self.transformation_matrix_left_eye = np.reshape(self.transformation_matrix_left_eye, (-1,2))
         print("")
         
     def calibrate_right_eye(self, fixations, initial_guess=np.identity(2)):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating right eye\n----------------")
-        self.transformation_matrix_right_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess)
+        if self.show_optimizing:
+            print("Calibrating right eye\n----------------")
+        self.transformation_matrix_right_eye = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=initial_guess, disp=self.show_optimizing)
         self.transformation_matrix_right_eye = np.reshape(self.transformation_matrix_right_eye, (-1,2))
         print("")
                 
@@ -61,10 +64,30 @@ class DataCorrection:
         return np.matmul(self.transformation_matrix_right_eye, fixations)
     
     
-    transformation_matrix_left_eye_poly = np.ones((2,3))
-    transformation_matrix_right_eye_poly = np.ones((2,3))
-    poly_init_matrix = np.array([[0,0,0],[0,0,0]])
+#    transformation_matrix_left_eye_poly = np.ones((2,2))
+#    transformation_matrix_right_eye_poly = np.ones((2,2))
+#    poly_init_matrix = np.array([[0,0],[0,0]])
     
+#    transformation_matrix_left_eye_poly = np.ones((2,3))
+#    transformation_matrix_right_eye_poly = np.ones((2,3))
+#    poly_init_matrix = np.array([[0,0,0],[0,0,0]])
+#    
+#    transformation_matrix_left_eye_poly = np.ones((2,4))
+#    transformation_matrix_right_eye_poly = np.ones((2,4))
+#    poly_init_matrix = np.array([[0,0,0,0],[0,0,0,0]])
+#    
+#    transformation_matrix_left_eye_poly = np.ones((2,5))
+#    transformation_matrix_right_eye_poly = np.ones((2,5))
+#    poly_init_matrix = np.array([[0,0,0,0,0],[0,0,0,0,0]])
+#    
+#    transformation_matrix_left_eye_poly = np.ones((2,6))
+#    transformation_matrix_right_eye_poly = np.ones((2,6))
+#    poly_init_matrix = np.array([[0,0,0,0,0,0],[0,0,0,0,0,0]])
+#
+    transformation_matrix_left_eye_poly = np.ones((2,7))
+    transformation_matrix_right_eye_poly = np.ones((2,7))
+    poly_init_matrix = np.array([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])
+
     def apply_polynomial(self, fixations, transformation):
 
         cor_x = []
@@ -100,15 +123,17 @@ class DataCorrection:
     def calibrate_left_eye_poly(self, fixations):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating left eye\n----------------")
-        self.transformation_matrix_left_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation_poly, x0=self.poly_init_matrix)
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        self.transformation_matrix_left_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation_poly, x0=self.poly_init_matrix, disp=self.show_optimizing)
         self.transformation_matrix_left_eye_poly = np.reshape(self.transformation_matrix_left_eye_poly, (2,-1))
         
     def calibrate_right_eye_poly(self, fixations):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating right eye\n----------------")
-        self.transformation_matrix_right_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation_poly, x0=self.poly_init_matrix)
+        if self.show_optimizing:
+            print("Calibrating right eye\n----------------")
+        self.transformation_matrix_right_eye_poly = optimize.fmin(func=self.avg_dist_to_closest_fixation_poly, x0=self.poly_init_matrix, disp=self.show_optimizing)
         self.transformation_matrix_right_eye_poly = np.reshape(self.transformation_matrix_right_eye_poly, (2,-1))
     
     def adjust_left_eye_poly(self, fixations):
@@ -228,15 +253,17 @@ class DataCorrection:
     def calibrate_left_eye_coef(self, fixations, initial_guess=np.ones((2,6))):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating left eye\n----------------")
-        self.transformation_matrix_left_eye = optimize.fmin(func=self.coef_func, x0=initial_guess, xtol=0.3)
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        self.transformation_matrix_left_eye = optimize.fmin(func=self.coef_func, x0=initial_guess, xtol=0.3, disp=self.show_optimizing)
         self.transformation_matrix_left_eye = np.reshape(self.transformation_matrix_left_eye, (2,-1))
         
     def calibrate_right_eye_coef(self, fixations, initial_guess=np.ones((2,6))):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
-        print("Calibrating right eye\n----------------")
-        self.transformation_matrix_right_eye = optimize.fmin(func=self.coef_func, x0=initial_guess, xtol=0.3)
+        if self.show_optimizing:
+            print("Calibrating right eye\n----------------")
+        self.transformation_matrix_right_eye = optimize.fmin(func=self.coef_func, x0=initial_guess, xtol=0.3, disp=self.show_optimizing)
         self.transformation_matrix_right_eye = np.reshape(self.transformation_matrix_right_eye, (2,-1))
     
         
@@ -304,34 +331,36 @@ class DataCorrection:
         
         fixation_upper_right, fixation_upper_left, fixation_bottom_right, fixation_bottom_left, fixation_center, target_points_upper_right, target_points_upper_left, target_points_bottom_right, target_points_bottom_left, target_points_center = self.seperate_fixations(fixations)
             
-        print("Calibrating left eye\n----------------")
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+            
         self.calibration_fixations = fixation_upper_right
         self.calibration_targets = target_points_upper_right
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_left_eye["upper_right"] = trans_matrix
         
         self.calibration_fixations = fixation_upper_left
         self.calibration_targets = target_points_upper_left
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_left_eye["upper_left"] = trans_matrix
         
         self.calibration_fixations = fixation_bottom_right
         self.calibration_targets = target_points_bottom_right
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_left_eye["bottom_right"] = trans_matrix
         
         self.calibration_fixations = fixation_bottom_left
         self.calibration_targets = target_points_bottom_left
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_left_eye["bottom_left"] = trans_matrix
         
         self.calibration_fixations = fixation_center
         self.calibration_targets = target_points_center
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_left_eye["center"] = trans_matrix
         
@@ -339,34 +368,36 @@ class DataCorrection:
     def calibrate_right_eye_seb(self, fixations):
         fixation_upper_right, fixation_upper_left, fixation_bottom_right, fixation_bottom_left, fixation_center, target_points_upper_right, target_points_upper_left, target_points_bottom_right, target_points_bottom_left, target_points_center = self.seperate_fixations(fixations)
             
-        print("Calibrating left eye\n----------------")        
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+            
         self.calibration_fixations = fixation_upper_right
         self.calibration_targets = target_points_upper_right
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_right_eye["upper_right"] = trans_matrix
         
         self.calibration_fixations = fixation_upper_left
         self.calibration_targets = target_points_upper_left
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_right_eye["upper_left"] = trans_matrix
         
         self.calibration_fixations = fixation_bottom_right
         self.calibration_targets = target_points_bottom_right
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_right_eye["bottom_right"] = trans_matrix
         
         self.calibration_fixations = fixation_bottom_left
         self.calibration_targets = target_points_bottom_left
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_right_eye["bottom_left"] = trans_matrix
         
         self.calibration_fixations = fixation_center
         self.calibration_targets = target_points_center
-        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2))
+        trans_matrix = optimize.fmin(func=self.avg_dist_to_closest_fixation, x0=np.identity(2), disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,2))
         self.transformation_matrices_right_eye["center"] = trans_matrix
     
