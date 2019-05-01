@@ -55,6 +55,7 @@ class GazeDataAnalyzer:
             db_scan = dbscan.DBScan()
             clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
             
+            
             if self.show_graphs_bool:
                 colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
                 colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
