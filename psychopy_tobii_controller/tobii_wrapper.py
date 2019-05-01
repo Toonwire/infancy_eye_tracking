@@ -741,7 +741,7 @@ class tobii_controller:
 #        self.unsubscribe_dict()
         
 
-    def start_fixation_exercise(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
+    def start_fixation_exercise(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015, fixation_duration = 3):
         
         img_stims = []
         for stimuli_path in stimuli_paths:
@@ -762,7 +762,7 @@ class tobii_controller:
             i = 0
             clock.reset()
             current_time = clock.getTime()
-            while current_time < 3:
+            while current_time < fixation_duration:
                 img_stim = img_stims[(pos_index - 1) % len(img_stims)]
                 img_stim.setPos(pos)
                 img_stim.ori = i * self.rot_deg_per_frame
@@ -771,7 +771,7 @@ class tobii_controller:
                 
                 i += 1
                 
-                psychopy.core.wait(0.015)
+                psychopy.core.wait(frame_delay)
                 current_time = clock.getTime()
                 
             pos_index += 1
@@ -782,7 +782,7 @@ class tobii_controller:
     
     
     
-    def start_fixation_exercise_animate_transition(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"]):
+    def start_fixation_exercise_animate_transition(self, positions=[(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015, move_duration=1, fixation_duration = 3):
         
         img_stims = []
         for stimuli_path in stimuli_paths:
@@ -807,7 +807,7 @@ class tobii_controller:
             i = 0
             clock.reset()
             current_time = clock.getTime()
-            while current_time < 3:
+            while current_time < fixation_duration:
                 img_stim = img_stims[(pos_index - 1) % len(img_stims)]
                 img_stim.setPos(pos)
                 img_stim.ori = i * self.rot_deg_per_frame
@@ -816,13 +816,13 @@ class tobii_controller:
                 
                 i += 1
                 
-                psychopy.core.wait(0.015)
+                psychopy.core.wait(frame_delay)
                 current_time = clock.getTime()
                 
             if pos_index < len(position_pairs):
 #                self.subscribe_to_data = False
                 self.do_reset_recording = False
-                self.start_pursuit_exercise(pathing="linear", positions=position_pairs[pos_index], stimuli_paths=stimuli_paths, move_duration=1)
+                self.start_pursuit_exercise(pathing="linear", positions=position_pairs[pos_index], stimuli_paths=stimuli_paths, frame_delay=frame_delay, move_duration=move_duration)
 #                self.subscribe_to_data = True
                 self.do_reset_recording = True
             pos_index += 1
