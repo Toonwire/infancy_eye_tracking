@@ -85,15 +85,39 @@ Vise progress
 Diskutér clustering algoritmer, fordele ulempter ved dbscan (as implemented)
 
 
-02/05 - Per
+02/05 - Per + Mikkel
 -----------------------
 Hvis vi finder ud af at 2-/5 punktskalibrering virker, så er det bare den der skal bruges (< 4-5 grader)
 	- Basically stimuli orienteret kalibrering
 Målgruppe er 4-12 måneder, hvor 2-5år ikke virker så godt --> further work, tilpas stimuli behold metode?
+	- Stadig ingen mødregruppe..
 
 Selvjusterende del - Rejustering af data forventes at forøge præcision, men grænser for hvor lang tid barns opmærksomhed kan holdes.
 
-Mikkel: som produkt, hvad ville du/i gerne have at et sådan program skulle kunne?
+Skrot kalibrering, Full ham mønstergenkendelse (idéer til metoder? vi har pt. prøvet hældningssammenligning)?
+
+Hvordan står vi længde/tidsmæssigt?
+	- Ikke tid til så meget mere data indsamling og forsøg (sidste gang torsdag nok)
+	- Rapport ca. 1 måned? Erfaring med andet?
+
+Per review rapport under skrivning? (Mikkel?)
+
+
+Vi har prøvet på kryds og tværs med transformationer af forskellige exercises og set på deres indvirkning på correction.
+	- Vis kompakt latex tabel (todo: ændre data)
+
+Vis raw transformation (no delay correction) i sheets, med eller uden egen exercise?
+
+Delay correction med closest target virker ikke så godt (fjerner forskydning til target)
+	- Anden måde til at fjerne delay kunne være udregning af gaze velocity mod 90Hz og se hvor gaze ville befinde sig til tidspunktet hvor target blev tegnet (fjerner ikke forskydning, men rykker gaze)
+		- kan bliver kringlet, især med børn som laver saccader til pursuit, stilstand og så hurtige movements er svært at predicte hvor gaze ville være, da springet skal øges smooth og resettes ved saccade.
+
+Sidst snakkede Per om:
+	segmentering af linear pursuit
+		visual angle heri tager både delay og selve error
+		tag delay ud af ligningen ved at sammenligne linære segmenter og finde nærmeste punkter fra targets til gaze points
+
+
 
 
 
