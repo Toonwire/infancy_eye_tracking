@@ -64,10 +64,10 @@ class DataCorrection:
         return np.matmul(self.transformation_matrix_right_eye, fixations)
     
     
-#    transformation_matrix_left_eye_poly = np.ones((2,2))
-#    transformation_matrix_right_eye_poly = np.ones((2,2))
-#    poly_init_matrix = np.array([[0,0],[0,0]])
-    
+    transformation_matrix_left_eye_poly = np.ones((2,2))
+    transformation_matrix_right_eye_poly = np.ones((2,2))
+    poly_init_matrix = np.array([[0,0],[0,0]])
+#    
 #    transformation_matrix_left_eye_poly = np.ones((2,3))
 #    transformation_matrix_right_eye_poly = np.ones((2,3))
 #    poly_init_matrix = np.array([[0,0,0],[0,0,0]])
@@ -84,9 +84,9 @@ class DataCorrection:
 #    transformation_matrix_right_eye_poly = np.ones((2,6))
 #    poly_init_matrix = np.array([[0,0,0,0,0,0],[0,0,0,0,0,0]])
 #
-    transformation_matrix_left_eye_poly = np.ones((2,7))
-    transformation_matrix_right_eye_poly = np.ones((2,7))
-    poly_init_matrix = np.array([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])
+#    transformation_matrix_left_eye_poly = np.ones((2,7))
+#    transformation_matrix_right_eye_poly = np.ones((2,7))
+#    poly_init_matrix = np.array([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])
 
     def apply_polynomial(self, fixations, transformation):
 

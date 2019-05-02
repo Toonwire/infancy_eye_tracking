@@ -41,6 +41,14 @@ def analyze(session_folder):
     fixation_deg_cor.append(rmse_deg_cor)
     fixation_deg_imp.append(rmse_deg_imp)
     
+    print("\nTEST DATA - FIXATION_2")
+    training_filename = test_folder + "training_fixation_2.csv"
+    rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_fixation", "values")
+
+    fixation_2_deg_raw.append(rmse_deg_raw)    
+    fixation_2_deg_cor.append(rmse_deg_cor)
+    fixation_2_deg_imp.append(rmse_deg_imp)
+    
     print("\nTEST DATA - PURSUIT (CIRCLE)")
     training_filename = test_folder + "training_pursuit_circle.csv"
     rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze_poly(training_filename, "dbscan_pursuit", "values")
@@ -150,23 +158,32 @@ print("")
 fixation_deg_raw = []
 fixation_deg_cor = []
 fixation_deg_imp = []
+# ------------
+fixation_2_deg_raw = []
+fixation_2_deg_cor = []
+fixation_2_deg_imp = []
+# ------------
 pursuit_circle_deg_raw = []
 pursuit_circle_deg_cor = []
 pursuit_circle_deg_imp = []
+# ------------
 pursuit_linear_deg_raw = []
 pursuit_linear_deg_cor = []
 pursuit_linear_deg_imp = []
+# ------------
 pursuit_spiral_deg_raw = []
 pursuit_spiral_deg_cor = []
 pursuit_spiral_deg_imp = []
 
 # Session to run
-analyze("ctrl_group_2_louise")
-analyze("ctrl_group_2_lasse")
-analyze("ctrl_group_2_marie")
-analyze("ctrl_group_2_mikkel")
-analyze("ctrl_group_2_lukas")
-analyze("ctrl_group_2_seb")
+#analyze("ctrl_group_2_louise")
+#analyze("ctrl_group_2_lasse")
+#analyze("ctrl_group_2_marie")
+#analyze("ctrl_group_2_mikkel")
+#analyze("ctrl_group_2_lukas")
+#analyze("ctrl_group_2_seb")
+analyze("fix_test_sebbi")
+analyze("fix_test_luggi")
 
 def print_nice(values):
     my_str = ""
@@ -176,18 +193,21 @@ def print_nice(values):
 
 print("Improvements values")
 print_nice(fixation_deg_imp)
+print_nice(fixation_2_deg_imp)
 print_nice(pursuit_circle_deg_imp)
 print_nice(pursuit_linear_deg_imp)
 print_nice(pursuit_spiral_deg_imp)
 
 print("Correction values")
 print_nice(fixation_deg_cor)
+print_nice(fixation_2_deg_cor)
 print_nice(pursuit_circle_deg_cor)
 print_nice(pursuit_linear_deg_cor)
 print_nice(pursuit_spiral_deg_cor)
 
 print("Raw values")
 print_nice(fixation_deg_raw)
+print_nice(fixation_2_deg_raw)
 print_nice(pursuit_circle_deg_raw)
 print_nice(pursuit_linear_deg_raw)
 print_nice(pursuit_spiral_deg_raw)
