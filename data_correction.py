@@ -63,27 +63,32 @@ class DataCorrection:
             raise Exception("No calibration for right eye exists")
         return np.matmul(self.transformation_matrix_right_eye, fixations)
     
-    
-    transformation_matrix_left_eye_poly = np.ones((2,2))
-    transformation_matrix_right_eye_poly = np.ones((2,2))
-    poly_init_matrix = np.array([[0,0],[0,0]])
+#    --------- First degree polynomial ------------
+#    transformation_matrix_left_eye_poly = np.ones((2,2))
+#    transformation_matrix_right_eye_poly = np.ones((2,2))
+#    poly_init_matrix = np.array([[0,0],[0,0]])
 #    
-#    transformation_matrix_left_eye_poly = np.ones((2,3))
-#    transformation_matrix_right_eye_poly = np.ones((2,3))
-#    poly_init_matrix = np.array([[0,0,0],[0,0,0]])
+#    --------- Second degree polynomial ------------
+    transformation_matrix_left_eye_poly = np.ones((2,3))
+    transformation_matrix_right_eye_poly = np.ones((2,3))
+    poly_init_matrix = np.array([[0,0,0],[0,0,0]])
 #    
+#    --------- Third degree polynomial ------------
 #    transformation_matrix_left_eye_poly = np.ones((2,4))
 #    transformation_matrix_right_eye_poly = np.ones((2,4))
 #    poly_init_matrix = np.array([[0,0,0,0],[0,0,0,0]])
 #    
+#    --------- Fourth degree polynomial ------------
 #    transformation_matrix_left_eye_poly = np.ones((2,5))
 #    transformation_matrix_right_eye_poly = np.ones((2,5))
 #    poly_init_matrix = np.array([[0,0,0,0,0],[0,0,0,0,0]])
-#    
+    
+#    --------- Fifth degree polynomial ------------
 #    transformation_matrix_left_eye_poly = np.ones((2,6))
 #    transformation_matrix_right_eye_poly = np.ones((2,6))
 #    poly_init_matrix = np.array([[0,0,0,0,0,0],[0,0,0,0,0,0]])
 #
+#    --------- Sixth degree polynomial ------------
 #    transformation_matrix_left_eye_poly = np.ones((2,7))
 #    transformation_matrix_right_eye_poly = np.ones((2,7))
 #    poly_init_matrix = np.array([[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]])
