@@ -9,7 +9,24 @@ Ikke noget godt kommer ud af at gå op i højere grad polynomium
 Smooth pursuit over en segmentering ved mænstergenkendlese af segmenenter og sammenligne med target segmenter
 
 
-Følg læseren igennem de overvejelser der har været undervejs. 
+Følg læseren igennem de overvejelser der har været undervejs.  
 
 
 Transformering fra punkt til "linje" gennem alle punkter
+
+
+
+
+
+
+FIndes en sammenhæng/symmetri mellem venstre og højre øje kalibrering
+Tag transformation for både venstre og højre øje, se om der er en relation mellem matricerne.
+	- Kan der ses en model udtrykt kun ved den ene transformation = T1 og T2 => T1 = T2*a (nok nærmere på hver parameter i matricen i stedet for at gange en skalar etc på).
+Findes en sådan relation? Hvis ja, findes den for alle børn (måske med lidt afvigelser)?
+
+Relationen mellem to transformationsmatricer hjælper måske til at detektere støj, hvis det kan ses at én forsøgsperson afviger fra normen (hvis der findes en), og på den måde kan det afgøres om dataet skulle være "corrupted"
+
+
+TIL EKSAMEN
+-----------
+Giv et overblik over situation, hvad der er gået igennem. "Video med forsøgsopstilling" - Vi har bare en tegning etc.
