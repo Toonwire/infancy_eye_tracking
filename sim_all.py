@@ -237,6 +237,11 @@ print("Average RMSE degree after correction: " + str(np.mean(fixation_deg_cor)))
 print("Average RMSE improvement: " + str(np.mean(fixation_deg_imp)))
 
 print("")
+print("Fixations 2 value")
+print("Average RMSE degree after correction: " + str(np.mean(fixation_2_deg_cor)))
+print("Average RMSE improvement: " + str(np.mean(fixation_2_deg_imp)))
+
+print("")
 print("Pursuit circle value")
 print("Average RMSE degree after correction: " + str(np.mean(pursuit_circle_deg_cor)))
 print("Average RMSE improvement: " + str(np.mean(pursuit_circle_deg_imp)))
