@@ -22,7 +22,7 @@ class GazeDataAnalyzer:
     show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
-    to_closest_target = True
+    to_closest_target = False
     
     def read_data(self, filename, filtering_method, remove_nan_values = True):
         # read config csv file
@@ -333,6 +333,9 @@ class GazeDataAnalyzer:
         
         test_size = self.N / k        
         
+        best_k_fold = 0
+        best_optimize = 0
+        
         for i in range(k):
             
             print("")
@@ -376,6 +379,33 @@ class GazeDataAnalyzer:
             
             rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
     
+            if rmse_deg_imp > best_optimize:
+                best_optimize = rmse_deg_imp
+                best_k_fold = i
+                
+        print("")
+        print("Best k fold, " + str(best_k_fold + 1))
+        print("With a given optimization on " + str(best_optimize))
+        print("")
+        
+        indices = np.array(range(1, self.N))
+        training_indices = indices[best_k_fold*test_size:(best_k_fold+1)*test_size]
+        test_indices = np.array([j for j in indices if j not in training_indices])
+        
+        training_set_left = gaze_data_left[:,training_indices]
+        test_set_left = gaze_data_left[:,test_indices]
+        
+        training_set_right = gaze_data_right[:,training_indices]
+        test_set_right = gaze_data_right[:,test_indices]
+        
+        training_set_target = target_points[:,training_indices]
+        test_set_target = target_points[:,test_indices]
+
+        self.data_correction = dc.DataCorrection(training_set_target, self.screen_width_px, self.screen_height_px)
+        self.data_correction.calibrate_left_eye(training_set_left)
+        self.data_correction.calibrate_right_eye(training_set_right)
+
+
     
     # set up the transformation matrices 
     def setup_poly(self, config_file, cal_filename, filtering_method = None):

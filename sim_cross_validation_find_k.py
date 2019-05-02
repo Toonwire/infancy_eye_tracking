@@ -30,7 +30,7 @@ training_filename = test_folder + "training_fixation.csv"
 analyzer = gda.GazeDataAnalyzer()
 
 print("\nSimulate cross validation")
-analyzer.cross_validation(config_filename, training_filename, "dbscan_fixation", k = 5)
+analyzer.cross_validation(config_filename, training_filename, "dbscan_fixation", k = 10)
 
 
 

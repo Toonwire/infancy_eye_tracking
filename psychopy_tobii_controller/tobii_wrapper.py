@@ -663,7 +663,7 @@ class tobii_controller:
             self.win.flip()
         
         
-    def animate_test(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points, stimuli_paths=["stimuli/smiley_yellow.png"]):
+    def animate_test(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points, stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015):
         
         self.make_psycho_window()
         
@@ -705,7 +705,7 @@ class tobii_controller:
 
             self.win.flip()
             
-            psychopy.core.wait(0.015)
+            psychopy.core.wait(frame_delay)
         
         self.close_psycho_window(screen=1)
         

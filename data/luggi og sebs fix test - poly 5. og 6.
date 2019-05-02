@@ -1,0 +1,147 @@
+------------------------------------------------------------------
+5. grads polynomium
+------------------------------------------------------------------
+
+
+
+------------------------------------------------------------------
+6. grads polynomium
+------------------------------------------------------------------
+
+Calibrating for default:
+------------------------
+
+Running for fix_test_sebbi
+------------------------
+
+Computing analyze linear transformation
+------------------------
+
+SETUP TRANSFORMATION
+
+TEST DATA - FIXATION
+RMS error raw:          0.09408785843301927
+RMS error corrected:    0.05325513779331649
+Change:                 43.39850148547213 %
+RMS error raw (deg of visual angle):            6.452686793841636
+RMS error corrected (deg of visual angle):      1.6146198300949042
+Change:                 74.97755769525529 %
+
+TEST DATA - FIXATION_2
+RMS error raw:          0.10786278767630128
+RMS error corrected:    0.07829982726346016
+Change:                 27.407932846646098 %
+RMS error raw (deg of visual angle):            7.635872420220574
+RMS error corrected (deg of visual angle):      4.855639102948859
+Change:                 36.410159367112676 %
+
+TEST DATA - PURSUIT (CIRCLE)
+RMS error raw:          0.12645257476184432
+RMS error corrected:    0.06776862976451756
+Change:                 46.40786880603241 %
+RMS error raw (deg of visual angle):            8.043637317533747
+RMS error corrected (deg of visual angle):      3.738433198074524
+Change:                 53.523100924436484 %
+
+TEST DATA - PURSUIT (LINEAR)
+RMS error raw:          0.09980740143095258
+RMS error corrected:    0.0356586272061769
+Change:                 64.27256225997851 %
+RMS error raw (deg of visual angle):            7.666055573754471
+RMS error corrected (deg of visual angle):      2.5486539997738253
+Change:                 66.75403699786101 %
+
+TEST DATA - PURSUIT (SPIRAL)
+RMS error raw:          0.11226335651002839
+RMS error corrected:    0.06520960509010178
+Change:                 41.913722235557195 %
+RMS error raw (deg of visual angle):            7.542452223620817
+RMS error corrected (deg of visual angle):      2.6409149699027257
+Change:                 64.9859900785035 %
+
+Running for fix_test_luggi
+------------------------
+
+Computing analyze linear transformation
+------------------------
+
+SETUP TRANSFORMATION
+
+TEST DATA - FIXATION
+RMS error raw:          0.10430691733170246
+RMS error corrected:    0.03517841234303076
+Change:                 66.2741328735071 %
+RMS error raw (deg of visual angle):            6.849391301840495
+RMS error corrected (deg of visual angle):      0.9972556442072615
+Change:                 85.44022964581845 %
+
+TEST DATA - FIXATION_2
+RMS error raw:          0.0988856522290576
+RMS error corrected:    0.04087595090906764
+Change:                 58.66341578616172 %
+RMS error raw (deg of visual angle):            6.865934592070122
+RMS error corrected (deg of visual angle):      2.0328888202798714
+Change:                 70.39166637812461 %
+
+TEST DATA - PURSUIT (CIRCLE)
+RMS error raw:          0.10352539112760992
+RMS error corrected:    0.03687762027494883
+Change:                 64.37818792735412 %
+RMS error raw (deg of visual angle):            7.166377092486968
+RMS error corrected (deg of visual angle):      2.060090005365467
+Change:                 71.25339653804697 %
+
+TEST DATA - PURSUIT (LINEAR)
+RMS error raw:          0.11315963503953999
+RMS error corrected:    0.029234772742816505
+Change:                 74.16501676361773 %
+RMS error raw (deg of visual angle):            7.472538698895852
+RMS error corrected (deg of visual angle):      1.5354620287024394
+Change:                 79.45193607455897 %
+
+TEST DATA - PURSUIT (SPIRAL)
+RMS error raw:          0.13170013535665026
+RMS error corrected:    0.07308122827415178
+Change:                 44.509374970462765 %
+RMS error raw (deg of visual angle):            7.620362029395796
+RMS error corrected (deg of visual angle):      2.257386225250218
+Change:                 70.37691626011629 %
+
+Improvements values
+74.97755769525529       85.44022964581845       
+36.410159367112676      70.39166637812461       
+53.523100924436484      71.25339653804697       
+66.75403699786101       79.45193607455897       
+64.9859900785035        70.37691626011629       
+Correction values
+1.6146198300949042      0.9972556442072615      
+4.855639102948859       2.0328888202798714      
+3.738433198074524       2.060090005365467       
+2.5486539997738253      1.5354620287024394      
+2.6409149699027257      2.257386225250218       
+Raw values
+6.452686793841636       6.849391301840495       
+7.635872420220574       6.865934592070122       
+8.043637317533747       7.166377092486968       
+7.666055573754471       7.472538698895852       
+7.542452223620817       7.620362029395796       
+
+Fixations value
+Average RMSE degree after correction: 1.305937737151083
+Average RMSE improvement: 80.20889367053687
+
+Fixations 2 value
+Average RMSE degree after correction: 3.4442639616143653
+Average RMSE improvement: 53.40091287261865
+
+Pursuit circle value
+Average RMSE degree after correction: 2.8992616017199957
+Average RMSE improvement: 62.38824873124173
+
+Pursuit linear value
+Average RMSE degree after correction: 2.0420580142381324
+Average RMSE improvement: 73.10298653620998
+
+Pursuit spiral value
+Average RMSE degree after correction: 2.449150597576472
+Average RMSE improvement: 67.68145316930989
