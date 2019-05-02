@@ -1,0 +1,15 @@
+SKriv logbogsagtigt forsøg og udvidelser
+
+
+tradeoff mellem kalibrering ofg default med transformation
+
+Ikke noget godt kommer ud af at gå op i højere grad polynomium
+
+
+Smooth pursuit over en segmentering ved mænstergenkendlese af segmenenter og sammenligne med target segmenter
+
+
+Følg læseren igennem de overvejelser der har været undervejs. 
+
+
+Transformering fra punkt til "linje" gennem alle punkter
