@@ -120,3 +120,12 @@ Sidst snakkede Per om:
 
 
 
+
+16/05 - Per
+-----------------------
+
+RMS error for visual angle skrives i grader eller ej?
+
+Kronologisk setup:
+	- Flow  --> correction algorithms inde i flow? Lidt irriterende at springe frem og tilbage hvis man har den section før/efter
+	

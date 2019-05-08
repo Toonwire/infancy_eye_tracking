@@ -15,7 +15,7 @@ type_of_cal = "default"
 #type_of_cal = "custom_5p"
 
 # Session to run
-session_folder = "ctrl_group_2_louise"
+session_folder = "ctrl_group_2_seb"
 #session_folder = "infant_d25_gudrun_5m"
 
 
@@ -25,25 +25,23 @@ test_folder = session_path + "test_" + type_of_cal + "/"
 config_filename = session_path + "config.csv"
 cal_filename = test_folder + "training_fixation.csv"
 
-
-
 analyzer = gda.GazeDataAnalyzer()
 
 print("\nSETUP TRANSFORMATION")
-analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+analyzer.setup(config_filename, cal_filename, "threshold_time_fixation")
 
 print("\nTEST DATA - FIXATION")
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, "dbscan_fixation")
+analyzer.analyze(training_filename, "threshold_time_fixation")
 
 print("\nTEST DATA - PURSUIT (CIRCLE)")
 training_filename = test_folder + "training_pursuit_circle.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+analyzer.analyze(training_filename, "threshold_time_pursuit")
 
 print("\nTEST DATA - PURSUIT (LINEAR)")
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+analyzer.analyze(training_filename, "threshold_time_pursuit")
 
 print("\nTEST DATA - PURSUIT (SPIRAL)")
 training_filename = test_folder + "training_pursuit_spiral.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+analyzer.analyze(training_filename, "threshold_time_pursuit")
