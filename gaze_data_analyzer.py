@@ -46,6 +46,8 @@ class GazeDataAnalyzer:
 
 
         self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
+        self.plot_scatter_avg(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering AVG")
+        
 
         return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
@@ -140,6 +142,7 @@ class GazeDataAnalyzer:
             target_points = np.array([target_points_x, target_points_y])
             
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
+            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
 
 
         # Remove all points after a shift of target for a half second (45 measures)
@@ -179,6 +182,8 @@ class GazeDataAnalyzer:
             target_points = np.array([target_points_x, target_points_y])
 
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
+            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
+            
         # Remove all points in the first half second (45 measures)
         elif filtering_method == "threshold_time_pursuit":
             
@@ -208,6 +213,7 @@ class GazeDataAnalyzer:
             target_points = np.array([target_points_x, target_points_y])
             
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
+            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
             
         # Do nothing for filter out outliers
         elif filtering_method == None:
@@ -922,6 +928,19 @@ class GazeDataAnalyzer:
         plt.ylim(1,0)
         plt.show()
         
+    def plot_scatter_avg(self, gaze_data_left, gaze_data_right, targets, title_string=""):
+        gaze_data_avg = np.mean(np.array([gaze_data_left, gaze_data_right]), axis=0)
+        
+        scatter_avg = plt.scatter(gaze_data_avg[0,:], gaze_data_avg[1,:], marker='x', color='blue')
+        scatter_target = plt.scatter(targets[0,:], targets[1,:], marker='^', color='black')
+            
+        plt.legend((scatter_avg, scatter_target),
+                   ("avg eye", "target points"))
+        plt.title(title_string, y=1.08)
+        plt.gca().xaxis.tick_top()
+        plt.xlim(0,1)
+        plt.ylim(1,0)
+        plt.show()
         
     def plot_angle_errors(self, err_left, err_right, title_string=""):
         self.plot_pixel_errors(err_left, err_right, title_string, y_max=6)
