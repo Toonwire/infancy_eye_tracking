@@ -62,6 +62,7 @@ class DataCorrection:
         if np.allclose(self.transformation_matrix_right_eye, np.identity(2)):
             raise Exception("No calibration for right eye exists")
         return np.matmul(self.transformation_matrix_right_eye, fixations)
+
     
 #    --------- First degree polynomial ------------
 #    transformation_matrix_left_eye_poly = np.ones((2,2))

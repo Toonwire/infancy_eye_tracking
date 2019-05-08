@@ -9,12 +9,11 @@ import gaze_data_analyzer as gda
 from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 
 # Run analyse on
-type_of_cal = "default"
+type_of_cal = "custom_2p"
 
 # Session to run
 #session_folder = "infant_d25_gudrun_5m"
-#session_folder = "ctrl_group_2_louise"
-session_folder = "fix_test_luggi"
+session_folder = "ctrl_group_2_marie"
 
 # Setting path and files
 session_path = "session_data/" + session_folder + "/"

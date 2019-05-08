@@ -38,10 +38,14 @@ class GazeDataAnalyzer:
         # note number of data rows in csv file
         self.N = len(data_frame)
         
+        
         # fetch gaze points from data
         gaze_data_left_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['left_gaze_point_on_display_area']]))
         gaze_data_right_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['right_gaze_point_on_display_area']]))
         target_points_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['current_target_point_on_display_area']]))
+
+
+        self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
 
         return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
@@ -134,6 +138,8 @@ class GazeDataAnalyzer:
             gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
+            
+            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
 
 
         # Remove all points after a shift of target for a half second (45 measures)
@@ -172,6 +178,7 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
 
+            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
         # Remove all points in the first half second (45 measures)
         elif filtering_method == "threshold_time_pursuit":
             
@@ -199,6 +206,8 @@ class GazeDataAnalyzer:
             gaze_data_left = np.array([gaze_data_left_x, gaze_data_left_y])
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
+            
+            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
             
         # Do nothing for filter out outliers
         elif filtering_method == None:
@@ -300,6 +309,11 @@ class GazeDataAnalyzer:
         
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         
+    def getTransformationLeft(self):
+        return self.data_correction.transformation_matrix_left_eye
+    
+    def getTransformationRight(self):
+        return self.data_correction.transformation_matrix_right_eye
     
     def shuffle(self, gaze_data_left, gaze_data_right, target_points):
         
