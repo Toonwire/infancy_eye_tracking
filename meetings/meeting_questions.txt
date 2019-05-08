@@ -118,5 +118,8 @@ Sidst snakkede Per om:
 
 
 
+16/05 - Per + Mikkel
+-----------------------
+Antal figurer i rapport, hvert barn, 3x3 default, 3x2 calibration, resten bilag?
 
 
