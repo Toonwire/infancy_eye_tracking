@@ -18,7 +18,7 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = False
+    show_graphs_bool = True
     show_rms_pixel_bool = True
     show_rms_degree_bool = True
     
@@ -56,7 +56,14 @@ class GazeDataAnalyzer:
             gaze_data_temp = np.mean(np.array([gaze_data_left_temp, gaze_data_right_temp]), axis=0)
             
             db_scan = dbscan.DBScan()
-            clusters = db_scan.run_linear(gaze_data_temp.T, 0.05, 10)
+            
+            dist_to_neighbor = 0.05
+            min_size_of_cluster = 10
+            if filtering_method == "dbscan_fixation":
+                dist_to_neighbor = 0.01
+                min_size_of_cluster = 10
+                
+            clusters = db_scan.run_linear(gaze_data_temp.T, dist_to_neighbor, min_size_of_cluster)
             
             
             if self.show_graphs_bool:
@@ -76,10 +83,9 @@ class GazeDataAnalyzer:
             target_points_x = []
             target_points_y = []
             
-            prev_target = np.array([-1.0, -1.0])
-            prev_cluster = 0
             
             for i in range(self.N):
+                                
                 current_target = target_points_temp[:,i]
                 p = (gaze_data_temp[0, i], gaze_data_temp[1, i])
                 
@@ -89,9 +95,8 @@ class GazeDataAnalyzer:
 #                current_cluster = clusters[p]
                 
                 # Check if current target is a new target, and if the future target is a new target
-#                is_new_target = not np.array_equal(current_target, prev_target)
 
-                dif_new_target = 5
+                dif_new_target = 50
                 is_past_new_target = False
                 if (i - dif_new_target >= 0):
                     is_past_new_target = not np.array_equal(current_target, target_points_temp[:,i-dif_new_target])
@@ -115,8 +120,6 @@ class GazeDataAnalyzer:
                     target_points_x.append(target_points_temp[0,i])
                     target_points_y.append(target_points_temp[1,i])
                         
-                prev_target = current_target
-#                prev_cluster = current_cluster
             
             if self.show_graphs_bool:
                 colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
@@ -253,6 +256,7 @@ class GazeDataAnalyzer:
     
     def analyze(self, training_filename, filtering_method = None, output = "points"):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
+        
         
         if self.to_closest_target:
             target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)        

@@ -13,13 +13,21 @@ import matplotlib.pyplot as plt
 
 
 session_folder = "session_data/"
-#sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
-sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
-type_of_cal = "default"
+#sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
+sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
+#sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
+#type_of_cal = "default"
+type_of_cal = "custom_2p"
+#type_of_cal = "custom_5p"
 type_of_training = "fixation"
+#type_of_training = "pursuit_linear"
+#type_of_training = "pursuit_spiral"
 
 # Filtering data by
+#filtering_method = None
 filtering_method = "dbscan_fixation"
+#filtering_method = "dbscan_pursuit"
+#filtering_method = "threshold_time_pursuit"
 
 
 
@@ -32,7 +40,7 @@ data_labels = []
 colors = ["red", "green", "blue", "yellow", "cyan", "magenta"]
 gaze_data = []
 gaze_data_corrected = []
-targets = None
+all_targets = [[],[]]
 
 subject = 1
 
@@ -52,6 +60,10 @@ for session in sessions:
         
         gaze_data.append(np.mean(np.array([gaze_left, gaze_right]), axis=0))
         gaze_data_corrected.append(np.mean(np.array([gaze_data_left_corrected, gaze_data_right_corrected]), axis=0))
+        
+        for t in targets.T:
+            all_targets[0].append(t[0])
+            all_targets[1].append(t[1])
 
         angle_err = np.mean(np.array([angle_err_left, angle_err_right]), axis=0)
         angle_err_corrected = np.mean(np.array([angle_err_left_corrected, angle_err_right_corrected]), axis=0)
@@ -66,13 +78,15 @@ for session in sessions:
     except Exception as e:
         print(e)
 
+all_targets = np.array(all_targets)
+
 data_labels.append("targets")
 
 scatters = []
 for idx, data in enumerate(gaze_data):
     scatters.append(plt.scatter(data[0,:], data[1,:], marker="x", color=colors[idx], alpha=0.8))    
 
-scatters.append(plt.scatter(targets[0,:], targets[1,:], marker="o", color="black"))
+scatters.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
 plt.legend(scatters, data_labels)
 plt.title("Raw data", y=1.08)
 plt.gca().xaxis.tick_top()
@@ -84,7 +98,7 @@ scatters_corrected = []
 for idx, data_corrected in enumerate(gaze_data_corrected):
     scatters_corrected.append(plt.scatter(data_corrected[0,:], data_corrected[1,:], marker="x", color=colors[idx], alpha=0.8))
 
-scatters_corrected.append(plt.scatter(targets[0,:], targets[1,:], marker="o", color="black"))
+scatters_corrected.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
 plt.legend(scatters_corrected, data_labels)
 plt.title("Transformed data", y=1.08)
 plt.gca().xaxis.tick_top()
