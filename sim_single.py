@@ -10,13 +10,13 @@ import gaze_data_analyzer as gda
 
 
 # Run analyse on
-type_of_cal = "default"
+#type_of_cal = "default"
 #type_of_cal = "custom_2p"
-#type_of_cal = "custom_5p"
+type_of_cal = "custom_5p"
 
 # Session to run
-session_folder = "ctrl_group_2_seb"
-#session_folder = "infant_d25_noel_5m"
+#session_folder = "ctrl_group_2_seb"
+session_folder = "infant2_d52_vilja_7m"
 
 
 # Setting path and files

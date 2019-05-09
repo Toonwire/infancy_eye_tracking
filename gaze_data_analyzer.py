@@ -44,12 +44,13 @@ class GazeDataAnalyzer:
         gaze_data_right_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['right_gaze_point_on_display_area']]))
         target_points_temp = np.transpose(np.array([eval(coord) if coord != "(nan, nan)" else (-1,-1) for coord in data_frame['current_target_point_on_display_area']]))
 
-
-        self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
-        self.plot_scatter_avg(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering AVG")
+        if len(gaze_data_left_temp) > 0 and len(gaze_data_right_temp) > 0:
+            self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
+            self.plot_scatter_avg(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering AVG")
         
-
-        return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
+            return self.filtering(filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
+        else:
+            return (gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
     def filtering(self, filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp):
         
@@ -141,8 +142,9 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
             
-            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
-            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
+            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0:
+                self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
+                self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
 
 
         # Remove all points after a shift of target for a half second (45 measures)
@@ -181,8 +183,9 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
 
-            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
-            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
+            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0:
+                self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
+                self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER filtering AVG")
             
         # Remove all points in the first half second (45 measures)
         elif filtering_method == "threshold_time_pursuit":
@@ -272,6 +275,8 @@ class GazeDataAnalyzer:
     def analyze(self, training_filename, filtering_method = None, output = "points"):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename, filtering_method)
         
+        if len(gaze_data_left) == 0 and len(gaze_data_right) == 0:
+            return None
         
         if self.to_closest_target:
             target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)        
@@ -908,7 +913,6 @@ class GazeDataAnalyzer:
           
   
     def plot_scatter(self, gaze_data_left, gaze_data_right, targets, title_string=""):
-        
         x_left = gaze_data_left[0,:]
         y_left = gaze_data_left[1,:]
         x_right = gaze_data_right[0,:]
