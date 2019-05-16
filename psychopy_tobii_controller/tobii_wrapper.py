@@ -832,7 +832,7 @@ class tobii_controller:
         self.stop_recording()
         
     
-    def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5):
+    def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5, reverse=False):
         
         
         # Normal coordinate system
@@ -900,11 +900,12 @@ class tobii_controller:
                 pos = (r*math.cos(theta), r*math.sin(theta))
                 intermediate_positions.append(pos)
         
-        
+        if reverse:
+            intermediate_positions.reverse()
         return intermediate_positions
         
     
-    def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015, move_duration=5):
+    def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], reverse=False, frame_delay=0.011, move_duration=5):
         
         img_stims = []
         for stimuli_path in stimuli_paths:
@@ -914,7 +915,7 @@ class tobii_controller:
             img_stims.append(img_stim)
         
 #        frame_delay = 0.015
-        intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=move_duration)
+        intermediate_positions = self.calc_pursuit_route(pathing, positions=positions, frame_delay=frame_delay, move_duration=move_duration, reverse=reverse)
         
         if self.do_reset_recording:
 #            self.subscribe_dict()
@@ -922,7 +923,6 @@ class tobii_controller:
         
         pos_index = 0
         for i, pos in enumerate(intermediate_positions):
-            self.current_target = self.get_tobii_pos(pos)
             img_stim = img_stims[(pos_index) % len(img_stims)]
             img_stim.setPos(pos)
             img_stim.ori = i * self.rot_deg_per_frame
@@ -935,7 +935,8 @@ class tobii_controller:
                 img_stim.ori = i * self.rot_deg_per_frame
                 img_stim.opacity = (i % int(len(intermediate_positions) / len(img_stims) + 1)) / int(len(intermediate_positions) / len(img_stims))
                 img_stim.draw()
-            
+                
+            self.current_target = self.get_tobii_pos(pos)
             self.win.flip()
             
             if pathing == "linear" and pos[0] == positions[pos_index + 1][0] and pos[1] == positions[pos_index + 1][1]:

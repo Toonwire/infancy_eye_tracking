@@ -1,7 +1,7 @@
 Elsass setup
 --------------
-Monitor
+Monitor: Dell E190S
 	resolution 		1280 x 1024
 	screen size 	19 in
-
+	refresh rate	60 hz
 
