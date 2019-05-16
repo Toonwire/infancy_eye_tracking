@@ -132,3 +132,12 @@ RMS error for visual angle skrives i grader eller ej?
 Kronologisk setup:
 	- Flow  --> correction algorithms inde i flow? Lidt irriterende at springe frem og tilbage hvis man har den section før/efter
 	
+
+Rapport struktur gennemgang
+	- rækkefølge på emner
+	- transformationer før forsøg
+		- data til at vise effects af transformationer
+
+Onset/Offset event latency
+
+Standard deviation forskellig alt efter infant 

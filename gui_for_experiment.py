@@ -247,6 +247,9 @@ class Application(tk.Frame):
         self.controller.start_pursuit_exercise(pathing="circle", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.store_data("training_pursuit_circle")
         
+        self.controller.start_pursuit_exercise(pathing="circle", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], reverse=True)
+        self.store_data("training_pursuit_circle_revert")
+        
 #        self.controller.flash_screen()
         self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
 #        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])

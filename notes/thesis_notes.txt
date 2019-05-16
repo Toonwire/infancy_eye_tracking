@@ -61,3 +61,11 @@ Filtering under Data Collection makes sense (mental note when writing report)
 
 Infants using default = transformation is good (accounts for already translated errors)
 Infants using custom = transformation is not so good (calibration is quite precise, given that they complete it)
+
+
+infant experiment 2
+--------------------
+Noted constant movement keeps attention span for longer (e.g. pursuit exercises)
+Noted that going far into one dimension of the screen (top of spiral/circle etc.) generally caused loss of focus from the infant.
+		- Try to keep exercises within 75% of the monitor dimensions
+		

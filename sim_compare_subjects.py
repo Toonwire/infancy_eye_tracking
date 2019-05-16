@@ -40,6 +40,8 @@ data_raw = []
 data_cor = []
 data_labels = []
 colors = ["red", "green", "blue", "yellow", "cyan", "magenta"]
+colors = ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta', 'brown', 'darkgrey', 'orange', 'mediumspringgreen', 'cadetblue', 'fuchsia', 'crimson']
+                
 gaze_data = []
 gaze_data_corrected = []
 all_targets = [[],[]]

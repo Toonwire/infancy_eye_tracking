@@ -53,6 +53,8 @@ class GazeDataAnalyzer:
             return (gaze_data_left_temp, gaze_data_right_temp, target_points_temp)
     
     def filtering(self, filtering_method, gaze_data_left_temp, gaze_data_right_temp, target_points_temp):
+        colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green', 'brown', 'darkgrey', 'orange', 'mediumspringgreen', 'cadetblue', 'fuchsia', 'crimson']
+                
         
         gaze_data_left = []
         gaze_data_right = []
@@ -64,7 +66,7 @@ class GazeDataAnalyzer:
             
             db_scan = dbscan.DBScan()
             
-            dist_to_neighbor = 0.05
+            dist_to_neighbor = 0.02
             min_size_of_cluster = 10
             if filtering_method == "dbscan_fixation":
                 dist_to_neighbor = 0.01
@@ -74,7 +76,6 @@ class GazeDataAnalyzer:
             
             
             if self.show_graphs_bool:
-                colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
                 colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
                 plt.scatter(*zip(*clusters.keys()),c=colors)
                 plt.title("DBScan", y=1.08)
@@ -129,7 +130,6 @@ class GazeDataAnalyzer:
                         
             
             if self.show_graphs_bool:
-                colours = ['black', 'red', 'blue', 'cyan', 'yellow', 'purple', 'green']
                 colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
                 plt.scatter(*zip(*clusters.keys()),c=colors)
                 plt.title("DBScan", y=1.08)
