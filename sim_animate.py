@@ -9,12 +9,12 @@ import gaze_data_analyzer as gda
 from psychopy_tobii_controller.tobii_wrapper import tobii_controller
 
 # Run analyse on
-type_of_cal = "default"
+type_of_cal = "custom_5p"
 
 # Session to run
-#session_folder = "infant_d25_gudrun_5m"
-#session_folder = "infant3_d_marley_7m_2"
-session_folder = "infant"
+session_folder = "infant_d25_gudrun_5m"
+#session_folder = "ctrl_group_2_marie"
+
 
 # Setting path and files
 session_path = "session_data/" + session_folder + "/"
@@ -31,10 +31,10 @@ analyzer.setup(config_filename, cal_filename, "dbscan_pursuit")
 
 print("\nRUN ANIMATION")
 #training_filename = test_folder + "transformation.csv"  # use "dbscan_fixation"
-#training_filename = test_folder + "training_fixation.csv"  # use "dbscan_fixation"
+training_filename = test_folder + "training_fixation.csv"  # use "dbscan_fixation"
 #training_filename = test_folder + "training_fixation_2.csv"  # use "dbscan_fixation"
 #training_filename = test_folder + "training_pursuit_circle.csv"  # use "dbscan_pursuit"
-training_filename = test_folder + "training_pursuit_circle_revert.csv"  # use "dbscan_pursuit"
+#training_filename = test_folder + "training_pursuit_circle_revert.csv"  # use "dbscan_pursuit"
 #training_filename = test_folder + "training_pursuit_linear.csv"  # use "dbscan_pursuit"
 #training_filename = test_folder + "training_pursuit_spiral.csv"  # use "dbscan_pursuit"
 target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected = analyzer.animate(training_filename)
