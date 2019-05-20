@@ -1145,7 +1145,24 @@ class GazeDataAnalyzer:
         degree = math.degrees(radians)
 
         return degree
+    
+    def get_pattern_eq(self, pathing, targets):
+#        (-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)
+        equations = [];
         
+        # filter target to turning pointpositions
+        positions = targets
+        if (pathing == "linear"): # iterate line segments
+            prevSlope = None
+            prevYInter = None
+            for p, q in zip(positions[:-1], positions[1:]): # iterate pairs of positions
+                slope = (p[1]-q[1])/(p[0]-q[0])
+                y_inter = slope * -p[0] + p[1]
+                if slope != prevSlope:
+                    equations.append((slope, y_inter))
+                prevSlope = slope
+                prevYInter = y_inter
+        return equations
             
             
         

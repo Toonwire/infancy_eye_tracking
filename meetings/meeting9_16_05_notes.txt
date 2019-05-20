@@ -1,0 +1,34 @@
+Ud af en exercise på 30 sec, havde vi data i 20 sec etc og så dokumentere det med data
+
+data fra forskellige miljøer, ende ud i en anbefaling af miljø og hvilke metoder vi bruger der fungerer beds t i hvilke miljøer
+
+foreslå automatisering af calibration steppet indtil afvigelserne er acceptable
+Der er grænser for hvor lang tid vi kan blive ved med at kalibrere
+
+Styrke ved vores metode: evne til at udtage et udsnit af data og bruge det til transformering/c"calibration"
+
+
+
+tabel --> csv snippet
+FÅ timestamps på og fjern linjer 
+CHange in targets highlighted = repeated targets in itallics
+
+
+Fortæl en historie med vores project:
+	FLow = ?
+
+Sammenlignlige figurer = Samme akser mm.
+
+
+Opsummere alle metoder brugt undervejs efter flow
+
+
+Attention
+------------
+	Size of figures / saliency
+
+
+
+Forklar robusthed ved hver metode fordele/ulemper
+
+

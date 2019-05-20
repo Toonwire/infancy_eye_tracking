@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 26 10:34:34 2019
+Created on Thu May 16 13:18:54 2019
 
 @author: Toonw
 """
@@ -31,18 +31,12 @@ analyzer = gda.GazeDataAnalyzer()
 print("\nSETUP TRANSFORMATION")
 analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
 
-print("\nTEST DATA - FIXATION")
-training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, "dbscan_fixation")
-
-#print("\nTEST DATA - PURSUIT (CIRCLE)")
-#training_filename = test_folder + "training_pursuit_circle.csv"
-#analyzer.analyze(training_filename, "dbscan_pursuit")
 
 print("\nTEST DATA - PURSUIT (LINEAR)")
 training_filename = test_folder + "training_pursuit_linear.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
 
-print("\nTEST DATA - PURSUIT (SPIRAL)")
-training_filename = test_folder + "training_pursuit_spiral.csv"
-analyzer.analyze(training_filename, "dbscan_pursuit")
+targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, "dbscan_pursuit")
+
+
+print(targets.T)
+print(analyzer.get_pattern_eq("linear", targets.T))

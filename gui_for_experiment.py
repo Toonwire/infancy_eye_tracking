@@ -197,11 +197,12 @@ class Application(tk.Frame):
     def test_pursuit(self, path_type):
         self.controller.make_psycho_window()
 
-        if path_type == "linear":
-            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
-        elif path_type == "spiral":
-            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
-            
+#        if path_type == "linear":
+#            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+#        elif path_type == "spiral": 
+#            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+          
         self.controller.close_psycho_window()
         
         
