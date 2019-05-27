@@ -21,6 +21,7 @@ type_of_cal = "default"
 session_folder = "ctrl_group_3_seb"
 #session_folder = "infant3_d_marley_7m_2"
 #session_folder = "infant2_525d_noel_6m"
+#session_folder = "bad_circle"
 
 
 # Setting path and files
@@ -263,31 +264,56 @@ import numpy as np
 
 
 
-N = 3
+N = 20
 
 
+#gaze_x = np.append(gaze_data_avg[0,:], gaze_data_avg[0,0])
+#gaze_y = np.append(gaze_data_avg[1,:], gaze_data_avg[1,0])
+#
+#gaze_x = np.flip(gaze_x,0)
+#gaze_y = np.flip(gaze_y,0)
 
+
+gaze_data_avg[0,:] = np.flip(gaze_data_avg[0,:], axis=0)
+gaze_data_avg[1,:] = np.flip(gaze_data_avg[1,:], axis=0)
 gaze_x = np.append(gaze_data_avg[0,:], gaze_data_avg[0,0])
 gaze_y = np.append(gaze_data_avg[1,:], gaze_data_avg[1,0])
-########################
+    
+
+#########################
 ##############################
 
-vectors_gaze_avg = []
-for x1, x2, y1, y2 in zip(gaze_x, gaze_x[1:], gaze_y, gaze_y[1:]):
-    v = (x2-x1, y2-y1)
-    if v == (0.0, 0.0):
-        continue
-    vectors_gaze_avg.append((x2-x1, y2-y1))
-    
-    
 vectors_gaze_avg = []
 for i in range(N):  
     v = (0,0)
     for j in range(i*len(gaze_x)/N, i*len(gaze_x)/N + len(gaze_x)/N):
         v0 = (gaze_x[j], gaze_y[j])
         v = ssim.add(v, v0)
-    vectors_gaze_avg.append(v)
+        v_avg = (v[0]/(len(gaze_x)/N),v[1]/(len(gaze_x)/N))
+    vectors_gaze_avg.append(v_avg)
     
+#for i in range(len(gaze_x)/N):
+#    plt.scatter(gaze_x[i], gaze_y[i])
+
+vectors_gaze_refined = []
+for i in range(N):
+    x1 = vectors_gaze_avg[i][0]
+    y1 = vectors_gaze_avg[i][1]
+    
+    x2 = vectors_gaze_avg[(i+1) % N][0]
+    y2 = vectors_gaze_avg[(i+1) % N][1]
+    
+    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[0])
+    vectors_gaze_refined.append((x2-x1, y2-y1))
+#    v1 = ssim.unit_vector(vectors_gaze_avg[i])
+#    v2 = ssim.unit_vector(vectors_gaze_avg[(i+1)%N])
+    
+#    plt.quiver(v1[0], v1[1], v2[0]-v1[0], v2[1]-v1[1])
+#    start = i*len(gaze_x)/N
+#    plt.quiver(gaze_x[start], gaze_y[start], x2-gaze_x[start], y2-gaze_y[start], color="r")
+    
+vectors_gaze_avg = vectors_gaze_refined
+
         
     
 slopes_gaze_avg = []
@@ -331,16 +357,17 @@ for i in range(N):
     
 circle_params_target = analyzer.get_pattern_eq("circle", targets.T)
 
-theta = np.linspace(0, 2*np.pi, N+1)
+theta = np.linspace(np.pi, 3*np.pi, N+1)
 
 c = circle_params_target[0][0]
 r = circle_params_target[0][1]
-target_x = c[0] + r*-np.cos(theta)
+target_x = c[0] + r*np.cos(theta)  # start from same point as exercise
 target_y = c[1] + r*np.sin(theta)
 
 
 vectors_target = []
 for x1, x2, y1, y2 in zip(target_x, target_x[1:], target_y, target_y[1:]):
+    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[1])
     vectors_target.append((x2-x1, y2-y1))
     
     
@@ -360,33 +387,45 @@ for x1, x2, y1, y2 in zip(target_x, target_x[1:], target_y, target_y[1:]):
 print("")
 slopes_diff = [t-g for t,g in zip(slopes_target, slopes_gaze_avg)]
 
-print(slopes_target)
-print(slopes_gaze_avg_multiple)
+#print(slopes_target)
+#print(slopes_gaze_avg_multiple)
 
 slope_comparison = [math.atan(math.tan(abs(math.atan(t)-math.atan(g)))/(1+math.tan(abs(math.atan(g)*math.atan(t))))) for t,g in zip(slopes_target, slopes_gaze_avg_multiple)]
 
-print(slope_comparison)
+#print(slope_comparison)
 
 #print(slopes_target)
 #print(slopes_gaze_avg)
 
-angle_comparison = [2*abs(ssim.angle_between(v1,v2))/np.pi for v1, v2 in zip(vectors_target, vectors_gaze_avg)]
-print(vectors_gaze_avg)
-print(vectors_target)
-
+angle_comparison = [2*ssim.angle_between(v1,v2)/(np.pi*(len(vectors_target)+len(vectors_gaze_avg))) for v1, v2 in zip(vectors_target, vectors_gaze_avg)]
+#print(vectors_gaze_avg)
+#print(vectors_target)
 
 #print(angle_comparison)
 #print(slope_comparison)
-plt.ylim(1,0)
+plt.ylim(0,1)
 plt.xlim(0,1)
 plt.gca().xaxis.tick_top()
 plt.plot(gaze_x, gaze_y)
 plt.plot(target_x, target_y)
-
 plt.show()
+
+
+
+#startx = vectors_target[0][0]
+#starty = vectors_target[0][1]
+#for i in range(len(vectors_target)):
+#    endx = startx + vectors_target[i][0]
+#    endy = starty + vectors_target[i][1]
+#    plt.quiver(startx, starty, endx, endy)
+#    
+#    startx = endx
+#    starty = endy
+
+
 #print(slope_comparison)
 print("Slope similarity measure: \t" + str(1-np.array(slope_comparison).mean()))
-#print("Slope similarity measure diff: \t" + str(1-np.array(slope_diff).mean()))
+print("Sim measure (pdf): \t\t" + str(ssim.sim_measure(vectors_target, vectors_gaze_avg)))
 print("Angle similarity measure: \t" + str(1-np.array(angle_comparison).mean()))
 
 
