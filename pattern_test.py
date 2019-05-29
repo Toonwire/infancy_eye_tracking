@@ -9,6 +9,7 @@ import gaze_data_analyzer as gda
 import matplotlib.pyplot as plt
 import math
 import shape_similarity as ssim
+import numpy as np
 
 
 
@@ -18,10 +19,12 @@ type_of_cal = "default"
 #type_of_cal = "custom_5p"
 
 # Session to run
-session_folder = "ctrl_group_3_seb"
-#session_folder = "infant3_d_marley_7m_2"
+#session_folder = "ctrl_group_3_seb"
+session_folder = "infant3_d_marley_7m_2"
 #session_folder = "infant2_525d_noel_6m"
 #session_folder = "bad_circle"
+#session_folder = "bad_circle_seb"
+#session_folder = "bad_circle_seb_cal"
 
 
 # Setting path and files
@@ -215,7 +218,6 @@ plt.show()
     
 
 
-import numpy as np
 #theta = np.linspace(0, 2*np.pi, 8)
 #
 #c = circle_params_target[0][0]
@@ -278,6 +280,22 @@ gaze_data_avg[0,:] = np.flip(gaze_data_avg[0,:], axis=0)
 gaze_data_avg[1,:] = np.flip(gaze_data_avg[1,:], axis=0)
 gaze_x = np.append(gaze_data_avg[0,:], gaze_data_avg[0,0])
 gaze_y = np.append(gaze_data_avg[1,:], gaze_data_avg[1,0])
+#gaze_x = gaze_data_avg[0,:]
+#gaze_y = gaze_data_avg[1,:]
+
+#
+#gaze_points = [(gx,gy) for gx,gy in zip(gaze_x, gaze_y)]
+#import rdp
+#
+#plt.ylim(1,0)
+#plt.xlim(0,1)
+#plt.gca().xaxis.tick_top()
+#new_points = rdp.simplifyDouglasPeucker(gaze_points, int(len(gaze_x)/N)) 
+##plt.plot([p[0] for p in new_points], [p[1] for p in new_points])
+##plt.show()
+#
+#gaze_x = np.array([p[0] for p in new_points])
+#gaze_y = np.array([p[1] for p in new_points])
     
 
 #########################
@@ -403,11 +421,12 @@ angle_comparison = [2*ssim.angle_between(v1,v2)/(np.pi*(len(vectors_target)+len(
 
 #print(angle_comparison)
 #print(slope_comparison)
+#plt.ylim(1,0)
 plt.ylim(0,1)
 plt.xlim(0,1)
-plt.gca().xaxis.tick_top()
-plt.plot(gaze_x, gaze_y)
-plt.plot(target_x, target_y)
+#plt.gca().xaxis.tick_top()
+#plt.plot(gaze_x, gaze_y)
+#plt.plot(target_x, target_y)
 plt.show()
 
 
@@ -423,10 +442,11 @@ plt.show()
 #    starty = endy
 
 
+
 #print(slope_comparison)
-print("Slope similarity measure: \t" + str(1-np.array(slope_comparison).mean()))
+#print("Slope similarity measure: \t" + str(1-np.array(slope_comparison).mean()))
+#print("Angle similarity measure: \t" + str(1-np.array(angle_comparison).mean()))
 print("Sim measure (pdf): \t\t" + str(ssim.sim_measure(vectors_target, vectors_gaze_avg)))
-print("Angle similarity measure: \t" + str(1-np.array(angle_comparison).mean()))
 
 
 
