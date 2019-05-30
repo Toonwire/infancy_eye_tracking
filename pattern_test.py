@@ -20,8 +20,9 @@ type_of_cal = "default"
 
 # Session to run
 #session_folder = "ctrl_group_3_seb"
-session_folder = "infant3_d_marley_7m_2"
-#session_folder = "infant2_525d_noel_6m"
+#session_folder = "ctrl_group_3_lukas"
+#session_folder = "infant3_d_marley_7m_2"
+session_folder = "infant2_52d_sofie_7m"
 #session_folder = "bad_circle"
 #session_folder = "bad_circle_seb"
 #session_folder = "bad_circle_seb_cal"
@@ -266,7 +267,7 @@ plt.show()
 
 
 
-N = 20
+N = 30
 
 
 #gaze_x = np.append(gaze_data_avg[0,:], gaze_data_avg[0,0])
@@ -321,7 +322,7 @@ for i in range(N):
     x2 = vectors_gaze_avg[(i+1) % N][0]
     y2 = vectors_gaze_avg[(i+1) % N][1]
     
-    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[0])
+#    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[0])
     vectors_gaze_refined.append((x2-x1, y2-y1))
 #    v1 = ssim.unit_vector(vectors_gaze_avg[i])
 #    v2 = ssim.unit_vector(vectors_gaze_avg[(i+1)%N])
@@ -385,7 +386,7 @@ target_y = c[1] + r*np.sin(theta)
 
 vectors_target = []
 for x1, x2, y1, y2 in zip(target_x, target_x[1:], target_y, target_y[1:]):
-    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[1])
+#    plt.quiver(x1, y1, x2-x1, y2-y1, color=colors[1])
     vectors_target.append((x2-x1, y2-y1))
     
     
@@ -425,8 +426,8 @@ angle_comparison = [2*ssim.angle_between(v1,v2)/(np.pi*(len(vectors_target)+len(
 plt.ylim(0,1)
 plt.xlim(0,1)
 #plt.gca().xaxis.tick_top()
-#plt.plot(gaze_x, gaze_y)
-#plt.plot(target_x, target_y)
+plt.plot(gaze_x, gaze_y)
+plt.plot(target_x, target_y)
 plt.show()
 
 
