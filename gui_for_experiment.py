@@ -197,11 +197,11 @@ class Application(tk.Frame):
     def test_pursuit(self, path_type):
         self.controller.make_psycho_window()
 
-        if path_type == "linear":
-            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
-        elif path_type == "spiral":
-            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
-            
+#        if path_type == "linear":
+#            self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+#        elif path_type == "spiral": 
+#            self.controller.start_pursuit_exercise(pathing="spiral", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
         self.controller.close_psycho_window()
         
         
@@ -249,10 +249,17 @@ class Application(tk.Frame):
         
         self.controller.start_pursuit_exercise(pathing="circle", positions=[(-0.7,0.0), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], reverse=True)
         self.store_data("training_pursuit_circle_revert")
+        positions=[(-0.7,0.0), (0.0, 0.0)]
+        pos = []
+        for p in positions:
+            pos.append(self.controller.get_tobii_pos(p))
+        print(pos)
         
 #        self.controller.flash_screen()
         self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)], stimuli_paths=["stimuli/smiley_yellow.png"])
 #        self.controller.start_pursuit_exercise(pathing="linear", positions=[(-0.85,-0.5), (-0.5, 0.7), (0.0, 0.7), (0.1, -0.7), (0.6, -0.7), (0.85, 0.5)], stimuli_paths=["stimuli/smiley_yellow.png"])
+        
+        
         self.store_data("training_pursuit_linear")
         
 #        self.controller.flash_screen()

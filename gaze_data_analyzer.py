@@ -430,9 +430,9 @@ class GazeDataAnalyzer:
         self.data_correction.calibrate_right_eye(gaze_data_right)
         
     
-    def analyze(self, training_filename, filtering_method = None, output = "points"):
+    def analyze(self, training_filename, filtering_method = None, output = "points", remove_outliers=True):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename)
-        gaze_data_left, gaze_data_right, target_points = self.filtering(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = True)
+        gaze_data_left, gaze_data_right, target_points = self.filtering(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = remove_outliers)
         
         if len(gaze_data_left) == 0 and len(gaze_data_right) == 0:
             return None
@@ -1087,7 +1087,7 @@ class GazeDataAnalyzer:
     
           
   
-    def plot_scatter(self, gaze_data_left, gaze_data_right, targets, title_string=""):
+    def plot_scatter(self, gaze_data_left, gaze_data_right, targets, title_string="", show=True):
         x_left = gaze_data_left[0,:]
         y_left = gaze_data_left[1,:]
         x_right = gaze_data_right[0,:]
@@ -1105,7 +1105,8 @@ class GazeDataAnalyzer:
         plt.gca().xaxis.tick_top()
         plt.xlim(0,1)
         plt.ylim(1,0)
-        plt.show()
+        if (show == True):
+            plt.show()
         
     def plot_scatter_avg(self, gaze_data_left, gaze_data_right, targets, title_string=""):
         gaze_data_avg = np.mean(np.array([gaze_data_left, gaze_data_right]), axis=0)
@@ -1320,7 +1321,150 @@ class GazeDataAnalyzer:
         degree = math.degrees(radians)
 
         return degree
+    
+    def get_pattern_eq(self, pathing, targets):
+#        (-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)
+        equations = [];
+        count = 0
         
+        # filter target to turning pointpositions
+        positions = targets
+        if (pathing == "linear"): # iterate line segments
+            prevSlope = None
+            prevYInter = None
+            for i in range(len(positions)):
+                if i == len(positions)-1:
+                    break
+                p = positions[i]
+                q = positions[i+1]
+                
+                p_x = round(p[0], 5)
+                p_y = round(p[1], 5)
+                q_x = round(q[0], 5)
+                q_y = round(q[1], 5)
+                
+                if p_x == q_x and p_y == q_y:
+                    continue
+                slope = round((p_y-q_y)/(p_x-q_x), 5)
+                y_inter = round(slope * -p_x + p_y, 5)
+                slope_min = abs(slope * 0.95)
+                slope_max = abs(slope * 1.05)
+
+                if prevSlope < slope_min or slope_max < prevSlope:
+                    prevSlope = abs(slope)
+                    prevYInter = y_inter
+                    count = 0
+                    
+                else:
+                    count += 1
+                    
+                
+                if count == 9:
+                    equations.append((i-count, slope, y_inter))
             
+        elif pathing == "circle": # calc center and avg radius to determine circ eq
+            ## find opposing points to make a diamter line
+#            targets = targets.T
+#            avg = np.mean(targets, axis=1)
+#            avg_r = np.array([((p[0]-avg[0])**2 + (p[1]-avg[1])**2)**0.5 for p in targets]).mean()
+#            
+#            best = targets[:,0]
+#            dist = ((best[0]-avg[0])**2 + (best[1]-avg[1])**2)**0.5
+#            for p in targets.T:
+##                _dist = ((p[0]-avg[0])**2 + (p[1]-avg[1])**2)**0.5
+##                print(_dist)
+#                if abs(((p[0]-avg[0])**2 + (p[1]-avg[1])**2)**0.5 - avg_r) < abs(dist - avg_r):
+#                    best = p
+#                    dist = ((best[0]-avg[0])**2 + (best[1]-avg[1])**2)**0.5
+#            equations.append((avg, best, dist))
+#            targets = targets.T
+            
+            
+#            diameters = []
+#            for i in range(len(targets)/2):
+#                p = targets[i]
+#                q = targets[(i+(len(targets)-1)/2)%len(targets)]
+#                d = ((p[0]-q[0])**2 + (p[1]-q[1])**2) ** 0.5
+#                diameters.append(d)
+#            r_avg = np.array(diameters).mean()/2
+#            
+#            best = None
+#            for i in range(len(targets)):
+#                p = targets[i]
+#                q = targets[(i+(len(targets)-1)/2)%len(targets)]
+#                r = ((p[0]-q[0])**2 + (p[1]-q[1])**2) ** 0.5 / 2
+#                if best == None:
+#                    best = (r, p, q)
+#                elif abs(r_avg - r) < abs(r_avg - best[0]):
+#                    best = (r, p, q)
+#                    
+##            print(best)
+#            dx = (best[1][0]-best[2][0])/2
+#            dy = (best[1][1]-best[2][1])/2
+#            s = (best[2][0]+dx, best[2][1]+dy)  # (x0,y0)
+#            
+#            a = best[0]
+#            b = abs(r_avg**2-a**2)**0.5
+#            
+##            a = (dx**2+dy**2)**0.5
+##            b = (best[0]**2-a**2)**0.5
+#            
+#            x3 = s[0] + b*dy/a
+#            y3 = s[1] - b*dx/a
+##            print((x3, y3))
+#            center_pos = (x3,y3)
+#            start_pos = best[1]     # or best[2]
+#            radius = best[0]
+##            equations.append((center_pos, start_pos, radius))
+#            
+#            equations.append((center_pos, start_pos, radius))
+            
+            #  http://www.cs.bsu.edu/homepages/kjones/kjones/circles.pdf
+            n = len(targets)
+            
+            sumx = sum([p[0] for p in targets])
+            sumxx = sum([p[0]**2 for p in targets])
+            
+            sumy = sum([p[1] for p in targets])
+            sumyy = sum([p[1]**2 for p in targets])
+            
+            d11 = n * sum([p[0] * p[1] for p in targets]) - sumx * sumy
+        
+            d20 = n * sumxx - sumx * sumx
+            d02 = n * sumyy - sumy * sumy
+        
+            d30 = n * sum([p[0]**3 for p in targets]) - sumxx * sumx
+            d03 = n * sum([p[1]**3 for p in targets]) - sumyy * sumy
+        
+            d21 = n * sum([p[0]**2 * p[1] for p in targets]) - sumxx * sumy
+            d12 = n * sum([p[0] * p[1]**2 for p in targets]) - sumyy * sumx
+        
+            x = ((d30 + d12) * d02 - (d03 + d21) * d11) / (2 * (d20 * d02 - d11 * d11))
+            y = ((d03 + d21) * d20 - (d30 + d12) * d11) / (2 * (d20 * d02 - d11 * d11))
+        
+            c = (sumxx + sumyy - 2 * x * sumx - 2 * y * sumy) / n
+            r = (c + x**2 + y**2)**0.5
+#            pdfR = sum([((p[0]-x)**2+(p[1]-y)**2)**0.5/n for p in targets])
+#            print(pdfR)
+            equations.append(((x,y), r))
+            
+        return equations
+
+    def best_fit(self, X, Y):
+    
+        xbar = sum(X)/len(X)
+        ybar = sum(Y)/len(Y)
+        n = len(X) # or len(Y)
+    
+        numer = float(sum([xi*yi for xi,yi in zip(X, Y)]) - n * xbar * ybar)
+        denum = float(sum([xi**2 for xi in X]) - n * xbar**2)
+    
+        a = numer / denum
+        b = ybar - a * xbar
+        
+        return a, b
+        
+    def get_avg(self, data1, data2):
+        return np.mean(np.array([data1, data2]), axis=0)
             
         

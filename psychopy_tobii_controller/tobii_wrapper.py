@@ -903,7 +903,7 @@ class tobii_controller:
         if reverse:
             intermediate_positions.reverse()
         return intermediate_positions
-        
+    
     
     def start_pursuit_exercise(self, pathing="linear", positions=[(-0.7,0.0),(0.0,0.0)], stimuli_paths=["stimuli/smiley_yellow.png"], reverse=False, frame_delay=0.011, move_duration=5):
         
@@ -936,8 +936,8 @@ class tobii_controller:
                 img_stim.opacity = (i % int(len(intermediate_positions) / len(img_stims) + 1)) / int(len(intermediate_positions) / len(img_stims))
                 img_stim.draw()
                 
-            self.current_target = self.get_tobii_pos(pos)
-            self.win.flip()
+            self.win.flip()         # await back buffer flip
+            self.current_target = self.get_tobii_pos(pos) # update target only after rendering has completed
             
             if pathing == "linear" and pos[0] == positions[pos_index + 1][0] and pos[1] == positions[pos_index + 1][1]:
                 pos_index += 1
