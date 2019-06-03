@@ -1,0 +1,33 @@
+Figurer: mere specifik og mere forklaring
+
+
+toc depth: færre (3 niveauer max)
+	Fjerne sidetal fra toc 3+ niveau men beholde 3+ titler
+
+
+Det er vigtigt at når vi kan diagnotisere tidligt, at vi også begynder intervention tidligt
+
+
+
+Litterature search ---> metode
+Litterature tabel med indhold
+
+
+Infants kan ikke smooth pursuit..... Figur X viser infant ikke kan smooth pursuit  .... drag parallel
+
+Gå gennem Outlier detection, den er lidt funky eller kald den noget andet!
+Gazepunkter vægtet i starten af fixation i stedet for tættest på targets
+
+
+
+Angiv baseline først med kalibreringer
+	No calibration
+	TObii cal
+	Custom cal
+
+Angiv korrektioner
+	Linear
+	Regression
+	etc..
+
+Sammenlign med baseline

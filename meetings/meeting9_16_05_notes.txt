@@ -5,7 +5,6 @@ data fra forskellige miljøer, ende ud i en anbefaling af miljø og hvilke metod
 foreslå automatisering af calibration steppet indtil afvigelserne er acceptable
 Der er grænser for hvor lang tid vi kan blive ved med at kalibrere
 
-Styrke ved vores metode: evne til at udtage et udsnit af data og bruge det til transformering/c"calibration"
 
 
 
@@ -30,5 +29,5 @@ Attention
 
 
 Forklar robusthed ved hver metode fordele/ulemper
-
+	- Styrke ved vores metode: evne til at udtage et udsnit af data og bruge det til transformering/c"calibration"
 

@@ -120,12 +120,7 @@ Sidst snakkede Per om:
 
 16/05 - Per + Mikkel
 -----------------------
-Antal figurer i rapport, hvert barn, 3x3 default, 3x2 calibration, resten bilag?
-
-
-
-16/05 - Per
------------------------
+Antal figurer i rapport, hvert barn, 3x3 default, 3x2 calibration, resten bilag?	
 
 RMS error for visual angle skrives i grader eller ej?
 
@@ -141,3 +136,10 @@ Rapport struktur gennemgang
 Onset/Offset event latency
 
 Standard deviation forskellig alt efter infant 
+
+
+
+30/05 - Per + Mikkel
+-----------------------
+"Hvad har vi lært" afsnit / med i fremlæggelsen?
+
