@@ -18,9 +18,10 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = True
-    show_rms_pixel_bool = True
+    show_graphs_bool = False
+    show_rms_pixel_bool = False
     show_rms_degree_bool = True
+    show_filtering = True
     
     to_closest_target = False
     
@@ -52,7 +53,7 @@ class GazeDataAnalyzer:
         gaze_data_right = []
         target_points = []
         
-        if len(gaze_data_left_temp) > 0 and len(gaze_data_right_temp) > 0:
+        if len(gaze_data_left_temp) > 0 and len(gaze_data_right_temp) > 0 and self.show_filtering:
             self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
             self.plot_scatter_avg(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering AVG")
         
@@ -147,8 +148,9 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
             
-            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
-            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan AVG")
+            if self.show_filtering:
+                self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
+                self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan AVG")
 
 
         self.N = len(target_points[0,:])
@@ -163,7 +165,7 @@ class GazeDataAnalyzer:
         gaze_data_right = []
         target_points = []
         
-        if len(gaze_data_left_temp) > 0 and len(gaze_data_right_temp) > 0:
+        if len(gaze_data_left_temp) > 0 and len(gaze_data_right_temp) > 0 and self.show_filtering:
             self.plot_scatter(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering")
             self.plot_scatter_avg(gaze_data_left_temp, gaze_data_right_temp, target_points_temp, title_string="BEFORE filtering AVG")
 
@@ -182,7 +184,7 @@ class GazeDataAnalyzer:
             clusters = db_scan.run_linear(gaze_data_temp.T, dist_to_neighbor, min_size_of_cluster)
             
             
-            if self.show_graphs_bool:
+            if self.show_filtering:
                 colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
                 plt.scatter(*zip(*clusters.keys()),c=colors)
                 plt.title("DBScan", y=1.08)
@@ -204,7 +206,7 @@ class GazeDataAnalyzer:
 #                if i < 40:
 #                    continue;
                 
-#                if i < 40 and filtering_method == "dbscan_fixation":
+#                if i < 60 and filtering_method == "dbscan_fixation":
 #                    continue;
                     
                 current_target = target_points_temp[:,i]
@@ -243,7 +245,7 @@ class GazeDataAnalyzer:
                     target_points_y.append(target_points_temp[1,i])
                         
             
-            if self.show_graphs_bool:
+            if self.show_filtering:
                 colors = [colours[int(clusters[key]) % len(colours)] for key in clusters.keys()]
                 plt.scatter(*zip(*clusters.keys()),c=colors)
                 plt.title("DBScan", y=1.08)
@@ -256,7 +258,7 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
             
-            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0:
+            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0 and self.show_filtering:
                 self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan filter")
                 self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER dbscan AVG")
 
@@ -297,7 +299,7 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
 
-            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0:
+            if len(gaze_data_left) > 0 and len(gaze_data_right) > 0 and self.show_filtering:
                 self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
                 self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold AVG")
             
@@ -329,14 +331,18 @@ class GazeDataAnalyzer:
             gaze_data_right = np.array([gaze_data_right_x, gaze_data_right_y])
             target_points = np.array([target_points_x, target_points_y])
             
-            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
-            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold AVG")
+            if self.show_filtering:
+                self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold filter")
+                self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER treshold AVG")
             
         # Do nothing for filter out outliers
         elif filtering_method == None:
             gaze_data_left = gaze_data_left_temp
             gaze_data_right = gaze_data_right_temp
             target_points = target_points_temp
+        
+
+        before = len(target_points[0,:])
         
         if remove_outliers:
             pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -354,7 +360,7 @@ class GazeDataAnalyzer:
             pixel_err_left = np.array(pixel_left)
             pixel_err_right = np.array(pixel_right)
             
-            m = 1.5
+            m = 1.1
             
             indices_left_x = [i for i, x in enumerate(pixel_err_left[0,:]) if abs(x - np.mean(pixel_err_left[0,:])) < m * np.std(pixel_err_left[0,:])]
             indices_left_y = [i for i, y in enumerate(pixel_err_left[1,:]) if abs(y - np.mean(pixel_err_left[1,:])) < m * np.std(pixel_err_left[1,:])]
@@ -368,9 +374,12 @@ class GazeDataAnalyzer:
             gaze_data_right = gaze_data_right[:,indices]
             target_points = target_points[:,indices]
         
-            self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier filter")
-            self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier AVG")
+            if self.show_filtering:
+                self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier filter")
+                self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier AVG")
 
+        print("DIF LENTH")
+        print(str(before) + " - > " + str(len(target_points[0,:])))
         
         self.N = len(target_points[0,:])
         
@@ -411,8 +420,8 @@ class GazeDataAnalyzer:
         # then redefine target as those closest to gaze points
         
         if self.to_closest_target:
-            gaze_data_left = self.reject_outliers_gaze_only(gaze_data_left)
-            gaze_data_right = self.reject_outliers_gaze_only(gaze_data_right)
+#            gaze_data_left = self.reject_outliers_gaze_only(gaze_data_left)
+#            gaze_data_right = self.reject_outliers_gaze_only(gaze_data_right)
             
             target_points = self.find_closest_target(target_points, gaze_data_left, gaze_data_right)
         

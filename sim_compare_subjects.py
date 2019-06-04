@@ -14,22 +14,26 @@ import matplotlib.pyplot as plt
 
 session_folder = "session_data/"
 #sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
-sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
+sessions = ["ctrl_group_chrille1"]
+sessions = ["ctrl_group_louise", "ctrl_group_mikkel"]
+#sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
 #sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
 #sessions = ["ctrl_group_louise"]
 
+
+type_of_cal = "active"
 #type_of_cal = "default"
-type_of_cal = "custom_2p"
+#type_of_cal = "custom_2p"
 #type_of_cal = "custom_5p"
 
-#type_of_training = "fixation"
+type_of_training = "fixation"
 #type_of_training = "pursuit_linear"
-type_of_training = "pursuit_spiral"
+#type_of_training = "pursuit_spiral"
 
 # Filtering data by
 #filtering_method = None
-#filtering_method = "dbscan_fixation"
-filtering_method = "dbscan_pursuit"
+filtering_method = "dbscan_fixation"
+#filtering_method = "dbscan_pursuit"
 #filtering_method = "threshold_time_pursuit"
 
 
@@ -91,11 +95,18 @@ for idx, data in enumerate(gaze_data):
     scatters.append(plt.scatter(data[0,:], data[1,:], marker="x", color=colors[idx], alpha=0.8))    
 
 scatters.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
-plt.legend(scatters, data_labels)
+#plt.legend(scatters, data_labels)
 plt.title("Raw data", y=1.08)
 plt.gca().xaxis.tick_top()
+
 plt.xlim(0,1)
 plt.ylim(1,0)
+
+#ax = plt.gca()
+#box = ax.get_position()
+#ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+#plt.legend(scatters, data_labels, loc="center left", bbox_to_anchor=(1,0.5))
+
 plt.show()
 
 scatters_corrected = []
@@ -103,7 +114,7 @@ for idx, data_corrected in enumerate(gaze_data_corrected):
     scatters_corrected.append(plt.scatter(data_corrected[0,:], data_corrected[1,:], marker="x", color=colors[idx], alpha=0.8))
 
 scatters_corrected.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
-plt.legend(scatters_corrected, data_labels)
+#plt.legend(scatters_corrected, data_labels)
 plt.title("Transformed data", y=1.08)
 plt.gca().xaxis.tick_top()
 plt.xlim(0,1)

@@ -53,14 +53,60 @@ class DataCorrection:
         self.transformation_matrix_right_eye = np.reshape(self.transformation_matrix_right_eye, (-1,2))
         print("")
                 
+    def adjust_both_eyes(self, fixations, trans_matrix):
+        
+        print(trans_matrix)
+        
+        corrected_fixations = [[],[]]
+        for i, f in enumerate(fixations.T):
+            
+            weight = f[0] + f[1]
+            
+            norm_weight = (2 - weight) / 2
+            new_weight = (norm_weight**(norm_weight*5)) - 0.2
+            
+            
+            
+            
+#            factor = ((2 - weight) / 2)**2
+#            factor = 1 + factor if factor > 0.50 else (1 if factor > 0.25 else 1 - factor)
+            
+            factor = 1 + new_weight
+            
+#            factor = (2 - weight)**2
+            
+#            factor = 1
+            
+#            if i % 100 == 0:
+#                print(factor)
+#                print(weight)
+            
+            
+#            print(trans_matrix * factor)
+            
+            corrected_fixation = np.matmul((trans_matrix * factor), f)
+#            print(f)
+#            print(corrected_fixation)
+            corrected_fixations[0].append(corrected_fixation[0])
+            corrected_fixations[1].append(corrected_fixation[1])
+            
+        return np.array(corrected_fixations)
+    
+    
     def adjust_left_eye(self, fixations):
         if np.allclose(self.transformation_matrix_left_eye, np.identity(2)):
             raise Exception("No calibration for left eye exists")
-        return np.matmul(self.transformation_matrix_left_eye, fixations)
+        
+        return self.adjust_both_eyes(fixations, self.transformation_matrix_left_eye)
+        
+        return np.matmul((self.transformation_matrix_left_eye), fixations)
         
     def adjust_right_eye(self, fixations):
         if np.allclose(self.transformation_matrix_right_eye, np.identity(2)):
             raise Exception("No calibration for right eye exists")
+                    
+        return self.adjust_both_eyes(fixations, self.transformation_matrix_right_eye)
+
         return np.matmul(self.transformation_matrix_right_eye, fixations)
 
     
@@ -568,7 +614,7 @@ class DataCorrection:
         corrected_fix_x = []
         corrected_fix_y = []
         
-        dist_between_center_and_other_target_points = self.euclidean_distance(self.target_center, self.target_upper_left)
+#        dist_between_center_and_other_target_points = self.euclidean_distance(self.target_center, self.target_upper_left)
         
         for i in range(len(fixations[0,:])):
             current_fix = fixations[:,i]
@@ -578,32 +624,33 @@ class DataCorrection:
             r_upper_right = self.euclidean_distance(self.target_upper_right, current_fix)
             r_bottom_left= self.euclidean_distance(self.target_bottom_left, current_fix)
             r_bottom_right = self.euclidean_distance(self.target_bottom_right, current_fix)
-            r_sum = r_center + r_upper_left + r_upper_right + r_bottom_left + r_bottom_right
-            
+
             
             # To enlarge the effect of a target point, if further away from the center
-            rate = r_center / dist_between_center_and_other_target_points
+#            rate = r_center / dist_between_center_and_other_target_points
             
-                        
-            rate_trans_center_temp = 1 / (r_center / r_sum)
-            rate_trans_upper_left_temp = 1 / (r_upper_left / r_sum)
-            rate_trans_upper_right_temp = 1 / (r_upper_right / r_sum)
-            rate_trans_bottom_left_temp = 1 / (r_bottom_left / r_sum)
-            rate_trans_bottom_right_temp = 1 / (r_bottom_right / r_sum)
-    
-            rate_sum = rate_trans_center_temp + rate_trans_upper_left_temp + rate_trans_upper_right_temp + rate_trans_bottom_left_temp + rate_trans_bottom_right_temp
+            r_center_inv = 1 / r_center
+            r_upper_left_inv = 1 / r_upper_left
+            r_upper_right_inv = 1 / r_upper_right
+            r_bottom_left_inv = 1 / r_bottom_left
+            r_bottom_right_inv = 1 / r_bottom_right
             
-            rate_trans_center = rate_trans_center_temp / rate_sum
-            rate_trans_upper_left = rate_trans_upper_left_temp / rate_sum
-            rate_trans_upper_right = rate_trans_upper_right_temp / rate_sum
-            rate_trans_bottom_left = rate_trans_bottom_left_temp / rate_sum
-            rate_trans_bottom_right = rate_trans_bottom_right_temp / rate_sum
-                
-            trans_matrix = np.identity(2)
-            trans_matrix[0,0] = self.transformation_matrices_left_eye["center"][0,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,0] * rate_trans_bottom_right
-            trans_matrix[0,1] = self.transformation_matrices_left_eye["center"][0,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,1] * rate_trans_bottom_right
-            trans_matrix[1,0] = self.transformation_matrices_left_eye["center"][1,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,0] * rate_trans_bottom_right
-            trans_matrix[1,1] = self.transformation_matrices_left_eye["center"][1,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,1] * rate_trans_bottom_right
+            r_total_inv = r_center_inv + r_upper_left_inv + r_upper_right_inv + r_bottom_left_inv + r_bottom_right_inv
+            
+            rate_trans_center = r_center_inv / r_total_inv
+            rate_trans_upper_left = r_upper_left_inv / r_total_inv
+            rate_trans_upper_right = r_upper_right_inv / r_total_inv
+            rate_trans_bottom_left = r_bottom_left_inv / r_total_inv
+            rate_trans_bottom_right = r_bottom_right_inv / r_total_inv
+
+#            trans_matrix = self.transformation_matrices_left_eye["center"]
+            trans_matrix = self.transformation_matrices_left_eye["center"] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"] * rate_trans_bottom_right
+            
+#            trans_matrix = np.identity(2)
+#            trans_matrix[0,0] = self.transformation_matrices_left_eye["center"][0,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,0] * rate_trans_bottom_right
+#            trans_matrix[0,1] = self.transformation_matrices_left_eye["center"][0,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,1] * rate_trans_bottom_right
+#            trans_matrix[1,0] = self.transformation_matrices_left_eye["center"][1,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,0] * rate_trans_bottom_right
+#            trans_matrix[1,1] = self.transformation_matrices_left_eye["center"][1,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,1] * rate_trans_bottom_right
         
             new_fix = np.matmul(trans_matrix, current_fix)
             corrected_fix_x.append(new_fix[0])
@@ -618,7 +665,7 @@ class DataCorrection:
         corrected_fix_x = []
         corrected_fix_y = []
         
-        dist_between_center_and_other_target_points = self.euclidean_distance(self.target_center, self.target_upper_left)
+#        dist_between_center_and_other_target_points = self.euclidean_distance(self.target_center, self.target_upper_left)
         
         for i in range(len(fixations[0,:])):
             current_fix = fixations[:,i]
@@ -628,32 +675,34 @@ class DataCorrection:
             r_upper_right = self.euclidean_distance(self.target_upper_right, current_fix)
             r_bottom_left= self.euclidean_distance(self.target_bottom_left, current_fix)
             r_bottom_right = self.euclidean_distance(self.target_bottom_right, current_fix)
-            r_sum = r_center + r_upper_left + r_upper_right + r_bottom_left + r_bottom_right
             
             
             # To enlarge the effect of a target point, if further away from the center
-            rate = r_center / dist_between_center_and_other_target_points
+#            rate = r_center / dist_between_center_and_other_target_points
             
-                        
-            rate_trans_center_temp = 1 / (r_center / r_sum)
-            rate_trans_upper_left_temp = 1 / (r_upper_left / r_sum)
-            rate_trans_upper_right_temp = 1 / (r_upper_right / r_sum)
-            rate_trans_bottom_left_temp = 1 / (r_bottom_left / r_sum)
-            rate_trans_bottom_right_temp = 1 / (r_bottom_right / r_sum)
-    
-            rate_sum = rate_trans_center_temp + rate_trans_upper_left_temp + rate_trans_upper_right_temp + rate_trans_bottom_left_temp + rate_trans_bottom_right_temp
+            r_center_inv = 1 / r_center
+            r_upper_left_inv = 1 / r_upper_left
+            r_upper_right_inv = 1 / r_upper_right
+            r_bottom_left_inv = 1 / r_bottom_left
+            r_bottom_right_inv = 1 / r_bottom_right
             
-            rate_trans_center = rate_trans_center_temp / rate_sum
-            rate_trans_upper_left = rate_trans_upper_left_temp / rate_sum
-            rate_trans_upper_right = rate_trans_upper_right_temp / rate_sum
-            rate_trans_bottom_left = rate_trans_bottom_left_temp / rate_sum
-            rate_trans_bottom_right = rate_trans_bottom_right_temp / rate_sum
+            r_total_inv = r_center_inv + r_upper_left_inv + r_upper_right_inv + r_bottom_left_inv + r_bottom_right_inv
+            
+            rate_trans_center = r_center_inv / r_total_inv
+            rate_trans_upper_left = r_upper_left_inv / r_total_inv
+            rate_trans_upper_right = r_upper_right_inv / r_total_inv
+            rate_trans_bottom_left = r_bottom_left_inv / r_total_inv
+            rate_trans_bottom_right = r_bottom_right_inv / r_total_inv
+            
+
+#            trans_matrix = self.transformation_matrices_right_eye["center"]
+            trans_matrix = self.transformation_matrices_right_eye["center"] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"] * rate_trans_bottom_right
                 
-            trans_matrix = np.identity(2)
-            trans_matrix[0,0] = self.transformation_matrices_right_eye["center"][0,0] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][0,0] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][0,0] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][0,0] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][0,0] * rate_trans_bottom_right
-            trans_matrix[0,1] = self.transformation_matrices_right_eye["center"][0,1] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][0,1] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][0,1] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][0,1] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][0,1] * rate_trans_bottom_right
-            trans_matrix[1,0] = self.transformation_matrices_right_eye["center"][1,0] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][1,0] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][1,0] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][1,0] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][1,0] * rate_trans_bottom_right
-            trans_matrix[1,1] = self.transformation_matrices_right_eye["center"][1,1] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][1,1] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][1,1] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][1,1] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][1,1] * rate_trans_bottom_right
+#            trans_matrix = np.identity(2)
+#            trans_matrix[0,0] = self.transformation_matrices_right_eye["center"][0,0] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][0,0] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][0,0] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][0,0] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][0,0] * rate_trans_bottom_right
+#            trans_matrix[0,1] = self.transformation_matrices_right_eye["center"][0,1] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][0,1] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][0,1] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][0,1] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][0,1] * rate_trans_bottom_right
+#            trans_matrix[1,0] = self.transformation_matrices_right_eye["center"][1,0] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][1,0] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][1,0] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][1,0] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][1,0] * rate_trans_bottom_right
+#            trans_matrix[1,1] = self.transformation_matrices_right_eye["center"][1,1] * rate_trans_center + self.transformation_matrices_right_eye["upper_left"][1,1] * rate_trans_upper_left + self.transformation_matrices_right_eye["upper_right"][1,1] * rate_trans_upper_right + self.transformation_matrices_right_eye["bottom_left"][1,1] * rate_trans_bottom_left + self.transformation_matrices_right_eye["bottom_right"][1,1] * rate_trans_bottom_right
         
             new_fix = np.matmul(trans_matrix, current_fix)
             corrected_fix_x.append(new_fix[0])
@@ -840,8 +889,8 @@ class DataCorrection:
             predicted_error_x = self.poly_left_y(gaze_data[1,i])
             predicted_error_y = self.poly_left_x(gaze_data[0,i])
             
-            corrected_x.append(gaze_data[0,i] + predicted_error_x)
-            corrected_y.append(gaze_data[1,i] + predicted_error_y)
+            corrected_x.append(gaze_data[0,i] - predicted_error_x)
+            corrected_y.append(gaze_data[1,i] - predicted_error_y)
             
 #        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
         return np.array([corrected_x, corrected_y])
@@ -855,8 +904,8 @@ class DataCorrection:
             predicted_error_x = self.poly_right_y(gaze_data[1,i])
             predicted_error_y = self.poly_right_x(gaze_data[0,i])
             
-            corrected_x.append(gaze_data[0,i] + predicted_error_x)
-            corrected_y.append(gaze_data[1,i] + predicted_error_y)
+            corrected_x.append(gaze_data[0,i] - predicted_error_x)
+            corrected_y.append(gaze_data[1,i] - predicted_error_y)
             
         
         
