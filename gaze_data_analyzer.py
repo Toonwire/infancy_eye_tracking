@@ -982,7 +982,7 @@ class GazeDataAnalyzer:
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
             self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
             self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
-            # self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
+#            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
          
         
         
@@ -1220,7 +1220,7 @@ class GazeDataAnalyzer:
         
         subplot_vertical_err.plot(px_right_x, [-a for a in px_err_right_y], 'o', px_right_x, [-a for a in line_y_right_x]) 
 #        subplot_vertical_err.set_title("Right eye vertical error as gaze varies horizontally")
-        subplot_vertical_err.set_xlabel("X Coordinate (pixels)")
+        subplot_vertical_err.set_xlabel("Screen width (pixels)")
         subplot_vertical_err.set_ylabel("Vertical error (pixels)")
         subplot_vertical_err.set_xlim(0, self.screen_width_px)
         
@@ -1229,7 +1229,7 @@ class GazeDataAnalyzer:
         subplot_horizontal_err.plot(px_err_right_x, px_right_y, 'o', line_y_right_y, px_right_y)  
 #        subplot_horizontal_err.set_title("Right eye horizontal error as gaze varies vertically")
         subplot_horizontal_err.set_xlabel("Horizontal error (pixels)")
-        subplot_horizontal_err.set_ylabel("Y Coordinate (pixels)")
+        subplot_horizontal_err.set_ylabel("Screen height (pixels)")
         subplot_horizontal_err.set_ylim(0,self.screen_height_px)
 #        
         plt.show()
