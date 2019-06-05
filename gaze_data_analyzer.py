@@ -18,7 +18,7 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = False
+    show_graphs_bool = True
     show_rms_pixel_bool = False
     show_rms_degree_bool = True
     show_filtering = True
@@ -318,7 +318,7 @@ class GazeDataAnalyzer:
             for i in range(self.N):
                 wait += 1
                 
-                if (wait > 10):
+                if (wait > 20):
                     gaze_data_left_x.append(gaze_data_left_temp[0,i])
                     gaze_data_left_y.append(gaze_data_left_temp[1,i])
                     gaze_data_right_x.append(gaze_data_right_temp[0,i])
@@ -683,9 +683,9 @@ class GazeDataAnalyzer:
 
         
         
-    def analyze_regression(self, training_filename, filtering_method = None, output = "points"):
+    def analyze_regression(self, training_filename, filtering_method = None, output = "points", remove_outliers=True):
         gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename)
-        gaze_data_left, gaze_data_right, target_points = self.filtering(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = True)
+        gaze_data_left, gaze_data_right, target_points = self.filtering(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = remove_outliers)
 
         
         ### error analysis - raw
@@ -991,7 +991,7 @@ class GazeDataAnalyzer:
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
             self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
             self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
-#            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
+            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen")
          
         
         
