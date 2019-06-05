@@ -21,8 +21,8 @@ type_of_cal = "default"
 # Session to run
 #session_folder = "ctrl_group_3_seb"
 #session_folder = "ctrl_group_3_lukas"
-#session_folder = "infant3_d_marley_7m_2"
-session_folder = "infant2_52d_sofie_7m"
+session_folder = "infant3_d_marley_7m_2"
+#session_folder = "infant2_52d_sofie_7m"
 #session_folder = "bad_circle"
 #session_folder = "bad_circle_seb"
 #session_folder = "bad_circle_seb_cal"
@@ -79,7 +79,7 @@ for i in range(len(gaze_segments)):
     fix_y = [fix[1] for fix in gaze_segments[i]]
     a, b = analyzer.best_fit(fix_x, fix_y)
     linear_fit_gaze.append((a,b))
-    plt.scatter(fix_x, fix_y, color=colors[i])
+    plt.scatter(fix_x, fix_y, color=colors[i%3])
     padding = 0.01 if i < len(gaze_segments)-1 else -0.01
     for j in range(10):
         fix_x.insert(0, fix_x[0]-padding)
