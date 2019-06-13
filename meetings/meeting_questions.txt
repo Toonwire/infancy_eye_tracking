@@ -143,3 +143,11 @@ Standard deviation forskellig alt efter infant
 -----------------------
 "Hvad har vi lært" afsnit / med i fremlæggelsen?
 
+
+13/06 - Per + Mikkel
+-----------------------
+Mikkel: Transformation characteristics
+Elsass supply af børn ikke helt som forventet
+Singleton transformation under- /overestimated in diagonal
+Fejlscenarier igennem forløbet (off-center stimuli, ingen kontroltracking af øjne etc.)
+

@@ -53,9 +53,16 @@ class DataCorrection:
         self.transformation_matrix_right_eye = np.reshape(self.transformation_matrix_right_eye, (-1,2))
         print("")
                 
+    def get_trans_matrix_left(self):
+        return self.transformation_matrix_left_eye
+                
+    def get_trans_matrix_right(self):
+        return self.transformation_matrix_right_eye
+    
+    
     def adjust_both_eyes(self, fixations, trans_matrix):
         
-        print(trans_matrix)
+#        print(trans_matrix)
         
         corrected_fixations = [[],[]]
         for i, f in enumerate(fixations.T):
@@ -97,16 +104,14 @@ class DataCorrection:
         if np.allclose(self.transformation_matrix_left_eye, np.identity(2)):
             raise Exception("No calibration for left eye exists")
         
-        return self.adjust_both_eyes(fixations, self.transformation_matrix_left_eye)
-        
+#        return self.adjust_both_eyes(fixations, self.transformation_matrix_left_eye)
         return np.matmul((self.transformation_matrix_left_eye), fixations)
         
     def adjust_right_eye(self, fixations):
         if np.allclose(self.transformation_matrix_right_eye, np.identity(2)):
             raise Exception("No calibration for right eye exists")
                     
-        return self.adjust_both_eyes(fixations, self.transformation_matrix_right_eye)
-
+#        return self.adjust_both_eyes(fixations, self.transformation_matrix_right_eye)
         return np.matmul(self.transformation_matrix_right_eye, fixations)
 
     
@@ -806,11 +811,9 @@ class DataCorrection:
         return (np.array(fixation_upper_right), np.array(fixation_upper_left), np.array(fixation_bottom_right), np.array(fixation_bottom_left), np.array(fixation_center), np.array(target_points_upper_right), np.array(target_points_upper_left), np.array(target_points_bottom_right), np.array(target_points_bottom_left), np.array(target_points_center))
     
     
-    def calibrate_eyes_regression(self, gaze_data_left, gaze_data_right):
+    def calibrate_eyes_regression(self, gaze_data_left, gaze_data_right, degree=2):
         
-        degree = 2
-        
-        print("Calibrating eyes regression\n----------------")
+#        print("Calibrating eyes regression\n----------------")
         target_points = self.targets
         # the gaze data recorded is normalized
         # flip y-coordinates to turn recording coordinate system (origo in top-left) into screen coordinate system (origo in bottom-left)
@@ -832,7 +835,6 @@ class DataCorrection:
         
         
         ## CAlCULATE VERTICAL ERRORS AS GAZE VARIES HORIZONTALLY
-        # convert normalized coordinates to pixel coordinates (as on screen)
         pixel_err_left = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], target_points[0,:], target_points[1,:])]
         pixel_err_right = [(fix_x-tar_x, fix_y-tar_y) for fix_x, fix_y, tar_x, tar_y in zip(gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:])]
         
@@ -840,6 +842,7 @@ class DataCorrection:
         px_err_left_y = []
         px_err_right_x = []
         px_err_right_y = []
+        # convert normalized coordinates to pixel coordinates (as on screen)
         for err_left_norm, err_right_norm in zip(pixel_err_left, pixel_err_right):
 #            px_err_left_x.append(err_left_norm[0] * self.px_width)
 #            px_err_left_y.append(err_left_norm[1] * self.px_height)
@@ -859,11 +862,12 @@ class DataCorrection:
         
 #        print(px_err_left_x)
         
-        # fit a qudratic line for the vertical errors
+        # fit a poly line for the vertical and horizontal errors
         self.poly_left_x = np.poly1d(np.polyfit(px_left_x, px_err_left_y, degree))
         self.poly_left_y = np.poly1d(np.polyfit(px_left_y, px_err_left_x, degree))
         self.poly_right_x = np.poly1d(np.polyfit(px_right_x, px_err_right_y, degree))
         self.poly_right_y = np.poly1d(np.polyfit(px_right_y, px_err_right_x, degree))
+#        print("calibration done")
         
         
     def reject_outliers(self, data, targets, m=1.5):
@@ -880,12 +884,11 @@ class DataCorrection:
     
         
      
-    def adjust_left_eye_regression(self, fixations):
+    def adjust_left_eye_regression(self, gaze_data):
 #        gaze_data = self.norm_to_pixels(fixations)
-        gaze_data = fixations
         corrected_x = []
         corrected_y = []
-        for i in range(len(fixations[0,:])):
+        for i in range(len(gaze_data[0,:])):
             predicted_error_x = self.poly_left_y(gaze_data[1,i])
             predicted_error_y = self.poly_left_x(gaze_data[0,i])
             
@@ -895,12 +898,11 @@ class DataCorrection:
 #        return self.pixels_to_norm(np.array([corrected_x, corrected_y]))
         return np.array([corrected_x, corrected_y])
      
-    def adjust_right_eye_regression(self, fixations):
+    def adjust_right_eye_regression(self, gaze_data):
 #        gaze_data = self.norm_to_pixels(fixations)
-        gaze_data = fixations
         corrected_x = []
         corrected_y = []
-        for i in range(len(fixations[0,:])):
+        for i in range(len(gaze_data[0,:])):
             predicted_error_x = self.poly_right_y(gaze_data[1,i])
             predicted_error_y = self.poly_right_x(gaze_data[0,i])
             
@@ -927,10 +929,6 @@ class DataCorrection:
         norm_y = 1 - data[1,:] / self.px_height
         
         return np.array([norm_x, norm_y])
-        
-    
-    
-    
     
     
     
