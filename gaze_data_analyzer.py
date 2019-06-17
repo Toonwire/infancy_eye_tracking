@@ -18,7 +18,7 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = True
+    show_graphs_bool = False
     show_rms_pixel_bool = False
     show_rms_degree_bool = True
     show_filtering = False

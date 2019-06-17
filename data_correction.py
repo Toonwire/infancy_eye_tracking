@@ -44,7 +44,48 @@ class DataCorrection:
             distClosest.append(self.euclidean_distance(f,t))
                         
         return np.mean(distClosest)
+'''    
+    def affine_left_eye(self, fixations, initial_guess=np.array([[0],[0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+#        print(self.affine_matrix_left_eye)
     
+        for f, t in zip(fixations.T, self.targets.T):
+
+            if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
+                self.affine_matrix_left_eye[0][0] = t[0] - f[0]
+                self.affine_matrix_left_eye[1][0] = t[1] - f[1]
+                self.affine_matrix_left_eye = np.array(self.affine_matrix_left_eye)
+            else:
+                self.affine_matrix_left_eye[0][0] = self.affine_matrix_left_eye[0][0] + (t[0] - f[0])
+                self.affine_matrix_left_eye[1][0] = self.affine_matrix_left_eye[1][0] + (t[1] - f[1])
+                self.affine_matrix_left_eye = np.array(self.affine_matrix_left_eye)
+                self.affine_matrix_left_eye = self.affine_matrix_left_eye / 2
+            
+        print("")
+        
+    def affine_right_eye(self, fixations, initial_guess=np.array([[0],[0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        
+        for f, t in zip(fixations.T, self.targets.T):
+            
+            if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
+                self.affine_matrix_right_eye[0][0] = t[0] - f[0]
+                self.affine_matrix_right_eye[1][0] = t[1] - f[1]
+                self.affine_matrix_right_eye = np.array(self.affine_matrix_right_eye)
+            else:
+                self.affine_matrix_right_eye[0][0] = self.affine_matrix_right_eye[0][0] + (t[0] - f[0])
+                self.affine_matrix_right_eye[1][0] = self.affine_matrix_right_eye[1][0] + (t[1] - f[1])
+                self.affine_matrix_right_eye = np.array(self.affine_matrix_right_eye)
+                self.affine_matrix_right_eye = self.affine_matrix_right_eye / 2
+            
+        print("")
+''' 
     def affine_left_eye(self, fixations, initial_guess=np.array([[0],[0]])):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
