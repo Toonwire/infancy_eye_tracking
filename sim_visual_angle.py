@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 26 10:34:34 2019
+Created on Wed Jun 12 11:21:04 2019
 
 @author: Toonw
 """
 
+import numpy as np
 import gaze_data_analyzer as gda
+import matplotlib.pyplot as plt
+import math
+
+
 
 
 
@@ -31,20 +36,50 @@ cal_filename = test_folder + "training_fixation.csv"
 analyzer = gda.GazeDataAnalyzer()
 
 print("\nSETUP TRANSFORMATION")
-analyzer.setup_translate(config_filename, cal_filename, "dbscan_fixation")
-
-print("\nTEST DATA - FIXATION")
-training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze_translate(training_filename, "dbscan_fixation")
+analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+#
+#print("\nTEST DATA - FIXATION")
+#training_filename = test_folder + "training_fixation.csv"
+#analyzer.analyze(training_filename, "dbscan_fixation")
 
 #print("\nTEST DATA - PURSUIT (CIRCLE)")
 #training_filename = test_folder + "training_pursuit_circle.csv"
 #analyzer.analyze(training_filename, "dbscan_pursuit")
-#
+
 #print("\nTEST DATA - PURSUIT (LINEAR)")
 #training_filename = test_folder + "training_pursuit_linear.csv"
-#analyzer.analyze(training_filename, "dbscan_pursuit")
-#
+#_,rmse_cor,_ = analyzer.analyze(training_filename, "dbscan_pursuit",output="values")
+
 #print("\nTEST DATA - PURSUIT (SPIRAL)")
 #training_filename = test_folder + "training_pursuit_spiral.csv"
 #analyzer.analyze(training_filename, "dbscan_pursuit")
+
+
+
+analyzer.plot_visual_angle_ring(center=(0.5,0.5), angles_degrees=[2, 5, 10, 20])
+
+
+
+#angle_circle = plt.Circle((0.5,0.5), 0.2, fill=False, color='orange', linewidth=3)
+#plt.gcf().gca().add_artist(angle_circle)
+#plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
