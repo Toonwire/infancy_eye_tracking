@@ -18,6 +18,12 @@ class DataCorrection:
     affine_matrix_left_eye = np.array([[0],[0]])
     affine_matrix_right_eye = np.array([[0],[0]])
     
+    A_left = np.array([[1,0],[0,1]])
+    A_right = np.array([[1,0],[0,1]])
+    b_left = np.array([[0],[0]])
+    b_right = np.array([[0],[0]])
+    
+    
     
     show_optimizing = False
     
@@ -45,6 +51,59 @@ class DataCorrection:
                         
         return np.mean(distClosest)
     
+    
+    def affine_avg_dist_to_closest_fixation2(self, transformation):
+        
+#        print("First")
+#        print(transformation)
+        transformation = np.reshape(transformation, (-1,3))
+#        print("Second")
+#        print(transformation)
+#        print(transformation)
+        A = transformation[:,0:2]
+        b = np.reshape(transformation[:,2], (-1,1))
+        
+#        print(A)
+#        print(b)
+#        die()
+        coords = self.affine_adjust_both_eyes2(self.calibration_fixations, A, b)
+        
+        distClosest = []
+        
+        for f, t in zip(coords.T, self.calibration_targets.T):
+            distClosest.append(self.euclidean_distance(f,t))
+                        
+        return np.mean(distClosest)
+    
+    def affine_left_eye2(self, fixations, initial_guess=np.array([[1,0,0],[0,1,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,3))
+        
+        self.A_left = transformation[:,0:2]
+        self.b_left = np.reshape(transformation[:,2], (-1,1))
+        
+        print("")
+        
+    
+    def affine_right_eye2(self, fixations, initial_guess=np.array([[1,0,0],[0,1,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,3))
+        
+        self.A_right = transformation[:,0:2]
+        self.b_right = np.reshape(transformation[:,2], (-1,1))
+        
+        print("")
+    
     def affine_left_eye(self, fixations, initial_guess=np.array([[0],[0]])):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
@@ -64,8 +123,11 @@ class DataCorrection:
         self.affine_matrix_right_eye = np.reshape(self.affine_matrix_right_eye, (-1,1))
         print("")
     
-    def affine_adjust_both_eyes(self, fixations, trans_matrix):
-        return fixations + trans_matrix
+    def affine_adjust_both_eyes(self, fixations, b):
+        return fixations + b
+    
+    def affine_adjust_both_eyes2(self, fixations, A, b):
+        return np.matmul(A, fixations) + b
     
     def affine_adjust_left_eye(self, fixations):
         if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
@@ -78,7 +140,20 @@ class DataCorrection:
         if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
             raise Exception("No calibration for left eye exists")
         
-        return self.affine_adjust_both_eyes(fixations, self.affine_matrix_right_eye)        
+        return self.affine_adjust_both_eyes(fixations, self.affine_matrix_right_eye)     
+    
+    
+    def affine_adjust_left_eye2(self, fixations):
+#        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2(fixations, self.A_left, self.b_left)
+
+    def affine_adjust_right_eye2(self, fixations):
+#        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2(fixations, self.A_right, self.b_right)   
     
     def avg_dist_to_closest_fixation(self, transformation):
         

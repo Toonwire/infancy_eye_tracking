@@ -18,10 +18,11 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 12})
 
-    show_graphs_bool = True
+    show_graphs_bool = False
     show_rms_pixel_bool = False
-    show_rms_degree_bool = True
+    show_rms_degree_bool = False
     show_filtering = False
+    show_accuracy_precision = True
     
     to_closest_target = False
     
@@ -351,11 +352,11 @@ class GazeDataAnalyzer:
             gaze_data_right = gaze_data_right_temp
             target_points = target_points_temp
         
-        print("After Grace")
-        print(str(before) + " - > " + str(before - removed_gaze))
-        print("After DBSCAN")
-        print(str(before - removed_gaze) + " - > " + str(len(target_points[0,:])))
-        before = len(target_points[0,:])
+#        print("After Grace")
+#        print(str(before) + " - > " + str(before - removed_gaze))
+#        print("After DBSCAN")
+#        print(str(before - removed_gaze) + " - > " + str(len(target_points[0,:])))
+#        before = len(target_points[0,:])
         
         if remove_outliers:
             pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -390,9 +391,9 @@ class GazeDataAnalyzer:
             if self.show_filtering:
                 self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier filter")
                 self.plot_scatter_avg(gaze_data_left, gaze_data_right, target_points, title_string="AFTER outlier AVG")
-
-        print("After Outlier")
-        print(str(before) + " - > " + str(len(target_points[0,:])))
+#
+#        print("After Outlier")
+#        print(str(before) + " - > " + str(len(target_points[0,:])))
         
         self.N = len(target_points[0,:])
         
@@ -491,36 +492,36 @@ class GazeDataAnalyzer:
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
        
         rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
-        
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         # formula proof accuracy (angular offset) calc
-        angle_left, angle_right, angle_avg = self.compute_angular_offset(gaze_data_left, gaze_data_right, target_points)
-        angle_left_corrected, angle_right_corrected, angle_avg_corrected = self.compute_angular_offset(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
-        
-        accuracy_raw = np.mean(angle_avg)
-        accuracy_corrected = np.mean(angle_avg_corrected)
-        
-        print("")
-        print("############################################")
-        print("Accuracy: "+u"\u03B8"+ "_offset")
-        print("Accuracy (raw)\t\t" + str(accuracy_raw))
-        print("Accuracy (corrected)\t" + str(accuracy_corrected))
-        print("-----------")
-        print("Change\t\t\t" + str((accuracy_raw - accuracy_corrected) / max(accuracy_raw, accuracy_corrected) * 100) + " %")
-        print("############################################")
-        
-        
-        # formula proof precision calc
-        precision_avg = (np.mean([theta**2 for theta in angle_avg]))**0.5
-        precision_avg_corrected = (np.mean([theta**2 for theta in angle_avg_corrected]))**0.5
-        
-        print("")
-        print("############################################")
-        print("Precision: RMS("+u"\u03B8" + ")")
-        print("Precision (raw)\t\t" + str(precision_avg))
-        print("Precision (corrected)\t" + str(precision_avg_corrected))
-        print("-----------")
-        print("Change\t\t\t" + str((precision_avg - precision_avg_corrected) / max(precision_avg, precision_avg_corrected) * 100) + " %")
-        print("############################################")
+#        angle_left, angle_right, angle_avg = self.compute_angular_offset(gaze_data_left, gaze_data_right, target_points)
+#        angle_left_corrected, angle_right_corrected, angle_avg_corrected = self.compute_angular_offset(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+#        
+#        accuracy_raw = np.mean(angle_avg)
+#        accuracy_corrected = np.mean(angle_avg_corrected)
+#        
+#        print("")
+#        print("############################################")
+#        print("Accuracy: "+u"\u03B8"+ "_offset")
+#        print("Accuracy (raw)\t\t" + str(accuracy_raw))
+#        print("Accuracy (corrected)\t" + str(accuracy_corrected))
+#        print("-----------")
+#        print("Change\t\t\t" + str((accuracy_raw - accuracy_corrected) / max(accuracy_raw, accuracy_corrected) * 100) + " %")
+#        print("############################################")
+#        
+#        
+#        # formula proof precision calc
+#        precision_avg = (np.mean([theta**2 for theta in angle_avg]))**0.5
+#        precision_avg_corrected = (np.mean([theta**2 for theta in angle_avg_corrected]))**0.5
+#        
+#        print("")
+#        print("############################################")
+#        print("Precision: RMS("+u"\u03B8" + ")")
+#        print("Precision (raw)\t\t" + str(precision_avg))
+#        print("Precision (corrected)\t" + str(precision_avg_corrected))
+#        print("-----------")
+#        print("Change\t\t\t" + str((precision_avg - precision_avg_corrected) / max(precision_avg, precision_avg_corrected) * 100) + " %")
+#        print("############################################")
         
         
         if output == "values":
@@ -699,6 +700,7 @@ class GazeDataAnalyzer:
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
         
         rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         if output == "values":
             return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
@@ -774,6 +776,7 @@ class GazeDataAnalyzer:
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
         
         rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         if output == "values":
             return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
@@ -844,6 +847,7 @@ class GazeDataAnalyzer:
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
         
         rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         if output == "values":
             return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
@@ -900,6 +904,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -916,6 +921,83 @@ class GazeDataAnalyzer:
         return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
         
     
+    # set up the transformation matrices 
+    def setup_affine2(self, config_file, cal_filename, filtering_method = None):
+        
+        # read config csv file
+        data_frame = pd.read_csv(config_file, delimiter=";")
+        
+        # read global config variables in
+        self.screen_width_px = data_frame['Screen width (px)'][0]
+        self.screen_height_px = data_frame['Screen height (px)'][0]
+        self.screen_size_diag_inches = data_frame['Screen size (inches)'][0]
+        self.dist_to_screen_cm = data_frame['Distance to screen (cm)'][0]
+        self.ppcm = math.sqrt(self.screen_width_px**2 + self.screen_height_px**2) / (self.screen_size_diag_inches*2.54)
+        
+        gaze_data_left, gaze_data_right, target_points = self.read_data(cal_filename)
+        gaze_data_left, gaze_data_right, target_points = self.filtering_setup(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = False)
+        
+        self.data_correction = dc.DataCorrection(target_points, self.screen_width_px, self.screen_height_px)
+        self.data_correction.affine_left_eye2(gaze_data_left)
+        self.data_correction.affine_right_eye2(gaze_data_right)
+
+#        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+#        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+#
+#        self.data_correction.affine_left_eye(gaze_data_left_corrected)
+#        self.data_correction.affine_right_eye(gaze_data_right_corrected)
+
+#        gaze_data_left_corrected = self.data_correction.adjust_left_eye(gaze_data_left)
+#        gaze_data_right_corrected = self.data_correction.adjust_right_eye(gaze_data_right)
+#
+#        self.data_correction.calibrate_left_eye_seb(gaze_data_left_corrected)
+#        self.data_correction.calibrate_right_eye_seb(gaze_data_right_corrected)
+            
+        
+        
+    def analyze_affine2(self, training_filename, filtering_method = None, output = "points", remove_outliers=True):
+        gaze_data_left, gaze_data_right, target_points = self.read_data(training_filename)
+        gaze_data_left, gaze_data_right, target_points = self.filtering(gaze_data_left, gaze_data_right, target_points, filtering_method, remove_outliers = remove_outliers)
+ 
+        ### error analysis - raw
+        self.analyze_errors(gaze_data_left, gaze_data_right, target_points)
+        
+        #------ correct raw data ------#
+        gaze_data_left_corrected = self.data_correction.affine_adjust_left_eye2(gaze_data_left)
+        gaze_data_right_corrected = self.data_correction.affine_adjust_right_eye2(gaze_data_right)
+        
+        #gaze_data_left_corrected_2 = self.data_correction.adjust_left_eye_seb_2(gaze_data_left_corrected)
+        #gaze_data_right_corrected_2 = self.data_correction.adjust_right_eye_seb_2(gaze_data_right_corrected)
+        #------------------------------#
+        
+        ### error analysis - corrected
+        self.analyze_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+#        self.analyze_errors(gaze_data_left_corrected_2, gaze_data_right_corrected_2, target_points)
+        
+        ### error analysis - corrected
+#        fixations_filtered_left, filtered_targets = self.reject_outliers(gaze_data_left_corrected, target_points)
+#        fixations_filtered_right, filtered_targets = self.reject_outliers(gaze_data_right_corrected, target_points)
+#        self.analyze_errors(fixations_filtered_left, fixations_filtered_right, target_points)
+        
+        
+        # RMSE values for raw and corrected data (averaged btween left- and right fixations)
+        rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+        
+#        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
+        pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
+        angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
+        
+        pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+        angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
+        
+        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        
+        if output == "values":
+            return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
+        
+        return (target_points, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        
     
     # set up the transformation matrices 
     def setup_affine(self, config_file, cal_filename, filtering_method = None):
@@ -980,6 +1062,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -1058,6 +1141,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -1139,6 +1223,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -1219,6 +1304,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         rmse_raw, rmse_cor, rmse_imp = self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)                
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
 #        pixel_err_left, pixel_err_right = self.compute_pixel_errors_to_closest_target(gaze_data_left, gaze_data_right, target_points)
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
@@ -1290,6 +1376,7 @@ class GazeDataAnalyzer:
         
         # RMSE values for raw and corrected data (averaged btween left- and right fixations)
         self.show_rms_pixel(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)      
+        self.show_accuracy_precision(gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         
         pixel_err_left, pixel_err_right = self.compute_pixel_errors(gaze_data_left, gaze_data_right, target_points)
         angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
@@ -1339,6 +1426,39 @@ class GazeDataAnalyzer:
             print("Change:\t\t\t" + str(rmse_deg_imp) + " %")
             
         return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
+    
+    def show_accuracy_precision(self, gaze_data_left, gaze_data_right, gaze_data_left_corrected, gaze_data_right_corrected, target_points):
+        if self.show_accuracy_precision:
+            # formula proof accuracy (angular offset) calc
+            angle_left, angle_right, angle_avg = self.compute_angular_offset(gaze_data_left, gaze_data_right, target_points)
+            angle_left_corrected, angle_right_corrected, angle_avg_corrected = self.compute_angular_offset(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+            
+            accuracy_raw = np.mean(angle_avg)
+            accuracy_corrected = np.mean(angle_avg_corrected)
+            
+            print("")
+            print("############################################")
+            print("Accuracy: "+u"\u03B8"+ "_offset")
+            print("Accuracy (raw)\t\t" + str(accuracy_raw))
+            print("Accuracy (corrected)\t" + str(accuracy_corrected))
+            print("-----------")
+            print("Change\t\t\t" + str((accuracy_raw - accuracy_corrected) / max(accuracy_raw, accuracy_corrected) * 100) + " %")
+            print("############################################")
+            
+            
+            # formula proof precision calc
+            precision_avg = (np.mean([theta**2 for theta in angle_avg]))**0.5
+            precision_avg_corrected = (np.mean([theta**2 for theta in angle_avg_corrected]))**0.5
+            
+            print("")
+            print("############################################")
+            print("Precision: RMS("+u"\u03B8" + ")")
+            print("Precision (raw)\t\t" + str(precision_avg))
+            print("Precision (corrected)\t" + str(precision_avg_corrected))
+            print("-----------")
+            print("Change\t\t\t" + str((precision_avg - precision_avg_corrected) / max(precision_avg, precision_avg_corrected) * 100) + " %")
+            print("############################################")
+    
     
     def rmse(self, fixations, targets):
         return np.sqrt(((fixations - targets) ** 2).mean())
