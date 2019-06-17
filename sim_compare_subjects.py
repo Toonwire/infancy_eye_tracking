@@ -13,16 +13,18 @@ import matplotlib.pyplot as plt
 
 
 session_folder = "session_data/"
-#sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
-sessions = ["ctrl_group_chrille1"]
-sessions = ["ctrl_group_louise", "ctrl_group_mikkel"]
+sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
+#sessions = ["ctrl_group_chrille1"]
+#sessions = ["ctrl_group_lasse"]
+#sessions = ["ctrl_group_louise", "ctrl_group_mikkel"]
+#sessions = ["ctrl4_a_seb_glass","ctrl4_a_seb","ctrl4_a_marie_2","ctrl4_a_marie","ctrl4_a_lukas_blind","ctrl4_a_lukas"]
 #sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
 #sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
 #sessions = ["ctrl_group_louise"]
 
 
-type_of_cal = "active"
-#type_of_cal = "default"
+#type_of_cal = "active"
+type_of_cal = "default"
 #type_of_cal = "custom_2p"
 #type_of_cal = "custom_5p"
 
@@ -36,6 +38,11 @@ filtering_method = "dbscan_fixation"
 #filtering_method = "dbscan_pursuit"
 #filtering_method = "threshold_time_pursuit"
 
+type_of_training_2 = None
+#type_of_training_2 = "pursuit_linear"
+filtering_method_2 = "dbscan_pursuit"
+
+remove_outliers = True
 
 analyzer = gda.GazeDataAnalyzer()
 
@@ -61,10 +68,10 @@ for session in sessions:
         transformation_filename = test_path + "transformation.csv"
         training_filename = test_path + "training_" + type_of_training + ".csv"
         
-        analyzer.setup(config_filename, transformation_filename, "dbscan_fixation")
+        analyzer.setup_affine_weighted(config_filename, transformation_filename, "dbscan_fixation")
         #analyzer.analyze(transformation_filename, "dbscan_fixation")
         
-        targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method)
+        targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine_weighted(training_filename, filtering_method, remove_outliers = remove_outliers)
         
         gaze_data.append(np.mean(np.array([gaze_left, gaze_right]), axis=0))
         gaze_data_corrected.append(np.mean(np.array([gaze_data_left_corrected, gaze_data_right_corrected]), axis=0))
@@ -74,10 +81,23 @@ for session in sessions:
             all_targets[1].append(t[1])
 
         angle_err = np.mean(np.array([angle_err_left, angle_err_right]), axis=0)
-        angle_err_corrected = np.mean(np.array([angle_err_left_corrected, angle_err_right_corrected]), axis=0)
+        angle_err_corrected = np.mean(np.array([angle_err_left_corrected, angle_err_right_corrected]), axis=0)                
+    
+    
+        if not type_of_training_2 == None:
+            training_filename_2 = test_path + "training_" + type_of_training_2 + ".csv"
+            targets_2, gaze_left_2, gaze_right_2, gaze_data_left_corrected_2, gaze_data_right_corrected_2, angle_err_left_2, angle_err_right_2, angle_err_left_corrected_2, angle_err_right_corrected_2 = analyzer.analyze(training_filename_2, filtering_method_2, remove_outliers = remove_outliers)
+
+            angle_err_2 = np.mean(np.array([angle_err_left_2, angle_err_right_2]), axis=0)
+            angle_err_corrected_2 = np.mean(np.array([angle_err_left_corrected_2, angle_err_right_corrected_2]), axis=0)
+
+            data_raw.append(np.concatenate((angle_err, angle_err_2)))
+            data_cor.append(np.concatenate((angle_err_corrected, angle_err_corrected_2)))
+
+        else:
+            data_raw.append(angle_err)
+            data_cor.append(angle_err_corrected)
         
-        data_raw.append(angle_err)
-        data_cor.append(angle_err_corrected)
         #data_labels.append(session_path.split('_')[-1])
         data_labels.append("Subject " + str(subject))
         

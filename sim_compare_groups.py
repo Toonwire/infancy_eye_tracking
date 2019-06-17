@@ -17,7 +17,7 @@ session_groups = [
     ["infant_d25_gudrun_5m","infant_d25_noel_5m"],
     ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
 ]
-type_of_cal = "custom_2p"
+type_of_cal = "default"
 type_of_training = "fixation"
 
 # Filtering data by

@@ -31,20 +31,20 @@ cal_filename = test_folder + "training_fixation.csv"
 analyzer = gda.GazeDataAnalyzer()
 
 print("\nSETUP TRANSFORMATION")
-analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
+analyzer.setup_translate(config_filename, cal_filename, "dbscan_fixation")
 
 print("\nTEST DATA - FIXATION")
 training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze(training_filename, "dbscan_fixation")
+analyzer.analyze_translate(training_filename, "dbscan_fixation")
 
 #print("\nTEST DATA - PURSUIT (CIRCLE)")
 #training_filename = test_folder + "training_pursuit_circle.csv"
 #analyzer.analyze(training_filename, "dbscan_pursuit")
-
+#
 #print("\nTEST DATA - PURSUIT (LINEAR)")
 #training_filename = test_folder + "training_pursuit_linear.csv"
-#_,rmse_cor,_ = analyzer.analyze(training_filename, "dbscan_pursuit",output="values")
-
+#analyzer.analyze(training_filename, "dbscan_pursuit")
+#
 #print("\nTEST DATA - PURSUIT (SPIRAL)")
 #training_filename = test_folder + "training_pursuit_spiral.csv"
 #analyzer.analyze(training_filename, "dbscan_pursuit")
