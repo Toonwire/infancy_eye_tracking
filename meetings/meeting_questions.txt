@@ -150,4 +150,5 @@ Mikkel: Transformation characteristics
 Elsass supply af børn ikke helt som forventet
 Singleton transformation under- /overestimated in diagonal
 Fejlscenarier igennem forløbet (off-center stimuli, ingen kontroltracking af øjne etc.)
+Algorithm 3 - nødvendig eller fyld?
 

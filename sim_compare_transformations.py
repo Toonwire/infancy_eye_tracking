@@ -68,7 +68,7 @@ for i in range(len(session_folders)):
     r4 = T_right[1,1]
     
     
-    a = (l2*r3-l1*r4)/(r2*r3-r1*r4)
+    a = (l2*r3-l1*r4)/(r2*r3-r1*r4) 
     b = (l2*r1-l1*r2)/(r1*r4-r2*r3)
     c = (l4*r3-l1*r4)/(r2*r3-r1*r4)
     d = (l4*r1-l1*r2)/(r1*r4-r2*r3)

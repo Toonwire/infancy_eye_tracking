@@ -20,7 +20,7 @@ class GazeDataAnalyzer:
 
     show_graphs_bool = True
     show_rms_pixel_bool = False
-    show_rms_degree_bool = False
+    show_rms_degree_bool = True
     show_filtering = False
     
     to_closest_target = False
@@ -483,8 +483,39 @@ class GazeDataAnalyzer:
         
         pixel_err_left_corrected, pixel_err_right_corrected = self.compute_pixel_errors(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
         angle_err_left_corrected, angle_err_right_corrected = self.compute_visual_angle_error(pixel_err_left_corrected, pixel_err_right_corrected)
-        
+       
         rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = self.show_rms_degree(angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected)
+        
+        # formula proof accuracy (angular offset) calc
+        angle_left, angle_right, angle_avg = self.compute_angular_offset(gaze_data_left, gaze_data_right, target_points)
+        angle_left_corrected, angle_right_corrected, angle_avg_corrected = self.compute_angular_offset(gaze_data_left_corrected, gaze_data_right_corrected, target_points)
+        
+        accuracy_raw = np.mean(angle_avg)
+        accuracy_corrected = np.mean(angle_avg_corrected)
+        
+        print("")
+        print("############################################")
+        print("Accuracy: "+u"\u03B8"+ "_offset")
+        print("Accuracy (raw)\t\t" + str(accuracy_raw))
+        print("Accuracy (corrected)\t" + str(accuracy_corrected))
+        print("-----------")
+        print("Change\t\t\t" + str((accuracy_raw - accuracy_corrected) / max(accuracy_raw, accuracy_corrected) * 100) + " %")
+        print("############################################")
+        
+        
+        # formula proof precision calc
+        precision_avg = (np.mean([theta**2 for theta in angle_avg]))**0.5
+        precision_avg_corrected = (np.mean([theta**2 for theta in angle_avg_corrected]))**0.5
+        
+        print("")
+        print("############################################")
+        print("Precision: RMS("+u"\u03B8" + ")")
+        print("Precision (raw)\t\t" + str(precision_avg))
+        print("Precision (corrected)\t" + str(precision_avg_corrected))
+        print("-----------")
+        print("Change\t\t\t" + str((precision_avg - precision_avg_corrected) / max(precision_avg, precision_avg_corrected) * 100) + " %")
+        print("############################################")
+        
         
         if output == "values":
             return (rmse_deg_raw, rmse_deg_cor, rmse_deg_imp)
@@ -1007,16 +1038,16 @@ class GazeDataAnalyzer:
            
     
             # compute how much visual angle error the pixel errors correspond to
-            angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
+#            angle_err_left, angle_err_right = self.compute_visual_angle_error(pixel_err_left, pixel_err_right)
+            angle_err_left, angle_err_right, angle_err_avg = self.compute_angular_offset(gaze_data_left, gaze_data_right, target_points)
+            
             
             
                     
             self.plot_scatter(gaze_data_left, gaze_data_right, target_points, title_string="Scatter plot for fixations")
             self.plot_pixel_errors(pixel_dist_err_left, pixel_dist_err_right, title_string="Pixel distance error")
             self.plot_angle_errors(angle_err_left, angle_err_right, title_string="Visual angle error")
-#            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen", poly_degree=self.regression_poly_degree)
-         
-        
+#            self.plot_gaze_points_in_pixels(gaze_data_left, gaze_data_right, target_points, title_string="Gaze data on screen", poly_degree=self.regression_poly_degree)            
         
             
         
@@ -1084,7 +1115,7 @@ class GazeDataAnalyzer:
     
     
     def compute_visual_angle_error(self, pixel_err_left_norm, pixel_err_right_norm):
-        
+    
         visual_angle_err_left = []
         visual_angle_err_right = []
         
@@ -1108,6 +1139,63 @@ class GazeDataAnalyzer:
             
         return (np.array(visual_angle_err_left), np.array(visual_angle_err_right))
     
+    
+    def compute_angular_offset(self, gaze_data_left, gaze_data_right, target_points):
+        
+        visual_angle_left = []
+        visual_angle_right = []
+        visual_angle_avg = []
+        
+        for gazepoint_left_x, gazepoint_left_y, gazepoint_right_x, gazepoint_right_y, targetpoint_x, targetpoint_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:]):
+            
+            # convert normalized coordinates to pixel coordinates (as on screen)
+            gazepoint_left_x *= self.screen_width_px
+            gazepoint_left_y *= self.screen_height_px
+            gazepoint_right_x *= self.screen_width_px
+            gazepoint_right_y *= self.screen_height_px
+            targetpoint_x *= self.screen_width_px
+            targetpoint_y *= self.screen_height_px
+            
+            
+            theta_left = math.atan(((abs(targetpoint_x-gazepoint_left_x)**2 + abs(targetpoint_y-gazepoint_left_y)**2))**0.5/(self.dist_to_screen_cm*self.ppcm)) * 180 / np.pi
+            theta_right = math.atan(((abs(targetpoint_x-gazepoint_right_x)**2 + abs(targetpoint_y-gazepoint_right_y)**2))**0.5/(self.dist_to_screen_cm*self.ppcm)) * 180 / np.pi
+            theta_avg = (theta_left + theta_right) / 2
+            
+            visual_angle_left.append(theta_left)
+            visual_angle_right.append(theta_right)
+            visual_angle_avg.append(theta_avg)
+            
+#        print("AVG ANGULAR OFFSET: " + str(np.mean(visual_angle_avg)))
+        return visual_angle_left, visual_angle_right, visual_angle_avg
+    
+    
+    def compute_precision(self, gaze_data_left, gaze_data_right, target_points):
+        
+        precision_left = []
+        precision_right = []
+        precision_avg = []
+        
+        for gazepoint_left_x, gazepoint_left_y, gazepoint_right_x, gazepoint_right_y, targetpoint_x, targetpoint_y in zip(gaze_data_left[0,:], gaze_data_left[1,:], gaze_data_right[0,:], gaze_data_right[1,:], target_points[0,:], target_points[1,:]):
+            
+            # convert normalized coordinates to pixel coordinates (as on screen)
+            gazepoint_left_x *= self.screen_width_px
+            gazepoint_left_y *= self.screen_height_px
+            gazepoint_right_x *= self.screen_width_px
+            gazepoint_right_y *= self.screen_height_px
+            targetpoint_x *= self.screen_width_px
+            targetpoint_y *= self.screen_height_px
+            
+            
+            theta_left = math.atan(((abs(targetpoint_x-gazepoint_left_x)**2 + abs(targetpoint_y-gazepoint_left_y)**2))**0.5/(self.dist_to_screen_cm*self.ppcm)) * 180 / np.pi
+            theta_right = math.atan(((abs(targetpoint_x-gazepoint_right_x)**2 + abs(targetpoint_y-gazepoint_right_y)**2))**0.5/(self.dist_to_screen_cm*self.ppcm)) * 180 / np.pi
+            theta_avg = (theta_left + theta_right) / 2
+            
+            visual_angle_left.append(theta_left)
+            visual_angle_right.append(theta_right)
+            visual_angle_avg.append(theta_avg)
+            
+        return visual_angle_left, visual_angle_right
+    
           
   
     def plot_scatter(self, gaze_data_left, gaze_data_right, targets, title_string="", show=True):
@@ -1125,7 +1213,7 @@ class GazeDataAnalyzer:
 #                   ("left eye", "right eye"))
         scatter_target = plt.scatter(x_targets, y_targets, marker='^', color='black')
         plt.legend((scatter_left, scatter_right, scatter_target),
-                   ("left eye", "right eye", "target points"))
+                   ("left eye", "right eye", "target points"), loc=0)
         plt.title(title_string, y=1.08)
         plt.gca().xaxis.tick_top()
         plt.xlim(0,1)
