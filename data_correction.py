@@ -18,6 +18,24 @@ class DataCorrection:
     affine_matrix_left_eye = np.array([[0],[0]])
     affine_matrix_right_eye = np.array([[0],[0]])
     
+    A_left = np.array([[1,0],[0,1]])
+    A_right = np.array([[1,0],[0,1]])
+    b_left = np.array([[0],[0]])
+    b_right = np.array([[0],[0]])
+    
+    b_left_mix = {}    
+    b_left_mix["upper_right"] = np.array([[0],[0]])
+    b_left_mix["upper_left"] = np.array([[0],[0]])
+    b_left_mix["bottom_right"] = np.array([[0],[0]])
+    b_left_mix["bottom_left"] = np.array([[0],[0]])
+    b_left_mix["center"] = np.array([[0],[0]])
+    
+    b_right_mix = {}    
+    b_right_mix["upper_right"] = np.array([[0],[0]])
+    b_right_mix["upper_left"] = np.array([[0],[0]])
+    b_right_mix["bottom_right"] = np.array([[0],[0]])
+    b_right_mix["bottom_left"] = np.array([[0],[0]])
+    b_right_mix["center"] = np.array([[0],[0]])
     
     show_optimizing = False
     
@@ -44,7 +62,151 @@ class DataCorrection:
             distClosest.append(self.euclidean_distance(f,t))
                         
         return np.mean(distClosest)
-'''    
+    
+    
+    def affine_avg_dist_to_closest_fixation2(self, transformation):
+        
+#        print("First")
+#        print(transformation)
+        transformation = np.reshape(transformation, (-1,3))
+#        print("Second")
+#        print(transformation)
+#        print(transformation)
+        A = transformation[:,0:2]
+        b = np.reshape(transformation[:,2], (-1,1))
+        
+#        print(A)
+#        print(b)
+#        die()
+        coords = self.affine_adjust_both_eyes2(self.calibration_fixations, A, b)
+        
+        distClosest = []
+        
+        for f, t in zip(coords.T, self.calibration_targets.T):
+            distClosest.append(self.euclidean_distance(f,t))
+                        
+        return np.mean(distClosest)
+    
+    def affine_avg_dist_to_closest_fixation2_mix(self, transformation):
+        
+        transformation = np.reshape(transformation, (-1,7))
+
+        A = transformation[:,0:2]
+        b_upper_right = np.reshape(transformation[:,2], (-1,1))
+        b_upper_left = np.reshape(transformation[:,3], (-1,1))
+        b_bottom_right = np.reshape(transformation[:,4], (-1,1))
+        b_bottom_left = np.reshape(transformation[:,5], (-1,1))
+        b_center = np.reshape(transformation[:,6], (-1,1))
+        
+        distClosest = []
+        
+        # Upper right corner
+        coords = self.affine_adjust_both_eyes2(self.fixation_upper_right, A, b_upper_right)
+        
+        for f, t in zip(coords.T, self.target_points_upper_right.T):
+            distClosest.append(self.euclidean_distance(f,t))
+        
+        # Upper left corner
+        coords = self.affine_adjust_both_eyes2(self.fixation_upper_left, A, b_upper_left)
+        
+        for f, t in zip(coords.T, self.target_points_upper_left.T):
+            distClosest.append(self.euclidean_distance(f,t))             
+
+        # Bottom right corner
+        coords = self.affine_adjust_both_eyes2(self.fixation_bottom_right, A, b_bottom_right)
+        
+        for f, t in zip(coords.T, self.target_points_bottom_right.T):
+            distClosest.append(self.euclidean_distance(f,t))
+            
+        # Bottom left corner
+        coords = self.affine_adjust_both_eyes2(self.fixation_bottom_left, A, b_bottom_left)
+        
+        for f, t in zip(coords.T, self.target_points_bottom_left.T):
+            distClosest.append(self.euclidean_distance(f,t))
+            
+        # Center
+        coords = self.affine_adjust_both_eyes2(self.fixation_center, A, b_center)
+        
+        for f, t in zip(coords.T, self.target_points_center.T):
+            distClosest.append(self.euclidean_distance(f,t))
+
+        return np.mean(distClosest)
+    
+    def affine_left_eye2(self, fixations, initial_guess=np.array([[1,0,0],[0,1,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,3))
+        
+        self.A_left = transformation[:,0:2]
+        self.b_left = np.reshape(transformation[:,2], (-1,1))
+        
+        print("")
+        
+    
+    def affine_right_eye2(self, fixations, initial_guess=np.array([[1,0,0],[0,1,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,3))
+        
+        self.A_right = transformation[:,0:2]
+        self.b_right = np.reshape(transformation[:,2], (-1,1))
+        
+        print("")
+        
+    def affine_left_eye2_mix(self, fixations, initial_guess=np.array([[1,0,0,0,0,0,0],[0,1,0,0,0,0,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        
+        self.fixation_upper_right, self.fixation_upper_left, self.fixation_bottom_right, self.fixation_bottom_left, self.fixation_center, self.target_points_upper_right, self.target_points_upper_left, self.target_points_bottom_right, self.target_points_bottom_left, self.target_points_center = self.seperate_fixations(self.calibration_fixations)
+        
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2_mix, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,7))
+        
+        self.A_left = transformation[:,0:2]
+        self.b_left_mix["upper_right"] = np.reshape(transformation[:,2], (-1,1))
+        self.b_left_mix["upper_left"] = np.reshape(transformation[:,3], (-1,1))
+        self.b_left_mix["bottom_right"] = np.reshape(transformation[:,4], (-1,1))
+        self.b_left_mix["bottom_left"] = np.reshape(transformation[:,5], (-1,1))
+        self.b_left_mix["center"] = np.reshape(transformation[:,6], (-1,1))
+        
+        print("")
+        
+    
+    def affine_right_eye2_mix(self, fixations, initial_guess=np.array([[1,0,0,0,0,0,0],[0,1,0,0,0,0,0]])):
+        self.calibration_fixations = fixations
+        self.calibration_targets = self.targets
+        
+        self.fixation_upper_right, self.fixation_upper_left, self.fixation_bottom_right, self.fixation_bottom_left, self.fixation_center, self.target_points_upper_right, self.target_points_upper_left, self.target_points_bottom_right, self.target_points_bottom_left, self.target_points_center = self.seperate_fixations(self.calibration_fixations)
+        
+        if self.show_optimizing:
+            print("Calibrating left eye\n----------------")
+        
+#        print(self.affine_matrix_left_eye)
+        transformation = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation2_mix, x0=initial_guess, disp=self.show_optimizing)
+        transformation = np.reshape(transformation, (-1,7))
+        
+        self.A_right = transformation[:,0:2]
+        self.b_right_mix["upper_right"] = np.reshape(transformation[:,2], (-1,1))
+        self.b_right_mix["upper_left"] = np.reshape(transformation[:,3], (-1,1))
+        self.b_right_mix["bottom_right"] = np.reshape(transformation[:,4], (-1,1))
+        self.b_right_mix["bottom_left"] = np.reshape(transformation[:,5], (-1,1))
+        self.b_right_mix["center"] = np.reshape(transformation[:,6], (-1,1))
+        
+        print("")
+        
+    '''    
     def affine_left_eye(self, fixations, initial_guess=np.array([[0],[0]])):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
@@ -67,25 +229,9 @@ class DataCorrection:
         print("")
         
     def affine_right_eye(self, fixations, initial_guess=np.array([[0],[0]])):
-        self.calibration_fixations = fixations
-        self.calibration_targets = self.targets
-        if self.show_optimizing:
-            print("Calibrating left eye\n----------------")
-        
-        for f, t in zip(fixations.T, self.targets.T):
-            
-            if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
-                self.affine_matrix_right_eye[0][0] = t[0] - f[0]
-                self.affine_matrix_right_eye[1][0] = t[1] - f[1]
-                self.affine_matrix_right_eye = np.array(self.affine_matrix_right_eye)
-            else:
-                self.affine_matrix_right_eye[0][0] = self.affine_matrix_right_eye[0][0] + (t[0] - f[0])
-                self.affine_matrix_right_eye[1][0] = self.affine_matrix_right_eye[1][0] + (t[1] - f[1])
-                self.affine_matrix_right_eye = np.array(self.affine_matrix_right_eye)
-                self.affine_matrix_right_eye = self.affine_matrix_right_eye / 2
-            
-        print("")
-''' 
+    ''' 
+
+    
     def affine_left_eye(self, fixations, initial_guess=np.array([[0],[0]])):
         self.calibration_fixations = fixations
         self.calibration_targets = self.targets
@@ -105,8 +251,13 @@ class DataCorrection:
         self.affine_matrix_right_eye = np.reshape(self.affine_matrix_right_eye, (-1,1))
         print("")
     
-    def affine_adjust_both_eyes(self, fixations, trans_matrix):
-        return fixations + trans_matrix
+    def affine_adjust_both_eyes(self, fixations, b):
+        return fixations + b
+    
+    def affine_adjust_both_eyes2(self, fixations, A, b):
+        return np.matmul(A, (fixations + b))
+        return np.matmul(A, fixations) + b
+    
     
     def affine_adjust_left_eye(self, fixations):
         if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
@@ -119,8 +270,86 @@ class DataCorrection:
         if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
             raise Exception("No calibration for left eye exists")
         
-        return self.affine_adjust_both_eyes(fixations, self.affine_matrix_right_eye)        
+        return self.affine_adjust_both_eyes(fixations, self.affine_matrix_right_eye)     
     
+    
+    def affine_adjust_left_eye2(self, fixations):
+#        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2(fixations, self.A_left, self.b_left)
+
+    def affine_adjust_right_eye2(self, fixations):
+#        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2(fixations, self.A_right, self.b_right)   
+    
+    
+    def affine_adjust_both_eyes2_mix(self, fixations, A, b):
+
+        b_mix = np.array([[0],[0]])
+        
+        corrected_fix_x = []
+        corrected_fix_y = []
+        
+#        dist_between_center_and_other_target_points = self.euclidean_distance(self.target_center, self.target_upper_left)
+        
+        for i in range(len(fixations[0,:])):
+            current_fix = np.array([[fixations[0,i]],[fixations[1,i]]])
+
+            r_center = self.euclidean_distance(self.target_center, current_fix)
+            r_upper_left = self.euclidean_distance(self.target_upper_left, current_fix)
+            r_upper_right = self.euclidean_distance(self.target_upper_right, current_fix)
+            r_bottom_left= self.euclidean_distance(self.target_bottom_left, current_fix)
+            r_bottom_right = self.euclidean_distance(self.target_bottom_right, current_fix)
+
+            
+            # To enlarge the effect of a target point, if further away from the center
+#            rate = r_center / dist_between_center_and_other_target_points
+            r_center_inv = 1 / r_center
+            r_upper_left_inv = 1 / r_upper_left
+            r_upper_right_inv = 1 / r_upper_right
+            r_bottom_left_inv = 1 / r_bottom_left
+            r_bottom_right_inv = 1 / r_bottom_right
+            
+            r_total_inv = r_center_inv + r_upper_left_inv + r_upper_right_inv + r_bottom_left_inv + r_bottom_right_inv
+
+            rate_trans_center = r_center_inv / r_total_inv
+            rate_trans_upper_left = r_upper_left_inv / r_total_inv
+            rate_trans_upper_right = r_upper_right_inv / r_total_inv
+            rate_trans_bottom_left = r_bottom_left_inv / r_total_inv
+            rate_trans_bottom_right = r_bottom_right_inv / r_total_inv
+
+#            trans_matrix = self.transformation_matrices_left_eye["center"]
+            b_mix = b["center"] * rate_trans_center + b["upper_left"] * rate_trans_upper_left + b["upper_right"] * rate_trans_upper_right + b["bottom_left"] * rate_trans_bottom_left + b["bottom_right"] * rate_trans_bottom_right
+
+#            trans_matrix = np.identity(2)
+#            trans_matrix[0,0] = self.transformation_matrices_left_eye["center"][0,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,0] * rate_trans_bottom_right
+#            trans_matrix[0,1] = self.transformation_matrices_left_eye["center"][0,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][0,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][0,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][0,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][0,1] * rate_trans_bottom_right
+#            trans_matrix[1,0] = self.transformation_matrices_left_eye["center"][1,0] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,0] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,0] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,0] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,0] * rate_trans_bottom_right
+#            trans_matrix[1,1] = self.transformation_matrices_left_eye["center"][1,1] * rate_trans_center + self.transformation_matrices_left_eye["upper_left"][1,1] * rate_trans_upper_left + self.transformation_matrices_left_eye["upper_right"][1,1] * rate_trans_upper_right + self.transformation_matrices_left_eye["bottom_left"][1,1] * rate_trans_bottom_left + self.transformation_matrices_left_eye["bottom_right"][1,1] * rate_trans_bottom_right
+
+            new_fix  = self.affine_adjust_both_eyes2(current_fix, A, b_mix)
+
+            corrected_fix_x.append(new_fix[0,0])
+            corrected_fix_y.append(new_fix[1,0])
+            
+        return np.array([corrected_fix_x, corrected_fix_y])
+    
+    def affine_adjust_left_eye2_mix(self, fixations):
+#        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2_mix(fixations, self.A_left, self.b_left_mix)
+
+    def affine_adjust_right_eye2_mix(self, fixations):
+#        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
+        
+        return self.affine_adjust_both_eyes2_mix(fixations, self.A_right, self.b_right_mix)   
+
+
     def avg_dist_to_closest_fixation(self, transformation):
         
         transformation = np.reshape(transformation, (-1,2))

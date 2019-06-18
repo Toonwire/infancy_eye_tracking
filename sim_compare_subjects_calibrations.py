@@ -160,6 +160,12 @@ data_labels.append("targets")
 #plt.show()
     
     
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 16}
+
+plt.rc('font', **font)
+
 # BOXPLOT
 fig = plt.figure(1, figsize=(9,12))
 ax_raw = fig.add_subplot(2,1,1)
