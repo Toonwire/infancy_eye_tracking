@@ -4,6 +4,9 @@
 # author: Hiroyuki Sogo
 # Distributed under the terms of the GNU General Public License v3 (GPLv3).
 # 
+# edited by: Lukas Villumsen and Sebastian Nyholm
+#
+#
 
 from __future__ import division
 from __future__ import absolute_import
@@ -34,7 +37,7 @@ import psychopy.sound
 class tobii_controller:
 
     """
-    Default estimates
+    Default estimates, subject to change
     """
     dist_to_screen = 60
     screen_width = 1200
