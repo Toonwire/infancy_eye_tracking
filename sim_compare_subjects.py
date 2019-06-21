@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 session_folder = "session_data/"
 sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
 #sessions = ["ctrl_group_chrille1"]
+#sessions = ["ctrl_group_marie"]
 #sessions = ["ctrl_group_lasse"]
 #sessions = ["ctrl_group_louise", "ctrl_group_mikkel"]
 #sessions = ["ctrl4_a_seb_glass","ctrl4_a_seb","ctrl4_a_marie_2","ctrl4_a_marie","ctrl4_a_lukas_blind","ctrl4_a_lukas"]
@@ -24,9 +25,9 @@ sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctr
 
 
 #type_of_cal = "active"
-type_of_cal = "default"
+#type_of_cal = "default"
 #type_of_cal = "custom_2p"
-#type_of_cal = "custom_5p"
+type_of_cal = "custom_5p"
 
 type_of_training = "fixation"
 #type_of_training = "pursuit_linear"
@@ -38,14 +39,31 @@ filtering_method = "dbscan_fixation"
 #filtering_method = "dbscan_pursuit"
 #filtering_method = "threshold_time_pursuit"
 
-type_of_training_2 = None
-#type_of_training_2 = "pursuit_linear"
+#type_of_training_2 = None
+type_of_training_2 = "pursuit_linear"
 filtering_method_2 = "dbscan_pursuit"
 
-remove_outliers = True
+#remove_outliers = True
+remove_outliers = False
 
 analyzer = gda.GazeDataAnalyzer()
 
+
+method = "linear"
+#method = "affine"
+#method = "affine_weighted"
+#method = "affine_revert"
+#method = "affine2"
+#method = "affine_mix"
+#method = "regression"
+
+# linear -> Ap
+# affine -> (p+b)A -> 2 adjust
+# affine_weighted -> (p+b_weight)A -> 2 adjust
+# affine_revert -> Ap+b -> 2 adjust
+
+# affine2 -> Ap+b -> 1 adjust
+# affine_mix -> Ap+b_weight -> 1 adjust
 
 data_raw = []
 data_cor = []
@@ -68,10 +86,39 @@ for session in sessions:
         transformation_filename = test_path + "transformation.csv"
         training_filename = test_path + "training_" + type_of_training + ".csv"
         
-        analyzer.setup_affine2(config_filename, transformation_filename, "dbscan_fixation")
+        if method == "affine":
+            analyzer.setup_affine(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "affine_weighted":
+            analyzer.setup_affine_weighted(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "affine_revert":
+            analyzer.setup_affine_revert(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "affine2":
+            analyzer.setup_affine2(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "affine_mix":
+            analyzer.setup_affine_mix(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "linear":
+            analyzer.setup(config_filename, transformation_filename, "dbscan_fixation")
+        elif method == "regression":
+            analyzer.setup_regression(config_filename, transformation_filename, "dbscan_fixation")
+        
         #analyzer.analyze(transformation_filename, "dbscan_fixation")
         
-        targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine2(training_filename, filtering_method, remove_outliers = remove_outliers)
+        
+        if method == "affine":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "affine_weighted":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine_weighted(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "affine_revert":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine_revert(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "affine2":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine2(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "affine_mix":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine_mix(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "linear":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method, remove_outliers = remove_outliers)
+        elif method == "regression":
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_regression(training_filename, filtering_method, remove_outliers = remove_outliers)
+        
         
         gaze_data.append(np.mean(np.array([gaze_left, gaze_right]), axis=0))
         gaze_data_corrected.append(np.mean(np.array([gaze_data_left_corrected, gaze_data_right_corrected]), axis=0))
@@ -97,7 +144,7 @@ for session in sessions:
         else:
             data_raw.append(angle_err)
             data_cor.append(angle_err_corrected)
-        
+            
         #data_labels.append(session_path.split('_')[-1])
         data_labels.append("Subject " + str(subject))
         
@@ -110,13 +157,20 @@ all_targets = np.array(all_targets)
 
 data_labels.append("targets")
 
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 14}
+
+plt.rc('font', **font)
+
+
 scatters = []
 for idx, data in enumerate(gaze_data):
     scatters.append(plt.scatter(data[0,:], data[1,:], marker="x", color=colors[idx], alpha=0.8))    
 
 scatters.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
 #plt.legend(scatters, data_labels)
-plt.title("Raw data", y=1.08)
+#plt.title("Raw data", y=1.08)
 plt.gca().xaxis.tick_top()
 
 plt.xlim(0,1)
@@ -129,13 +183,14 @@ plt.ylim(1,0)
 
 plt.show()
 
+
 scatters_corrected = []
 for idx, data_corrected in enumerate(gaze_data_corrected):
     scatters_corrected.append(plt.scatter(data_corrected[0,:], data_corrected[1,:], marker="x", color=colors[idx], alpha=0.8))
 
 scatters_corrected.append(plt.scatter(all_targets[0,:], all_targets[1,:], marker="^", color="black"))
 #plt.legend(scatters_corrected, data_labels)
-plt.title("Transformed data", y=1.08)
+#plt.title("Transformed data", y=1.08)
 plt.gca().xaxis.tick_top()
 plt.xlim(0,1)
 plt.ylim(1,0)
@@ -149,7 +204,14 @@ plt.show()
 #plt.title(title_string)
 #plt.ylim(0,y_max)
 #plt.show()
-    
+
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 16}
+
+plt.rc('font', **font)
+
+
     
 # BOXPLOT
 fig = plt.figure(1, figsize=(9,12))
@@ -166,6 +228,17 @@ ax_cor.set_ylim(0,11)
 fig.show()
 
 
+
+#for data_corrected in gaze_data_corrected:
+#    mu = np.mean(data_corrected)
+#    sigma = np.std(data_corrected)
+#    
+#    # Create the bins and histogram
+#    count, bins, ignored = plt.hist(data_corrected, 20, normed=True)
+#    
+#    # Plot the distribution curve
+#    plt.plot(bins, 1/(sigma * np.sqrt(2 * np.pi)) * np.exp( - (bins - mu)**2 / (2 * sigma**2) ),       linewidth=3, color='y')
+#    plt.show()
 
 
 
