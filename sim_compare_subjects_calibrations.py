@@ -21,14 +21,14 @@ sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctr
 #sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
 #sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
 #sessions = ["ctrl_group_louise"]
+#sessions = ["infant_d25_noel_5m","infant_d25_gudrun_5m","infant1_d2_viggo_6m","infant1_d52_vilja_7m"]
 
-types_of_cal = ["active", "custom_2p", "custom_5p"]
-name_of_cal = ["Tobii's calibration scheme", "2-Point", "5-Point"]
+#types_of_cal = ["active", "custom_2p", "custom_5p"]
+#name_of_cal = ["Tobii", "2-Point", "5-Point"]
 
-#type_of_cal = "active"
-#type_of_cal = "default"
-#type_of_cal = "custom_2p"
-type_of_cal = "custom_5p"
+types_of_cal = ["active","custom_2p", "custom_5p", "default"]
+name_of_cal = ["Tobii", "2-Point", "5-Point", "Default + Correction"]
+
 
 type_of_training = "fixation"
 #type_of_training = "pursuit_linear"
@@ -76,10 +76,10 @@ for cal_type, name in zip(types_of_cal,name_of_cal):
             transformation_filename = test_path + "transformation.csv"
             training_filename = test_path + "training_" + type_of_training + ".csv"
             
-            analyzer.setup(config_filename, transformation_filename, "dbscan_fixation")
+            analyzer.setup_affine2(config_filename, transformation_filename, "dbscan_fixation")
             #analyzer.analyze(transformation_filename, "dbscan_fixation")
             
-            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze(training_filename, filtering_method, remove_outliers = remove_outliers)
+            targets, gaze_left, gaze_right, gaze_data_left_corrected, gaze_data_right_corrected, angle_err_left, angle_err_right, angle_err_left_corrected, angle_err_right_corrected = analyzer.analyze_affine2(training_filename, filtering_method, remove_outliers = remove_outliers)
             
             gaze_data.append(np.mean(np.array([gaze_left, gaze_right]), axis=0))
             gaze_data_corrected.append(np.mean(np.array([gaze_data_left_corrected, gaze_data_right_corrected]), axis=0))
@@ -96,7 +96,7 @@ for cal_type, name in zip(types_of_cal,name_of_cal):
         
             if not type_of_training_2 == None:
                 training_filename_2 = test_path + "training_" + type_of_training_2 + ".csv"
-                targets_2, gaze_left_2, gaze_right_2, gaze_data_left_corrected_2, gaze_data_right_corrected_2, angle_err_left_2, angle_err_right_2, angle_err_left_corrected_2, angle_err_right_corrected_2 = analyzer.analyze(training_filename_2, filtering_method_2, remove_outliers = remove_outliers)
+                targets_2, gaze_left_2, gaze_right_2, gaze_data_left_corrected_2, gaze_data_right_corrected_2, angle_err_left_2, angle_err_right_2, angle_err_left_corrected_2, angle_err_right_corrected_2 = analyzer.analyze_affine2(training_filename_2, filtering_method_2, remove_outliers = remove_outliers)
     
                 angle_err_2 = np.mean(np.array([angle_err_left_2, angle_err_right_2]), axis=0)
                 angle_err_corrected_2 = np.mean(np.array([angle_err_left_corrected_2, angle_err_right_corrected_2]), axis=0)
@@ -162,7 +162,7 @@ data_labels.append("targets")
     
 font = {'family' : 'normal',
         'weight' : 'normal',
-        'size'   : 16}
+        'size'   : 14}
 
 plt.rc('font', **font)
 
