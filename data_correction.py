@@ -260,15 +260,15 @@ class DataCorrection:
     
     
     def affine_adjust_left_eye(self, fixations):
-        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
-            raise Exception("No calibration for left eye exists")
+#        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
         
 #        print(self.affine_matrix_left_eye)
         return self.affine_adjust_both_eyes(fixations, self.affine_matrix_left_eye)
 
     def affine_adjust_right_eye(self, fixations):
-        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
-            raise Exception("No calibration for left eye exists")
+#        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
+#            raise Exception("No calibration for left eye exists")
         
         return self.affine_adjust_both_eyes(fixations, self.affine_matrix_right_eye)     
     
@@ -276,13 +276,13 @@ class DataCorrection:
     def affine_adjust_left_eye2(self, fixations):
 #        if np.allclose(self.affine_matrix_left_eye, np.array([[0],[0]])):
 #            raise Exception("No calibration for left eye exists")
-        
+#        print(self.b_left)
         return self.affine_adjust_both_eyes2(fixations, self.A_left, self.b_left)
 
     def affine_adjust_right_eye2(self, fixations):
 #        if np.allclose(self.affine_matrix_right_eye, np.array([[0],[0]])):
 #            raise Exception("No calibration for left eye exists")
-        
+#        print(self.b_right)
         return self.affine_adjust_both_eyes2(fixations, self.A_right, self.b_right)   
     
     
@@ -762,6 +762,7 @@ class DataCorrection:
         trans_matrix = np.reshape(trans_matrix, (-1,1))
         self.affine_transformation_matrices_left_eye["center"] = trans_matrix
         
+        print("")
 
     def affine_calibrate_right_eye_seb(self, fixations):
         fixation_upper_right, fixation_upper_left, fixation_bottom_right, fixation_bottom_left, fixation_center, target_points_upper_right, target_points_upper_left, target_points_bottom_right, target_points_bottom_left, target_points_center = self.seperate_fixations(fixations)
@@ -798,6 +799,8 @@ class DataCorrection:
         trans_matrix = optimize.fmin(func=self.affine_avg_dist_to_closest_fixation, x0=self.affine_transformation_matrices_right_eye["center"], disp=self.show_optimizing)
         trans_matrix = np.reshape(trans_matrix, (-1,1))
         self.affine_transformation_matrices_right_eye["center"] = trans_matrix
+    
+        print("")
     
     def affine_adjust_left_eye_seb_2(self, fixations):
         

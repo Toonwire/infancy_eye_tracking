@@ -19,9 +19,14 @@ def analyze(session_folder):
         test_folder = session_path + "test_" + type_of_cal + "/"
         config_filename = session_path + "config.csv"
 #        cal_filename = test_folder + "training_fixation.csv"
-        cal_filename = test_folder + "training_pursuit_circle.csv"
-    #    cal_filename = test_folder + "training_pursuit_linear.csv"
-    #    cal_filename = test_folder + "training_pursuit_spiral.csv"
+        cal_filename = test_folder + "training_fixation_2.csv"
+#        cal_filename = test_folder + "training_pursuit_circle.csv"
+#        cal_filename = test_folder + "training_pursuit_linear.csv"
+#        cal_filename = test_folder + "training_pursuit_spiral.csv"
+        
+#        remove_outliers = True
+        remove_outliers = False
+
         
         print("")
         print("Computing analyze linear transformation")
@@ -29,124 +34,112 @@ def analyze(session_folder):
         
         analyzer = gda.GazeDataAnalyzer()
         print("\nSETUP TRANSFORMATION")
-    #    analyzer.cross_validation(config_filename, cal_filename, "dbscan_fixation", k = 2)
-    #    analyzer.cross_validation(config_filename, cal_filename, "dbscan_pursuit", k = 5)
-#        analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
-        analyzer.setup(config_filename, cal_filename, "dbscan_pursuit")
-    #    print("\nTRAINING DATA")
-    #    analyzer.analyze(cal_filename, "dbscan_fixation")
+#        analyzer.cross_validation(config_filename, cal_filename, "dbscan_fixation", k = 2)
+#        analyzer.cross_validation(config_filename, cal_filename, "dbscan_pursuit", k = 5)
+        analyzer.setup_affine2(config_filename, cal_filename, "dbscan_fixation")
+#        analyzer.setup_affine2(config_filename, cal_filename, "dbscan_pursuit")
+#        print("\nTRAINING DATA")
+#        analyzer.analyze(cal_filename, "dbscan_fixation")
         
-        print("\nTEST DATA - FIXATION")
-        training_filename = test_folder + "training_fixation.csv"
-        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_fixation", "values")
-    
-        fixation_deg_raw.append(rmse_deg_raw)    
-        fixation_deg_cor.append(rmse_deg_cor)
-        fixation_deg_imp.append(rmse_deg_imp)
+        try:
+            print("\nTEST DATA - FIXATION")
+            training_filename = test_folder + "training_fixation.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_fixation", "values", remove_outliers = remove_outliers)
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
+            fixation_deg_raw.append(np.mean(angle_avg))
+            fixation_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING FIXATION")
+            print("-----------------------------")
+            fixation_deg_raw.append(0)
+            fixation_deg_cor.append(0)
+            
+        try:
+            print("\nTEST DATA - FIXATION_2")
+            training_filename = test_folder + "training_fixation_2.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_fixation", "values", remove_outliers = remove_outliers)
         
-#        print("\nTEST DATA - FIXATION_2")
-#        training_filename = test_folder + "training_fixation_2.csv"
-#        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_fixation", "values")
-#    
-#        fixation_2_deg_raw.append(rmse_deg_raw)    
-#        fixation_2_deg_cor.append(rmse_deg_cor)
-#        fixation_2_deg_imp.append(rmse_deg_imp)
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
+            fixation_2_deg_raw.append(np.mean(angle_avg))
+            fixation_2_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING FIXATION 2")
+            print("-----------------------------")
+            fixation_2_deg_raw.append(0)    
+            fixation_2_deg_cor.append(0)
+            
+        try:
+            print("\nTEST DATA - PURSUIT (CIRCLE)")
+            training_filename = test_folder + "training_pursuit_circle.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_pursuit", "values", remove_outliers = remove_outliers)
         
-        print("\nTEST DATA - PURSUIT (CIRCLE)")
-        training_filename = test_folder + "training_pursuit_circle.csv"
-        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
-    
-        pursuit_circle_deg_raw.append(rmse_deg_raw)    
-        pursuit_circle_deg_cor.append(rmse_deg_cor)
-        pursuit_circle_deg_imp.append(rmse_deg_imp)
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
         
-        print("\nTEST DATA - PURSUIT (LINEAR)")
-        training_filename = test_folder + "training_pursuit_linear.csv"
-        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
-    
-        pursuit_linear_deg_raw.append(rmse_deg_raw)
-        pursuit_linear_deg_cor.append(rmse_deg_cor)
-        pursuit_linear_deg_imp.append(rmse_deg_imp)
-    
-        print("\nTEST DATA - PURSUIT (SPIRAL)")
-        training_filename = test_folder + "training_pursuit_spiral.csv"
-        rmse_deg_raw, rmse_deg_cor, rmse_deg_imp = analyzer.analyze(training_filename, "dbscan_pursuit", "values")
-    
-        pursuit_spiral_deg_raw.append(rmse_deg_raw)
-        pursuit_spiral_deg_cor.append(rmse_deg_cor)
-        pursuit_spiral_deg_imp.append(rmse_deg_imp)
-    
-    
-        '''
-        print("") 
-        print("Computing analyze linear transformation mix")
-        print("------------------------")
-    
+            pursuit_circle_deg_raw.append(np.mean(angle_avg))
+            pursuit_circle_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING PURSUIT CIRCLE")
+            print("-----------------------------")
+            pursuit_circle_deg_raw.append(0)
+            pursuit_circle_deg_cor.append(0)
+            
+        try:
+            print("\nTEST DATA - PURSUIT (CIRCLE REVERT)")
+            training_filename = test_folder + "training_pursuit_circle_revert.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_pursuit", "values", remove_outliers = remove_outliers)
         
-        analyzer = gda.GazeDataAnalyzer()
-        print("\nSETUP TRANSFORMATION")
-        analyzer.setup_seb(config_filename, cal_filename, "dbscan_fixation")
-        print("\nTRAINING DATA")
-        analyzer.analyze_seb(cal_filename, "dbscan_fixation")
-        print("\nTEST DATA - FIXATION")
-        training_filename = test_folder + "training_fixation.csv"
-        analyzer.analyze_seb(training_filename, "dbscan_fixation")
-        print("\nTEST DATA - PURSUIT (CIRCLE)")
-        training_filename = test_folder + "training_pursuit_circle.csv"
-        analyzer.analyze_seb(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (LINEAR)")
-        training_filename = test_folder + "training_pursuit_linear.csv"
-        analyzer.analyze_seb(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (SPIRAL)")    
-        training_filename = test_folder + "training_pursuit_spiral.csv"
-        analyzer.analyze_seb(training_filename, "dbscan_pursuit")
-    
-    
-        print("")
-        print("Computing analyze regression by data driven")
-        print("------------------------")
-    
-        analyzer = gda.GazeDataAnalyzer()
-        print("\nSETUP TRANSFORMATION")
-        analyzer.setup_regression(config_filename, cal_filename, "dbscan_fixation")
-        print("\nTRAINING DATA")
-        analyzer.analyze_regression(cal_filename, "dbscan_fixation")
-        print("\nTEST DATA - FIXATION")
-        training_filename = test_folder + "training_fixation.csv"
-        analyzer.analyze_regression(training_filename, "dbscan_fixation")
-        print("\nTEST DATA - PURSUIT (CIRCLE)")
-        training_filename = test_folder + "training_pursuit_circle.csv"
-        analyzer.analyze_regression(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (LINEAR)")
-        training_filename = test_folder + "training_pursuit_linear.csv"
-        analyzer.analyze_regression(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (SPIRAL)")    
-        training_filename = test_folder + "training_pursuit_spiral.csv"
-        analyzer.analyze_regression(training_filename, "dbscan_pursuit")
-    
-        print("")
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
         
-        print("Computing analyze regression by optimization")
-        print("------------------------")
+            pursuit_circle_revert_deg_raw.append(np.mean(angle_avg))
+            pursuit_circle_revert_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING PURSUIT CIRCLE REVERT")
+            print("-----------------------------")
+            pursuit_circle_revert_deg_raw.append(0)
+            pursuit_circle_revert_deg_cor.append(0)
+            
+            
+        try:
+            print("\nTEST DATA - PURSUIT (LINEAR)")
+            training_filename = test_folder + "training_pursuit_linear.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_pursuit", "values", remove_outliers = remove_outliers)
     
-        analyzer = gda.GazeDataAnalyzer()
-        print("\nSETUP TRANSFORMATION")
-        analyzer.setup_poly(config_filename, cal_filename, "dbscan_fixation")
-        print("\nTRAINING DATA")
-        analyzer.analyze_poly(cal_filename, "dbscan_fixation")
-        print("\nTEST DATA - FIXATION")
-        training_filename = test_folder + "training_fixation.csv"
-        analyzer.analyze_poly(training_filename, "dbscan_fixation")
-        print("\nTEST DATA - PURSUIT (CIRCLE)")
-        training_filename = test_folder + "training_pursuit_circle.csv"
-        analyzer.analyze_poly(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (LINEAR)")
-        training_filename = test_folder + "training_pursuit_linear.csv"
-        analyzer.analyze_poly(training_filename, "dbscan_pursuit")
-        print("\nTEST DATA - PURSUIT (SPIRAL)")    
-        training_filename = test_folder + "training_pursuit_spiral.csv"
-        analyzer.analyze_poly(training_filename, "dbscan_pursuit")
-        '''
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
+                
+            pursuit_linear_deg_raw.append(np.mean(angle_avg))
+            pursuit_linear_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING PURSUIT LINEAR")
+            print("-----------------------------")
+            pursuit_linear_deg_raw.append(0)
+            pursuit_linear_deg_cor.append(0)
+            
+        try:
+            print("\nTEST DATA - PURSUIT (SPIRAL)")
+            training_filename = test_folder + "training_pursuit_spiral.csv"
+            angle_avg, angle_avg_corrected = analyzer.analyze_affine2(training_filename, "dbscan_pursuit", "values", remove_outliers = remove_outliers)
+        
+#            if len(angle_avg) < (5*90*0.3):
+#                raise ValueError('Not enough data')
+                
+            pursuit_spiral_deg_raw.append(np.mean(angle_avg))
+            pursuit_spiral_deg_cor.append(np.mean(angle_avg_corrected))
+        except:
+            print("-----------------------------")
+            print("SKIPPING PURSUIT SPIRAL")
+            print("-----------------------------")
+            pursuit_spiral_deg_raw.append(0)
+            pursuit_spiral_deg_cor.append(0)
         
         print("")
     except:
@@ -165,36 +158,34 @@ print("")
 
 fixation_deg_raw = []
 fixation_deg_cor = []
-fixation_deg_imp = []
 # ------------
 fixation_2_deg_raw = []
 fixation_2_deg_cor = []
-fixation_2_deg_imp = []
 # ------------
 pursuit_circle_deg_raw = []
 pursuit_circle_deg_cor = []
-pursuit_circle_deg_imp = []
+# ------------
+pursuit_circle_revert_deg_raw = []
+pursuit_circle_revert_deg_cor = []
 # ------------
 pursuit_linear_deg_raw = []
 pursuit_linear_deg_cor = []
-pursuit_linear_deg_imp = []
 # ------------
 pursuit_spiral_deg_raw = []
 pursuit_spiral_deg_cor = []
-pursuit_spiral_deg_imp = []
 
 
 for i in range(1):
     # Session to run
-    analyze("ctrl_group_2_louise")
-    analyze("ctrl_group_2_lasse")
-    analyze("ctrl_group_2_marie")
-    analyze("ctrl_group_2_mikkel")
-    analyze("ctrl_group_2_lukas")
-    analyze("ctrl_group_2_seb")
+#    analyze("ctrl_group_2_louise")
+#    analyze("ctrl_group_2_lasse")
+#    analyze("ctrl_group_2_marie")
+#    analyze("ctrl_group_2_mikkel")
+#    analyze("ctrl_group_2_lukas")
+#    analyze("ctrl_group_2_seb")
     
-#    analyze("fix_test_sebbi")
-#    analyze("fix_test_luggi")
+    analyze("ctrl_group_3_seb")
+    analyze("ctrl_group_3_lukas")
     
 #    analyze("ctrl4_a_seb_glass")
 #    analyze("ctrl4_a_seb")
@@ -221,26 +212,36 @@ def print_nice(values):
     return my_str
 
 
+fixation_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(fixation_deg_raw, fixation_deg_cor)]
+fixation_2_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(fixation_2_deg_raw, fixation_2_deg_cor)]
+pursuit_circle_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(pursuit_circle_deg_raw, pursuit_circle_deg_cor)]
+pursuit_circle_revert_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(pursuit_circle_revert_deg_raw, pursuit_circle_revert_deg_cor)]
+pursuit_linear_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(pursuit_linear_deg_raw, pursuit_linear_deg_cor)]
+pursuit_spiral_deg_imp = [(raw-cor)/raw*100 if raw > 0 else 0 for raw, cor in zip(pursuit_spiral_deg_raw, pursuit_spiral_deg_cor)]
+
 print("Improvements values")
 print(print_nice(fixation_deg_imp))
-#print(print_nice(fixation_2_deg_imp))
+print(print_nice(fixation_2_deg_imp))
 print(print_nice(pursuit_circle_deg_imp))
+print(print_nice(pursuit_circle_revert_deg_imp))
 print(print_nice(pursuit_linear_deg_imp))
 print(print_nice(pursuit_spiral_deg_imp))
 
 
 print("Correction values")
 print(print_nice(fixation_deg_cor))
-#print(print_nice(fixation_2_deg_cor))
+print(print_nice(fixation_2_deg_cor))
 print(print_nice(pursuit_circle_deg_cor))
+print(print_nice(pursuit_circle_revert_deg_cor))
 print(print_nice(pursuit_linear_deg_cor))
 print(print_nice(pursuit_spiral_deg_cor)) 
    
 
 print("Raw values")
 print(print_nice(fixation_deg_raw))
-#print(print_nice(fixation_2_deg_raw))
+print(print_nice(fixation_2_deg_raw))
 print(print_nice(pursuit_circle_deg_raw))
+print(print_nice(pursuit_circle_revert_deg_raw))
 print(print_nice(pursuit_linear_deg_raw))
 print(print_nice(pursuit_spiral_deg_raw))
 
@@ -251,15 +252,20 @@ print("Fixations value")
 print("Average RMSE degree after correction: " + str(np.mean(fixation_deg_cor)))
 print("Average RMSE improvement: " + str(np.mean(fixation_deg_imp)))
 
-#print("")
-#print("Fixations 2 value")
-#print("Average RMSE degree after correction: " + str(np.mean(fixation_2_deg_cor)))
-#print("Average RMSE improvement: " + str(np.mean(fixation_2_deg_imp)))
+print("")
+print("Fixations 2 value")
+print("Average RMSE degree after correction: " + str(np.mean(fixation_2_deg_cor)))
+print("Average RMSE improvement: " + str(np.mean(fixation_2_deg_imp)))
 
 print("")
 print("Pursuit circle value")
 print("Average RMSE degree after correction: " + str(np.mean(pursuit_circle_deg_cor)))
 print("Average RMSE improvement: " + str(np.mean(pursuit_circle_deg_imp)))
+
+print("")
+print("Pursuit circle value")
+print("Average RMSE degree after correction: " + str(np.mean(pursuit_circle_revert_deg_cor)))
+print("Average RMSE improvement: " + str(np.mean(pursuit_circle_revert_deg_imp)))
 
 print("")
 print("Pursuit linear value")
@@ -271,12 +277,22 @@ print("Pursuit spiral value")
 print("Average RMSE degree after correction: " + str(np.mean(pursuit_spiral_deg_cor)))
 print("Average RMSE improvement: " + str(np.mean(pursuit_spiral_deg_imp)))
 
+#print("")
+#print("All value")
+#print("Average RMSE degree after correction: " + str((np.mean(fixation_deg_cor) + np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 4))
+#print("Average RMSE improvement: " + str((np.mean(fixation_deg_imp) + np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 4))
+#
+#print("")
+#print("Smooth pursuit value")
+#print("Average RMSE degree after correction: " + str((np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 3))
+#print("Average RMSE improvement: " + str((np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 3))
+
 print("")
 print("All value")
-print("Average RMSE degree after correction: " + str((np.mean(fixation_deg_cor) + np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 4))
-print("Average RMSE improvement: " + str((np.mean(fixation_deg_imp) + np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 4))
+print("Average RMSE degree after correction: " + str((np.mean(fixation_deg_cor) + np.mean(fixation_2_deg_cor) + np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_circle_revert_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 6))
+print("Average RMSE improvement: " + str((np.mean(fixation_deg_imp) + np.mean(fixation_2_deg_imp) + np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_circle_revert_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 6))
 
 print("")
 print("Smooth pursuit value")
-print("Average RMSE degree after correction: " + str((np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 3))
-print("Average RMSE improvement: " + str((np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 3))
+print("Average RMSE degree after correction: " + str((np.mean(pursuit_circle_deg_cor) + np.mean(pursuit_circle_revert_deg_cor) + np.mean(pursuit_linear_deg_cor) + np.mean(pursuit_spiral_deg_cor)) / 4))
+print("Average RMSE improvement: " + str((np.mean(pursuit_circle_deg_imp) + np.mean(pursuit_circle_revert_deg_imp) + np.mean(pursuit_linear_deg_imp) + np.mean(pursuit_spiral_deg_imp)) / 4))

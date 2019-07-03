@@ -56,7 +56,7 @@ analyzer.setup(config_filename, cal_filename, "dbscan_fixation")
 
 
 
-analyzer.plot_visual_angle_ring(center=(0.5,0.5), angles_degrees=[2, 5, 10, 20])
+analyzer.plot_visual_angle_ring(center=(0.5,0.5), angles_degrees=[1.5, 5, 10, 20])
 
 
 

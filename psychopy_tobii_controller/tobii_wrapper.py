@@ -712,6 +712,63 @@ class tobii_controller:
         
         self.close_psycho_window(screen=1)
         
+        
+    def animate_test_2(self, gaze_data_left, gaze_data_right, target_points, stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015):
+        
+        self.make_psycho_window()
+        
+        img_stims = []
+        for stimuli_path in stimuli_paths:
+            img = Image.open(stimuli_path)
+            img_stim = psychopy.visual.ImageStim(self.win, image=img, autoLog=False)
+            img_stim.size = (0.15, 0.15)
+            img_stims.append(img_stim)        
+        
+        b_left = (0,0)
+        b_right = (0,0)
+        
+        ((4+5+6+7)/4)+((8-((4+5+6+7)/4))/5)
+        
+        for i, (gaze_point_left, gaze_point_right, target_point) in enumerate(zip(gaze_data_left.T, gaze_data_right.T, target_points.T)):
+            
+            b_left = ((b_left[0] + ((target_point[0] - gaze_point_left[0]) - (b_left[0])) / (i+1)), (b_left[1] + ((target_point[1] - gaze_point_left[1]) - (b_left[1])) / (i+1)))
+            b_right = ((b_right[0] + ((target_point[0] - gaze_point_right[0]) - (b_right[0])) / (i+1)), (b_right[1] + ((target_point[1] - gaze_point_right[1]) - (b_right[1])) / (i+1)))
+            
+            gaze_point_left_corrected = (gaze_point_left[0] + b_left[0], gaze_point_left[1] + b_left[1])
+            gaze_point_right_corrected = (gaze_point_right[0] + b_right[0], gaze_point_right[1] + b_right[1])
+            
+            target_point = self.get_psychopy_pos(target_point)
+            gaze_point_left = self.get_psychopy_pos(gaze_point_left)
+            gaze_point_right = self.get_psychopy_pos(gaze_point_right)
+            gaze_point_left_corrected = self.get_psychopy_pos(gaze_point_left_corrected)
+            gaze_point_right_corrected = self.get_psychopy_pos(gaze_point_right_corrected)
+            
+            img_stim = img_stims[(i - 1) % len(img_stims)]
+            img_stim.setPos(target_point)
+            img_stim.ori = i * self.rot_deg_per_frame
+            img_stim.draw()
+
+            stim_left = psychopy.visual.Circle(self.win, radius=0.05, fillColor='red', autoLog=False)
+            stim_left.setPos(gaze_point_left)
+            stim_left.draw()
+
+            stim_right = psychopy.visual.Circle(self.win, radius=0.05, fillColor='green', autoLog=False)
+            stim_right.setPos(gaze_point_right)
+            stim_right.draw()
+
+            stim_left_corrected= psychopy.visual.Circle(self.win, radius=0.05, fillColor='blue', autoLog=False)
+            stim_left_corrected.setPos(gaze_point_left_corrected)
+            stim_left_corrected.draw()
+            
+            stim_right_corrected = psychopy.visual.Circle(self.win, radius=0.05, fillColor='purple', autoLog=False)
+            stim_right_corrected.setPos(gaze_point_right_corrected)
+            stim_right_corrected.draw()
+
+            self.win.flip()
+            
+            psychopy.core.wait(frame_delay)
+        
+        self.close_psycho_window(screen=1)
     
 #    def make_transformation(self, stimuli_path="stimuli/smiley_yellow.png", enable_mouse=False):        
 #        
