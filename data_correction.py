@@ -255,7 +255,7 @@ class DataCorrection:
         return fixations + b
     
     def affine_adjust_both_eyes2(self, fixations, A, b):
-        return np.matmul(A, (fixations + b))
+#        return np.matmul(A, (fixations + b))
         return np.matmul(A, fixations) + b
     
     

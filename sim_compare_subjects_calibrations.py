@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 session_folder = "session_data/"
-sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
+#sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctrl_group_marie", "ctrl_group_mikkel"]
 #sessions = ["ctrl_group_chrille1"]
 #sessions = ["ctrl_group_lasse"]
 #sessions = ["ctrl_group_louise", "ctrl_group_mikkel"]
@@ -21,13 +21,14 @@ sessions = ["ctrl_group_chrille1", "ctrl_group_lasse", "ctrl_group_louise", "ctr
 #sessions = ["infant_d25_gudrun_5m","infant_d25_noel_5m"]
 #sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1", "infant_d25_josefine_2y", "infant_d25_molly_5y"]
 #sessions = ["ctrl_group_louise"]
-#sessions = ["infant_d25_noel_5m","infant_d25_gudrun_5m","infant1_d2_viggo_6m","infant1_d52_vilja_7m"]
+sessions = ["infant_d25_noel_5m","infant_d25_gudrun_5m","infant1_d2_viggo_6m","infant1_d52_vilja_7m"]
+#sessions = ["infant_walther_2y_twin1_cp","infant_d25_viggo_2y_twin1"]
 
-#types_of_cal = ["active", "custom_2p", "custom_5p"]
-#name_of_cal = ["Tobii", "2-Point", "5-Point"]
+types_of_cal = ["custom_2p", "custom_5p", "default"]
+name_of_cal = ["2-Point", "5-Point", "Default + Correction"]
 
-types_of_cal = ["active","custom_2p", "custom_5p", "default"]
-name_of_cal = ["Tobii", "2-Point", "5-Point", "Default + Correction"]
+#types_of_cal = ["active","custom_2p", "custom_5p", "default"]
+#name_of_cal = ["Tobii", "2-Point", "5-Point", "Default + Correction"]
 
 
 type_of_training = "fixation"
@@ -43,7 +44,7 @@ filtering_method = "dbscan_fixation"
 type_of_training_2 = "pursuit_linear"
 filtering_method_2 = "dbscan_pursuit"
 
-remove_outliers = True
+remove_outliers = False
 
 analyzer = gda.GazeDataAnalyzer()
 
@@ -58,7 +59,6 @@ gaze_data = []
 gaze_data_corrected = []
 all_targets = [[],[]]
 
-subject = 1
 
 
 for cal_type, name in zip(types_of_cal,name_of_cal):
@@ -112,8 +112,7 @@ for cal_type, name in zip(types_of_cal,name_of_cal):
     
     #data_labels.append(session_path.split('_')[-1])
     data_labels.append(name)
-    
-    subject += 1
+#    
         
 all_targets = np.array(all_targets)
 
@@ -180,6 +179,50 @@ ax_cor.set_ylim(0,11)
 
 fig.show()
 
+
+raw_data = []
+for row in data_raw:
+    raw_data.extend(row)
+    print("Raw")
+    print("STD: " + str(np.std(row)))
+    print("AVG: " + str(np.average(row)))
+    print("1Q: " + str(np.percentile(row, 25)))
+    print("2Q: " + str(np.percentile(row, 50)))
+    print("3Q: " + str(np.percentile(row, 75)))
+
+    print("")
+    
+    
+cor_data = []
+for row in data_cor:
+    cor_data.extend(row)
+    print("Corrected")
+    print("STD: " + str(np.std(row)))
+    print("AVG: " + str(np.average(row)))
+    print("1Q: " + str(np.percentile(row, 25)))
+    print("2Q: " + str(np.percentile(row, 50)))
+    print("3Q: " + str(np.percentile(row, 75)))
+    print("")
+    
+print("Raw")
+print("STD: " + str(np.std(np.array(raw_data))))
+print("AVG: " + str(np.average(np.array(raw_data))))
+print("")
+print("Corrected")
+print("STD: " + str(np.std(np.array(cor_data))))
+print("AVG: " + str(np.average(np.array(cor_data))))
+
+print("")
+
+print("Raw")
+print("1Q: " + str(np.percentile(np.array(raw_data), 25)))
+print("2Q: " + str(np.percentile(np.array(raw_data), 50)))
+print("3Q: " + str(np.percentile(np.array(raw_data), 75)))
+print("")
+print("Corrected")
+print("1Q: " + str(np.percentile(np.array(cor_data), 25)))
+print("2Q: " + str(np.percentile(np.array(cor_data), 50)))
+print("3Q: " + str(np.percentile(np.array(cor_data), 75)))
 
 
 

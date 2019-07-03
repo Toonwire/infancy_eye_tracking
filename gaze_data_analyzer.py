@@ -23,7 +23,7 @@ class GazeDataAnalyzer:
     show_rms_degree_bool = False
     show_filtering = False
     show_filtering_text = False
-    show_accuracy_precision_bool = False
+    show_accuracy_precision_bool = True
     
     to_closest_target = False
     
