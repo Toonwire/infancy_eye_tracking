@@ -834,8 +834,8 @@ class tobii_controller:
 #        self.unsubscribe_dict()
         self.stop_recording()
         
-    
-    def calc_pursuit_route(self, pathing, positions, frame_delay=0.03, move_duration=5, reverse=False):
+        
+    def calc_pursuit_route(self, pathing, positions, frame_delay=0.015, move_duration=5, reverse=False):
         
         
         # Normal coordinate system

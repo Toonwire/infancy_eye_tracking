@@ -30,16 +30,16 @@ cal_filename = test_folder + "training_fixation.csv"
 
 analyzer = gda.GazeDataAnalyzer()
 
-print("\nSETUP TRANSFORMATION")
-analyzer.setup_affine2(config_filename, cal_filename, "dbscan_fixation")
+#print("\nSETUP TRANSFORMATION")
+#analyzer.setup_affine2(config_filename, cal_filename, "dbscan_fixation")
 
-print("\nTEST DATA - FIXATION")
-training_filename = test_folder + "training_fixation.csv"
-analyzer.analyze_affine2(training_filename, "dbscan_fixation")
+#print("\nTEST DATA - FIXATION")
+#training_filename = test_folder + "training_fixation.csv"
+#analyzer.analyze_affine2(training_filename, "dbscan_fixation")
 
 #print("\nTEST DATA - PURSUIT (CIRCLE)")
 #training_filename = test_folder + "training_pursuit_circle.csv"
-#analyzer.analyze(training_filename, "dbscan_pursuit")
+#analyzer.analyze_affine2(training_filename, "dbscan_pursuit")
 #
 #print("\nTEST DATA - PURSUIT (LINEAR)")
 #training_filename = test_folder + "training_pursuit_linear.csv"
@@ -48,3 +48,5 @@ analyzer.analyze_affine2(training_filename, "dbscan_fixation")
 #print("\nTEST DATA - PURSUIT (SPIRAL)")
 #training_filename = test_folder + "training_pursuit_spiral.csv"
 #analyzer.analyze(training_filename, "dbscan_pursuit")
+
+analyzer.plot_exercises()

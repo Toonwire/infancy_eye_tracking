@@ -18,7 +18,7 @@ class GazeDataAnalyzer:
     
     plt.rcParams.update({'font.size': 14})
 
-    show_graphs_bool = False
+    show_graphs_bool = True
     show_rms_pixel_bool = False
     show_rms_degree_bool = False
     show_filtering = False
@@ -1001,6 +1001,7 @@ class GazeDataAnalyzer:
         gaze_data_left_corrected = self.data_correction.affine_adjust_left_eye2(gaze_data_left)
         gaze_data_right_corrected = self.data_correction.affine_adjust_right_eye2(gaze_data_right)
         
+#        gaze_data_left_corrected, gaze_data_right_corrected = self.center_by_cluster(gaze_data_left_corrected, gaze_data_right_corrected)
         #gaze_data_left_corrected_2 = self.data_correction.adjust_left_eye_seb_2(gaze_data_left_corrected)
         #gaze_data_right_corrected_2 = self.data_correction.adjust_right_eye_seb_2(gaze_data_right_corrected)
         #------------------------------#
@@ -2317,5 +2318,30 @@ class GazeDataAnalyzer:
             
         ax.legend(handles=angle_rings)
         plt.show()
-
+        
+    def plot_exercises(self):
+        from psychopy_tobii_controller.tobii_wrapper import tobii_controller
+        controller = tobii_controller(1280, 1024)
+        
+        fixation_positions = [(-0.5,-0.5), (0.5,-0.5), (-0.5, 0.5), (0.5, 0.5), (0.0, 0.0)]
+        xs = [t[0] for t in fixation_positions]
+        ys = [t[1] for t in fixation_positions]
+        plt.scatter(xs, ys)
+        plt.xlim(-1,1)
+        plt.ylim(-1,1)
+        plt.show()
+        
+        pursuit_exercise_params = [("linear", [(-0.5,-0.5), (0.3, 0.5), (0.5, -0.5), (0.0, 0.0)]), ("circle", [(-0.7,0.0), (0.0, 0.0)]), ("spiral", [(-0.7,0.0), (0.0, 0.0)])]
+        for params in pursuit_exercise_params:            
+            intermediate_positions = controller.calc_pursuit_route(params[0], params[1])
+            xs = [t[0] for t in intermediate_positions]
+            ys = [t[1] for t in intermediate_positions]
+            plt.scatter(xs, ys)
+            plt.xlim(-1,1)
+            plt.ylim(-1,1)
+            plt.show()
+        
+            
+        
+        
                     
