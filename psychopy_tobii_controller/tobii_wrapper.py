@@ -714,8 +714,8 @@ class tobii_controller:
         
         
     def animate_test_2(self, gaze_data_left, gaze_data_right, target_points, stimuli_paths=["stimuli/smiley_yellow.png"], frame_delay=0.015):
-        
         self.make_psycho_window()
+        time.sleep(5)
         
         img_stims = []
         for stimuli_path in stimuli_paths:
